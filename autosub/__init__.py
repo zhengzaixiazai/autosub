@@ -103,10 +103,8 @@ class SpeechRecognizer(object): # pylint: disable=too-few-public-methods
                         line = json.loads(line)
                         line = line['result'][0]['alternative'][0]['transcript']
                         return line[:1].upper() + line[1:]
-                    except (ValueError, IndexError):
+                    except (JSONDecodeError, ValueError, IndexError):
                         # no result
-                        continue
-                    except JSONDecodeError:
                         continue
 
         except KeyboardInterrupt:
@@ -171,7 +169,7 @@ def which(program):
 
 def ffmpeg_check():
     """
-    Return the ffmpeg executable name. "null" returned when no executable exists.
+    Return the ffmpeg executable name. "None" returned when no executable exists.
     """
     if which("ffmpeg"):
         return "ffmpeg"
