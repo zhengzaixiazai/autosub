@@ -26,7 +26,8 @@ from googleapiclient.discovery import build
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
 from autosub.constants import (
-    LANGUAGE_CODES, GOOGLE_SPEECH_API_KEY, GOOGLE_SPEECH_API_URL,
+    SPEECH_TO_TEXT_LANGUAGE_CODES, TRANSLATION_LANGUAGE_CODES,
+    GOOGLE_SPEECH_API_KEY, GOOGLE_SPEECH_API_URL,
 )
 from autosub.formatters import FORMATTERS
 
@@ -343,17 +344,32 @@ def validate(args):
         )
         return False
 
-    if args.src_language not in LANGUAGE_CODES.keys():
+    if args.src_language not in SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
         print(
             "Source language not supported. "
-            "Run with --list-languages to see all supported languages."
+            "Run with -lsc or --list-speech-to-text-codes "
+            "to see all supported languages."
         )
         return False
 
-    if args.dst_language not in LANGUAGE_CODES.keys():
+    if args.dst_language is None:
+        print(
+            "Destination language not provided. "
+            "Only performing speech recognition."
+        )
+        args.dst_language = args.src_language
+
+    elif args.dst_language == args.src_language:
+        print(
+            "Source language is the same as the Destination language. "
+            "Only performing speech recognition."
+        )
+
+    elif args.dst_language not in TRANSLATION_LANGUAGE_CODES.keys():
         print(
             "Destination language not supported. "
-            "Run with --list-languages to see all supported languages."
+            "Run with -ltc or --list-translation-codes "
+            "to see all supported languages."
         )
         return False
 
@@ -380,14 +396,31 @@ def main():
                         default=DEFAULT_SUBTITLE_FORMAT)
     parser.add_argument('-S', '--src-language', help="Language spoken in source file",
                         default=DEFAULT_SRC_LANGUAGE)
-    parser.add_argument('-D', '--dst-language', help="Desired language for the subtitles",
-                        default=DEFAULT_DST_LANGUAGE)
+    parser.add_argument('-D', '--dst-language', help="Desired language for the subtitles")
     parser.add_argument('-K', '--api-key',
-                        help="The Google Translate API key to be used. \
+                        help="The Google Translation API key to be used. \
                         (Required for subtitle translation)")
-    parser.add_argument('--list-formats', help="List all available subtitle formats",
+    parser.add_argument('-lf', '--list-formats', help="List all available subtitle formats",
                         action='store_true')
-    parser.add_argument('--list-languages', help="List all available source/destination languages",
+    parser.add_argument('-lsc', '--list-speech-to-text-codes',
+                        help="""List all available source language codes,
+                              which mean the speech-to-text
+                              available language codes.
+                              [WARNING]: Its name format is different from 
+                                         the destination language codes.
+                                         And it's Google who make that difference
+                                         not the developers of the autosub.
+                              Reference: https://cloud.google.com/speech-to-text/docs/languages""",
+                        action='store_true')
+    parser.add_argument('-ltc', '--list-translation-codes',
+                        help="""List all available destination language codes,
+                             which mean the translation
+                             language codes.
+                             [WARNING]: Its name format is different from 
+                                        the source language codes.
+                                        And it's Google who make that difference
+                                        not the developers of the autosub.
+                             Reference: https://cloud.google.com/translate/docs/languages""",
                         action='store_true')
     parser.add_argument('-htp', '--http-speech-to-text-api',
                         help="Change the speech-to-text api url into the http one",
@@ -401,9 +434,15 @@ def main():
             print("{format}".format(format=subtitle_format))
         return 0
 
-    if args.list_languages:
-        print("List of all languages:")
-        for code, language in sorted(LANGUAGE_CODES.items()):
+    if args.list_speech_to_text_codes:
+        print("List of all source language codes:")
+        for code, language in sorted(SPEECH_TO_TEXT_LANGUAGE_CODES.items()):
+            print("{code}\t{language}".format(code=code, language=language))
+        return 0
+
+    if args.list_translation_codes:
+        print("List of all destination language codes:")
+        for code, language in sorted(TRANSLATION_LANGUAGE_CODES.items()):
             print("{code}\t{language}".format(code=code, language=language))
         return 0
 
