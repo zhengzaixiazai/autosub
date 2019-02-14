@@ -44,15 +44,18 @@ optional arguments:
                         [WARNING]: Its name format is different from the
                         destination language codes. And it's Google who make
                         that difference not the developers of the autosub.
-                        Reference: https://cloud.google.com/speech-to-
-                        text/docs/languages
+                        Reference: 
+                        https://cloud.google.com/speech-to-text/docs/languages
   -ltc, --list-translation-codes
                         List all available destination language codes, which
-                        mean the translation language codes. [WARNING]: Its
-                        name format is different from the source language
-                        codes. And it's Google who make that difference not
+                        mean the translation language codes. 
+                        [WARNING]: Its name format is different 
+                        from the source language codes. 
+                        And it's Google who make that difference not
                         the developers of the autosub. Reference:
                         https://cloud.google.com/translate/docs/languages
+  -htp, --http-speech-to-text-api
+                        Change the speech-to-text api url into the http one
 ```
 
 ### License
