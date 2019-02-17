@@ -12,7 +12,6 @@ import math
 import multiprocessing
 import os
 import subprocess
-import sys
 import tempfile
 import wave
 import json
@@ -36,6 +35,7 @@ DEFAULT_CONCURRENCY = 10
 DEFAULT_SRC_LANGUAGE = 'en'
 DEFAULT_DST_LANGUAGE = 'en'
 DEFAULT_API_URL_SCHEME = 'https://'
+
 
 def percentile(arr, percent):
     """
@@ -243,7 +243,7 @@ def find_speech_regions(filename, frame_width=4096, min_region_size=0.5, max_reg
     return regions
 
 
-def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments
+def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too-many-statements
         source_path,
         output=None,
         concurrency=DEFAULT_CONCURRENCY,
@@ -251,7 +251,7 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments
         dst_language=DEFAULT_DST_LANGUAGE,
         subtitle_file_format=DEFAULT_SUBTITLE_FORMAT,
         api_url_scheme=DEFAULT_API_URL_SCHEME,
-        api_key=None,
+        api_key=None
     ):
     """
     Given an input audio/video file, generate subtitles in the specified language and format.
@@ -480,7 +480,3 @@ def main():
         return 1
 
     return 0
-
-
-if __name__ == '__main__':
-    sys.exit(main())
