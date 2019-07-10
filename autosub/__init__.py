@@ -16,6 +16,7 @@ import tempfile
 import wave
 import json
 import requests
+import pysubs2
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
@@ -32,10 +33,12 @@ from autosub.formatters import FORMATTERS
 
 DEFAULT_SUBTITLE_FORMAT = 'srt'
 DEFAULT_CONCURRENCY = 10
-DEFAULT_SRC_LANGUAGE = 'en'
-DEFAULT_DST_LANGUAGE = 'en'
+DEFAULT_SRC_LANGUAGE = 'en-US'
+DEFAULT_DST_LANGUAGE = 'en-US'
 DEFAULT_API_URL_SCHEME = 'https://'
-
+MAX_EXT_REGION_LENGTH = 10000
+# Maximum speech to text region length in milliseconds
+# when using external speech region control
 
 def percentile(arr, percent):
     """
@@ -223,27 +226,27 @@ def find_speech_regions(filename, frame_width=4096, min_region_size=0.5, max_reg
 
     threshold = percentile(energies, 0.2)
 
-    elapsed_time = 0
+    region_end = 0
 
     regions = []
     region_start = None
 
     for energy in energies:
         is_silence = energy <= threshold
-        max_exceeded = region_start and elapsed_time - region_start >= max_region_size
+        max_exceeded = region_start and region_end - region_start >= max_region_size
 
         if (max_exceeded or is_silence) and region_start:
-            if elapsed_time - region_start >= min_region_size:
-                regions.append((region_start, elapsed_time))
+            if region_end - region_start >= min_region_size:
+                regions.append((region_start, region_end))
                 region_start = None
 
         elif (not region_start) and (not is_silence):
-            region_start = elapsed_time
-        elapsed_time += chunk_duration
+            region_start = region_end
+        region_end += chunk_duration
     return regions
 
 
-def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too-many-statements
+def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         source_path,
         output=None,
         concurrency=DEFAULT_CONCURRENCY,
@@ -251,14 +254,41 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
         dst_language=DEFAULT_DST_LANGUAGE,
         subtitle_file_format=DEFAULT_SUBTITLE_FORMAT,
         api_url_scheme=DEFAULT_API_URL_SCHEME,
-        api_key=None
+        api_key=None,
+        ext_regions=None,
+        ext_max_length=MAX_EXT_REGION_LENGTH
     ):
     """
     Given an input audio/video file, generate subtitles in the specified language and format.
     """
     audio_filename, audio_rate = extract_audio(source_path)
 
-    regions = find_speech_regions(audio_filename)
+    if not ext_regions:
+        regions = find_speech_regions(audio_filename)
+    else:
+        regions = []
+        for event in ext_regions.events:
+            if not event.is_comment:
+                # not a comment region
+                reader = wave.open(audio_filename)
+                audio_file_length = float(reader.getnframes()) / float(reader.getframerate())
+                reader.close()
+                if event.duration <= ext_max_length:
+                    regions.append((float(event.start) / 1000.0,
+                                    float(event.start + event.duration) / 1000.0))
+                else:
+                    # split too long regions
+                    elapsed_time = event.duration
+                    start_time = event.start
+                    if float(elapsed_time) / 1000.0 > audio_file_length:
+                        elapsed_time = math.floor(audio_file_length) * 1000
+                    while elapsed_time > ext_max_length:
+                        regions.append((float(start_time) / 1000.0,
+                                        float(start_time + ext_max_length) / 1000.0))
+                        elapsed_time = elapsed_time - ext_max_length
+                        start_time = start_time + ext_max_length
+                    regions.append((float(start_time) / 1000.0,
+                                    float(start_time + elapsed_time) / 1000.0))
 
     pool = multiprocessing.Pool(concurrency)
     converter = FLACConverter(source_path=audio_filename)
@@ -268,10 +298,10 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
 
     transcripts = []
     if regions:
+        widgets = ["Converting speech regions to FLAC files: ", Percentage(), ' ', Bar(), ' ',
+                   ETA()]
+        pbar = ProgressBar(widgets=widgets, maxval=len(regions)).start()
         try:
-            widgets = ["Converting speech regions to FLAC files: ", Percentage(), ' ', Bar(), ' ',
-                       ETA()]
-            pbar = ProgressBar(widgets=widgets, maxval=len(regions)).start()
             extracted_regions = []
             for i, extracted_region in enumerate(pool.imap(converter, regions)):
                 extracted_regions.append(extracted_region)
@@ -380,7 +410,7 @@ def validate(args):
     return True
 
 
-def main():
+def main():  # pylint: disable=too-many-branches
     """
     Run autosub as a command-line program.
     """
@@ -392,6 +422,11 @@ def main():
     parser.add_argument('-o', '--output',
                         help="Output path for subtitles (by default, subtitles are saved in \
                         the same directory and name as the source path)")
+    parser.add_argument('-esr', '--external-speech-regions',
+                        help="Path to the external speech regions, \
+                        which is one of the formats that pysubs2 supports \
+                        and overrides the default method to find speech regions",
+                        nargs="?", metavar="path")
     parser.add_argument('-F', '--format', help="Destination subtitle format",
                         default=DEFAULT_SUBTITLE_FORMAT)
     parser.add_argument('-S', '--src-language', help="Language spoken in source file",
@@ -446,37 +481,45 @@ def main():
             print("{code}\t{language}".format(code=code, language=language))
         return 0
 
-    if not validate(args):
-        return 1
-
-    try:
+    if validate(args):
         if args.http_speech_to_text_api:
-            print("Using http url instead of https one. ")
-            subtitle_file_path = generate_subtitles(
-                source_path=args.source_path,
-                concurrency=args.concurrency,
-                src_language=args.src_language,
-                dst_language=args.dst_language,
-                api_url_scheme="http://",
-                api_key=args.api_key,
-                subtitle_file_format=args.format,
-                output=args.output,
-            )
-
+            api_url_scheme = "http://"
         else:
-            subtitle_file_path = generate_subtitles(
-                source_path=args.source_path,
-                concurrency=args.concurrency,
-                src_language=args.src_language,
-                dst_language=args.dst_language,
-                api_key=args.api_key,
-                subtitle_file_format=args.format,
-                output=args.output,
-            )
+            api_url_scheme = DEFAULT_API_URL_SCHEME
 
-        print("Subtitles file created at {}".format(subtitle_file_path))
+        try:
+            if args.external_speech_regions:
+                print("Using external speech regions.")
+                ext_regions = pysubs2.SSAFile.load(args.external_speech_regions)
+                subtitle_file_path = generate_subtitles(
+                    source_path=args.source_path,
+                    concurrency=args.concurrency,
+                    src_language=args.src_language,
+                    dst_language=args.dst_language,
+                    api_url_scheme=api_url_scheme,
+                    api_key=args.api_key,
+                    subtitle_file_format=args.format,
+                    output=args.output,
+                    ext_regions=ext_regions
+                )
 
-    except KeyboardInterrupt:
-        return 1
+            else:
+                subtitle_file_path = generate_subtitles(
+                    source_path=args.source_path,
+                    concurrency=args.concurrency,
+                    src_language=args.src_language,
+                    dst_language=args.dst_language,
+                    api_url_scheme=api_url_scheme,
+                    api_key=args.api_key,
+                    subtitle_file_format=args.format,
+                    output=args.output
+                )
+            print("Subtitles file created at {}".format(subtitle_file_path))
+
+        except KeyboardInterrupt:
+            return 1
+        except pysubs2.exceptions.Pysubs2Error:
+            print("Error: pysubs2.exceptions. Check your file format.")
+            return 1
 
     return 0

@@ -20,7 +20,7 @@ long_description = (
 
 setup(
     name='autosub',
-    version='0.4.0',
+    version='0.4.1-alpha',
     description='Auto-generates subtitles for any video or audio file',
     long_description=long_description,
     author='Anastasis Germanidis',
@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'google-api-python-client>=1.4.2',
         'requests>=2.3.0',
+        'pysubs2>=0.2.4',
         'pysrt>=1.0.1',
         'progressbar2>=3.34.3',
         'six>=1.11.0',
