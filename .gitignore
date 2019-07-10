@@ -14,3 +14,4 @@ MANIFEST
 /.idea
 /.build_and_dist
 /.build_and_dist27
+/.release

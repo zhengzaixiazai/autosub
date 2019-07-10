@@ -367,6 +367,10 @@ def validate(args):
     """
     Check that the CLI arguments passed to autosub are valid.
     """
+    if not args.source_path:
+        print("Error: You need to specify a source path.")
+        return False
+
     if args.format not in FORMATTERS:
         print(
             "Subtitle format not supported. "
@@ -401,10 +405,6 @@ def validate(args):
             "Run with -ltc or --list-translation-codes "
             "to see all supported languages."
         )
-        return False
-
-    if not args.source_path:
-        print("Error: You need to specify a source path.")
         return False
 
     return True
