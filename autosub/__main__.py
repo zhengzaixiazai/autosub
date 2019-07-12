@@ -1,8 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Defines autosub's entry point.
 """
-
-#!/usr/bin/env python
 
 # Import built-in modules
 # pylint: disable=no-member, protected-access

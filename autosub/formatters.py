@@ -1,8 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Defines subtitle formatters used by autosub.
 """
 
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 import json

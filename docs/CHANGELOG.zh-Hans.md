@@ -9,8 +9,8 @@
 ## 目录
 
 - [未发布的部分](#未发布的部分)
-  - 
-
+  - [添加](#添加未发布的部分)
+  - [改动](#改动未发布的部分)
 - [[0.4.1-alpha] - 2019-07-11](#041-alpha---2019-07-11)
   - [添加](#添加041-alpha)
   - [改动](#改动041-alpha)
@@ -18,6 +18,27 @@
   - [改动](#改动040-alpha)
 
 点击上箭头以返回目录。
+
+### [Unreleased]
+
+#### 添加(未发布的部分)
+
+- 为根据音量自动分句时的分句大小提供外部输入参数控制。[issue #3](https://github.com/BingLingGroup/autosub/issues/3)
+- 添加项目元数据文件。[issue #5](https://github.com/BingLingGroup/autosub/issues/5)
+- 添加输出文件名检测，以避免覆盖写入。
+- 添加新的dev分支用于推送最新的代码。
+
+#### 修改(未发布的部分)
+
+- [issue #5](https://github.com/BingLingGroup/autosub/issues/5)。
+  - 重写帮助信息。
+  - 重构argparse命令行参数解析。
+  - 重构常量。
+- 将原先的dev分支改名为origin分支。
+- 将alpha分支当作alpha版本发布的分支。
+- 修改文档。
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.4.1-alpha] - 2019-07-11
 

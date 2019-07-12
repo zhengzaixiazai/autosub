@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Defines autosub's metadata.
+"""
 
 NAME = 'autosub'
 VERSION = '0.4.1-alpha'

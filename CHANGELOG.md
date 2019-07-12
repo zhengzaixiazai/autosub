@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
-- [Unreleased](#Unreleased)
+- [[Unreleased]](#Unreleased)
   - [Added](#addedunreleased)
   - [Changed](#changedunreleased)
 - [[0.4.1-alpha] - 2019-07-11](#041-alpha---2019-07-11)
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Click up arrow to go back to TOC.
 
-### Unreleased
+### [Unreleased]
 
 #### Added(Unreleased)
 
@@ -31,12 +31,13 @@ Click up arrow to go back to TOC.
 
 #### Changed(Unreleased)
 
-- [issue #5](https://github.com/BingLingGroup/autosub/issues/5)
+- [issue #5](https://github.com/BingLingGroup/autosub/issues/5).
   - Rewrite help messages.
   - Refactor argparse.
   - Refactor constaints.
 - Change dev branch into origin branch.
-- Change alpha branch for alpha releases.
+- Use alpha branch for alpha releases.
+- Change docs.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
@@ -53,7 +54,7 @@ Click up arrow to go back to TOC.
 #### Changed(0.4.1-alpha)
 
 - Fix vague language codes caused wrong recognition result. [agermanidis/autosub pull request #136](https://github.com/agermanidis/autosub/pull/136)
-- Fix docs.
+- Change docs.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
