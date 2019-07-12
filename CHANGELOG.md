@@ -24,6 +24,7 @@ Click up arrow to go back to TOC.
 
 #### Added(Unreleased)
 
+- Add arguments for min and max region size. [issue #3](https://github.com/BingLingGroup/autosub/issues/3)
 - Add metadata.py. [issue #5](https://github.com/BingLingGroup/autosub/issues/5)
 - Add output file name detection to avoid any file overwritting.
 - Add new dev branch for latest dev codes to push.

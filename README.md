@@ -97,7 +97,7 @@ Currently suppports `.srt`, `.vtt`, `.json`, `.raw`(the same as the Aegisub plai
 
 - Include the least changes from [the original repo](https://github.com/agermanidis/autosub) except all new features in the [alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha). The changes in [origin branch](https://github.com/BingLingGroup/autosub/tree/dev) just make sure there's no critical bugs when the program running on Windows. Currently not maintained.
 
-[dev分支](https://github.com/BingLingGroup/autosub/tree/dev)
+[dev branch](https://github.com/BingLingGroup/autosub/tree/dev)
 
 - The latest codes will be pushed to this branch. If it works fine, it will be merged to alpha branch when new version released.
 - Only used to test or pull request. Don't install them unless you know what you are doing.

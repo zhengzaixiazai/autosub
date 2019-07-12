@@ -12,7 +12,9 @@ DEFAULT_CONCURRENCY = 10
 DEFAULT_SRC_LANGUAGE = 'en-US'
 DEFAULT_DST_LANGUAGE = 'en-US'
 DEFAULT_API_URL_SCHEME = 'https://'
-MAX_EXT_REGION_LENGTH = 10000
+MAX_REGION_SIZE = 6.0
+MIN_REGION_SIZE = 0.5
+MAX_EXT_REGION_SIZE = 10
 # Maximum speech to text region length in milliseconds
 # when using external speech region control
 

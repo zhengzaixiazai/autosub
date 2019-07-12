@@ -196,7 +196,10 @@ def extract_audio(filename, channels=1, rate=16000):
     return temp.name, rate
 
 
-def find_speech_regions(filename, frame_width=4096, min_region_size=0.5, max_region_size=6): # pylint: disable=too-many-locals
+def find_speech_regions(# pylint: disable=too-many-locals
+        filename, frame_width=4096,
+        min_region_size=constants.MIN_REGION_SIZE,
+        max_region_size=constants.MAX_REGION_SIZE):
     """
     Perform voice activity detection on a given audio file.
     """
@@ -244,8 +247,10 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
         subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
         api_url_scheme=constants.DEFAULT_API_URL_SCHEME,
         api_key=None,
+        min_region_size=constants.MIN_REGION_SIZE,
+        max_region_size=constants.MAX_REGION_SIZE,
         ext_regions=None,
-        ext_max_length=constants.MAX_EXT_REGION_LENGTH
+        ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000
     ):
     """
     Given an input audio/video file, generate subtitles in the specified language and format.
@@ -253,7 +258,9 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
     audio_filename, audio_rate = extract_audio(source_path)
 
     if not ext_regions:
-        regions = find_speech_regions(audio_filename)
+        regions = find_speech_regions(audio_filename,
+                                      min_region_size=min_region_size,
+                                      max_region_size=max_region_size)
     else:
         regions = []
         for event in ext_regions.events:
@@ -262,7 +269,7 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
                 reader = wave.open(audio_filename)
                 audio_file_length = float(reader.getnframes()) / float(reader.getframerate())
                 reader.close()
-                if event.duration <= ext_max_length:
+                if event.duration <= ext_max_size_ms:
                     regions.append((float(event.start) / 1000.0,
                                     float(event.start + event.duration) / 1000.0))
                 else:
@@ -271,11 +278,11 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
                     start_time = event.start
                     if float(elapsed_time) / 1000.0 > audio_file_length:
                         elapsed_time = math.floor(audio_file_length) * 1000
-                    while elapsed_time > ext_max_length:
+                    while elapsed_time > ext_max_size_ms:
                         regions.append((float(start_time) / 1000.0,
-                                        float(start_time + ext_max_length) / 1000.0))
-                        elapsed_time = elapsed_time - ext_max_length
-                        start_time = start_time + ext_max_length
+                                        float(start_time + ext_max_size_ms) / 1000.0))
+                        elapsed_time = elapsed_time - ext_max_size_ms
+                        start_time = start_time + ext_max_size_ms
                     regions.append((float(start_time) / 1000.0,
                                     float(start_time + elapsed_time) / 1000.0))
 
@@ -419,6 +426,22 @@ def validate(args):
         )
         return False
 
+    if args.min_region_size < constants.MIN_REGION_SIZE:
+        print(
+            "Your minimum region size {mrs0} is smaller than {mrs}.\n"
+            "Now reset to {mrs}".format(mrs0=args.min_region_size,
+                                        mrs=constants.MIN_REGION_SIZE)
+        )
+        args.min_region_size = constants.MIN_REGION_SIZE
+
+    if args.max_region_size > constants.MAX_EXT_REGION_SIZE:
+        print(
+            "Your maximum region size {mrs0} is larger than {mrs}.\n"
+            "Now reset to {mrs}".format(mrs0=args.max_region_size,
+                                        mrs=constants.MAX_EXT_REGION_SIZE)
+        )
+        args.max_region_size = constants.MAX_EXT_REGION_SIZE
+
     return True
 
 
@@ -493,6 +516,24 @@ def main():  # pylint: disable=too-many-branches
         type=int,
         default=constants.DEFAULT_CONCURRENCY,
         help="Number of concurrent API requests to make (default: %(default)s)."
+    )
+
+    ogroup.add_argument(
+        '-mnrs', '--min-region-size',
+        metavar='second',
+        type=float,
+        default=constants.MIN_REGION_SIZE,
+        help="Minimum region size "
+             "when not using external speech regions control(default: %(default)s)."
+    )
+
+    ogroup.add_argument(
+        '-mxrs', '--max-region-size',
+        metavar='second',
+        type=float,
+        default=constants.MAX_REGION_SIZE,
+        help="Maximum region size "
+             "when not using external speech regions control(default: %(default)s)."
     )
 
     ogroup.add_argument(
@@ -583,6 +624,8 @@ def main():  # pylint: disable=too-many-branches
                     api_key=args.api_key,
                     subtitles_file_format=args.format,
                     output=args.output,
+                    min_region_size=args.min_region_size,
+                    max_region_size=args.max_region_size,
                     ext_regions=ext_regions
                 )
 
@@ -595,7 +638,9 @@ def main():  # pylint: disable=too-many-branches
                     api_url_scheme=api_url_scheme,
                     api_key=args.api_key,
                     subtitles_file_format=args.format,
-                    output=args.output
+                    output=args.output,
+                    min_region_size=args.min_region_size,
+                    max_region_size=args.max_region_size
                 )
             print("\nSubtitles file created at \"{}\"".format(subtitles_file_path))
 
