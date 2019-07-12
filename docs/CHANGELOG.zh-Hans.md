@@ -1,0 +1,44 @@
+## 更新日志
+
+[English](../CHANGELOG.md)
+
+本项目的所有明显改变将被记录在这个文件里。
+
+本文件的格式将会基于[Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，同时本项目的版本号将遵守[Semantic Versioning](https://semver.org/lang/zh-CN/)。
+
+## 目录
+
+1. [[0.4.1-alpha] - 2019-07-11](#041-alpha---2019-07-11)
+   - 1.1 [添加](#添加041-alpha)
+   - 1.2 [改动](#改动041-alpha)
+2. [[0.4.0-alpha] - 2019-02-17](#040-alpha---2019-02-17)
+   - 2.1 [改动](#改动040-alpha)
+
+点击上箭头以返回目录。
+
+### [0.4.1-alpha] - 2019-07-11
+
+#### 添加
+
+- 添加https语音转文字api的url，并提供选择参数([agermanidis/autosub pull request #135](https://github.com/agermanidis/autosub/pull/135))
+- 添加外部字幕文件输入以控制语音识别分句([agermanidis/autosub pull request #159](https://github.com/agermanidis/autosub/pull/159))
+- 添加用于打包，发布等事务的脚本
+
+#### 改动
+
+- 修复因不确切的语言代码导致的错误识别结果([agermanidis/autosub pull request #136](https://github.com/agermanidis/autosub/pull/136))
+- 修改文档
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
+
+### [0.4.0-alpha] - 2019-02-17
+
+#### 改动
+
+- 修复多个问题 [agermanidis/autosub pull request #128](https://github.com/agermanidis/autosub/pull/128) by [@iWangJiaxiang](https://github.com/iWangJiaxiang)
+  - 修复Windows上ffmpeg依赖不存在问题
+  - 修复无法解析JSON对象导致的异常ValueError未被处理的问题
+  - 修复Windows 10临时文件夹权限被拒绝的问题([agermanidis/autosub issue #15](https://github.com/agermanidis/autosub/issues/15))
+- 修复无法解析JSONDecodeError对象导致的异常ValueError未被处理的问题([agermanidis/autosub pull request #131](https://github.com/agermanidis/autosub/pull/131)) by [@raryelcostasouza](https://github.com/raryelcostasouza)
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>

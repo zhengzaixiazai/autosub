@@ -417,10 +417,8 @@ def main():  # pylint: disable=too-many-branches
     parser = argparse.ArgumentParser()
     parser.add_argument('source_path', help="Path to the video or audio file to subtitle",
                         nargs='?')
-    parser.add_argument('-C', '--concurrency', help="Number of concurrent API requests to make",
-                        type=int, default=DEFAULT_CONCURRENCY)
     parser.add_argument('-o', '--output',
-                        help="Output path for subtitles (by default, subtitles are saved in \
+                        help="Output path for subtitle (by default, subtitle is saved in \
                         the same directory and name as the source path)")
     parser.add_argument('-esr', '--external-speech-regions',
                         help="Path to the external speech regions, \
@@ -457,6 +455,8 @@ def main():  # pylint: disable=too-many-branches
                                         not the developers of the autosub.
                              Reference: https://cloud.google.com/translate/docs/languages""",
                         action='store_true')
+    parser.add_argument('-C', '--concurrency', help="Number of concurrent API requests to make",
+                        type=int, default=DEFAULT_CONCURRENCY)
     parser.add_argument('-htp', '--http-speech-to-text-api',
                         help="Change the speech-to-text api url into the http one",
                         action='store_true')
