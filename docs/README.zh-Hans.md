@@ -93,14 +93,15 @@ MIT对GPLv3是兼容的，GPLv3对MIT不兼容。
 
 [alpha分支](https://github.com/BingLingGroup/autosub/tree/alpha)
 
-- 包括大量在[原仓库代码](https://github.com/agermanidis/autosub)基础上的改动. 详见[更新日志](CHANGELOG.zh-Hans.md)。
+- 包括大量在[原仓库代码](https://github.com/agermanidis/autosub)基础上的改动。详见[更新日志](CHANGELOG.zh-Hans.md)。代码仅在发布alpha版本时更新，相对来讲会比dev分支稳定。
+
+[origin分支](https://github.com/BingLingGroup/autosub/tree/origin)
+
+- 不包含[alpha分支](https://github.com/BingLingGroup/autosub/tree/alpha)中添加的新功能，仅包含最少的改动来让程序能在Windows上正常运行，可以看作只是[原仓库](https://github.com/agermanidis/autosub)的版本的修复版，而不会遇到各种各样的问题。现在不再维护。
 
 [dev分支](https://github.com/BingLingGroup/autosub/tree/dev)
 
-- 不包含[alpha分支](https://github.com/BingLingGroup/autosub/tree/alpha)中添加的新功能，仅包含最少的改动来让程序能在Windows上正常运行，而不是像[原仓库](https://github.com/agermanidis/autosub)的版本那样遇到各种各样的问题。
-
-其他分支
-
+- 开发中代码所在分支，如果没有问题，代码会在发布新版本时合并到alpha分支。
 - 只被用来测试或者提出拉取请求。除非你知道自己在干什么，否则不要安装它们。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
@@ -116,11 +117,11 @@ apt install ffmpeg python python-pip -y
 pip install autosub
 ```
 
-从`dev`分支安装。
+从`origin`分支安装。
 
 ```bash
 apt install ffmpeg python python-pip git -y
-pip install git+https://github.com/BingLingGroup/autosub.git@dev
+pip install git+https://github.com/BingLingGroup/autosub.git@origin
 ```
 
 从`alpha`分支安装。
@@ -146,13 +147,13 @@ pip install git+https://github.com/BingLingGroup/autosub.git@alpha
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
-从`dev`分支安装。
+从`origin`分支安装。
 
 ```batch
 choco install git python2 curl -y
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
-pip install git+https://github.com/BingLingGroup/autosub.git@dev
+pip install git+https://github.com/BingLingGroup/autosub.git@origin
 ```
 
 从`alpha`分支安装。

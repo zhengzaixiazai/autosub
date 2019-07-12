@@ -91,14 +91,15 @@ Currently suppports `.srt`, `.vtt`, `.json`, `.raw`(the same as the Aegisub plai
 
 [alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha)
 
-- Include many changes from [the original repo](https://github.com/agermanidis/autosub). Details in [Changelog](CHANGELOG.md).
+- Include many changes from [the original repo](https://github.com/agermanidis/autosub). Details in [Changelog](CHANGELOG.md). Codes will update when alpha released. It is stabler than the dev branch
 
-[dev branch](https://github.com/BingLingGroup/autosub/tree/dev)
+[origin branch](https://github.com/BingLingGroup/autosub/tree/origin)
 
-- Include the least changes from [the original repo](https://github.com/agermanidis/autosub) except all new features in the [alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha). The changes in [dev branch](https://github.com/BingLingGroup/autosub/tree/dev) just make sure there's no critical bugs when the program running on Windows. Currently not maintained.
+- Include the least changes from [the original repo](https://github.com/agermanidis/autosub) except all new features in the [alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha). The changes in [origin branch](https://github.com/BingLingGroup/autosub/tree/dev) just make sure there's no critical bugs when the program running on Windows. Currently not maintained.
 
-other branches
+[dev分支](https://github.com/BingLingGroup/autosub/tree/dev)
 
+- The latest codes will be pushed to this branch. If it works fine, it will be merged to alpha branch when new version released.
 - Only used to test or pull request. Don't install them unless you know what you are doing.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
@@ -114,11 +115,11 @@ apt install ffmpeg python python-pip -y
 pip install autosub
 ```
 
-Install from `dev` branch.
+Install from `origin` branch.
 
 ```bash
 apt install ffmpeg python python-pip git -y
-pip install git+https://github.com/BingLingGroup/autosub.git@dev
+pip install git+https://github.com/BingLingGroup/autosub.git@origin
 ```
 
 Install from `alpha` branch.
@@ -144,13 +145,13 @@ Choco install command on cmd.
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
-Install from `dev` branch.
+Install from `origin` branch.
 
 ```batch
 choco install git python2 curl -y
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
-pip install git+https://github.com/BingLingGroup/autosub.git@dev
+pip install git+https://github.com/BingLingGroup/autosub.git@origin
 ```
 
 Install from `alpha` branch.

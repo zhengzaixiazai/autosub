@@ -25,20 +25,9 @@ except ImportError:
 from googleapiclient.discovery import build
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
-from autosub.constants import (
-    SPEECH_TO_TEXT_LANGUAGE_CODES, TRANSLATION_LANGUAGE_CODES,
-    GOOGLE_SPEECH_API_KEY, GOOGLE_SPEECH_API_URL,
-)
-from autosub.formatters import FORMATTERS
-
-DEFAULT_SUBTITLE_FORMAT = 'srt'
-DEFAULT_CONCURRENCY = 10
-DEFAULT_SRC_LANGUAGE = 'en-US'
-DEFAULT_DST_LANGUAGE = 'en-US'
-DEFAULT_API_URL_SCHEME = 'https://'
-MAX_EXT_REGION_LENGTH = 10000
-# Maximum speech to text region length in milliseconds
-# when using external speech region control
+from autosub import constants
+from autosub import formatters
+from autosub import metadata
 
 def percentile(arr, percent):
     """
@@ -89,7 +78,7 @@ class SpeechRecognizer(object): # pylint: disable=too-few-public-methods
     Class for performing speech-to-text for an input FLAC file.
     """
     def __init__(self, api_url, language="en",
-                 rate=44100, retries=3, api_key=GOOGLE_SPEECH_API_KEY):
+                 rate=44100, retries=3, api_key=constants.GOOGLE_SPEECH_API_KEY):
                  # pylint: disable=too-many-arguments
         self.language = language
         self.rate = rate
@@ -194,11 +183,11 @@ def extract_audio(filename, channels=1, rate=16000):
     """
     temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
     if not os.path.isfile(filename):
-        print("The given file does not exist: {}".format(filename))
-        raise Exception("Invalid filepath: {}".format(filename))
+        print("The given file does not exist: {}.".format(filename))
+        raise Exception("Invalid filepath: {}.".format(filename))
     if not ffmpeg_check():
-        print("ffmpeg: Executable not found on machine.")
-        raise Exception("Dependency not found: ffmpeg")
+        print("ffmpeg: Executable not found on this machine.")
+        raise Exception("Dependency not found: ffmpeg.")
     command = [ffmpeg_check(), "-y", "-i", filename,
                "-ac", str(channels), "-ar", str(rate),
                "-loglevel", "error", temp.name]
@@ -249,14 +238,14 @@ def find_speech_regions(filename, frame_width=4096, min_region_size=0.5, max_reg
 def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         source_path,
         output=None,
-        concurrency=DEFAULT_CONCURRENCY,
-        src_language=DEFAULT_SRC_LANGUAGE,
-        dst_language=DEFAULT_DST_LANGUAGE,
-        subtitle_file_format=DEFAULT_SUBTITLE_FORMAT,
-        api_url_scheme=DEFAULT_API_URL_SCHEME,
+        concurrency=constants.DEFAULT_CONCURRENCY,
+        src_language=constants.DEFAULT_SRC_LANGUAGE,
+        dst_language=constants.DEFAULT_DST_LANGUAGE,
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
+        api_url_scheme=constants.DEFAULT_API_URL_SCHEME,
         api_key=None,
         ext_regions=None,
-        ext_max_length=MAX_EXT_REGION_LENGTH
+        ext_max_length=constants.MAX_EXT_REGION_LENGTH
     ):
     """
     Given an input audio/video file, generate subtitles in the specified language and format.
@@ -293,8 +282,8 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
     pool = multiprocessing.Pool(concurrency)
     converter = FLACConverter(source_path=audio_filename)
     recognizer = SpeechRecognizer(language=src_language, rate=audio_rate,
-                                  api_url=api_url_scheme + GOOGLE_SPEECH_API_URL,
-                                  api_key=GOOGLE_SPEECH_API_KEY)
+                                  api_url=api_url_scheme + constants.GOOGLE_SPEECH_API_URL,
+                                  api_key=constants.GOOGLE_SPEECH_API_KEY)
 
     transcripts = []
     if regions:
@@ -342,18 +331,41 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
             pbar.finish()
             pool.terminate()
             pool.join()
-            print("Cancelling transcription")
-            raise
+            print("Cancelling transcription.")
+            return 1
 
     timed_subtitles = [(r, t) for r, t in zip(regions, transcripts) if t]
-    formatter = FORMATTERS.get(subtitle_file_format)
-    formatted_subtitles = formatter(timed_subtitles)
+    formatter = formatters.FORMATTERS.get(subtitles_file_format)
+    if formatter:
+        formatted_subtitles = formatter(timed_subtitles)
+    else:
+        # fallback process
+        print("Format \"{fmt}\" not supported. \
+Using \"{default_fmt} instead.\"".format(fmt=subtitles_file_format,
+                                         default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        formatter = formatters.FORMATTERS.get(constants.DEFAULT_SUBTITLES_FORMAT)
+        formatted_subtitles = formatter(timed_subtitles)
+
+    try:
+        input_m = raw_input
+    except NameError:
+        input_m = input
 
     dest = output
 
     if not dest:
         base = os.path.splitext(source_path)[0]
-        dest = "{base}.{format}".format(base=base, format=subtitle_file_format)
+        dest = "{base}.{langcode}.{extension}".format(base=base,
+                                                      langcode=dst_language,
+                                                      extension=subtitles_file_format)
+
+    while os.path.isfile(dest):
+        print("There is already a file with the same name"
+              " in this location: \"{dest_name}\".".format(dest_name=dest))
+        dest = input_m("Input a new path (including directory and file name) for output file.\n")
+        dest = os.path.splitext(dest)[0]
+        dest = "{base}.{extension}".format(base=dest,
+                                           extension=subtitles_file_format)
 
     with open(dest, 'wb') as output_file:
         output_file.write(formatted_subtitles.encode("utf-8"))
@@ -371,14 +383,14 @@ def validate(args):
         print("Error: You need to specify a source path.")
         return False
 
-    if args.format not in FORMATTERS:
+    if args.format not in formatters.FORMATTERS:
         print(
             "Subtitle format not supported. "
             "Run with --list-formats to see all supported formats."
         )
         return False
 
-    if args.src_language not in SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
+    if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
         print(
             "Source language not supported. "
             "Run with -lsc or --list-speech-to-text-codes "
@@ -399,7 +411,7 @@ def validate(args):
             "Only performing speech recognition."
         )
 
-    elif args.dst_language not in TRANSLATION_LANGUAGE_CODES.keys():
+    elif args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
         print(
             "Destination language not supported. "
             "Run with -ltc or --list-translation-codes "
@@ -415,69 +427,140 @@ def main():  # pylint: disable=too-many-branches
     Run autosub as a command-line program.
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('source_path', help="Path to the video or audio file to subtitle",
-                        nargs='?')
-    parser.add_argument('-o', '--output',
-                        help="Output path for subtitle (by default, subtitle is saved in \
-                        the same directory and name as the source path)")
-    parser.add_argument('-esr', '--external-speech-regions',
-                        help="Path to the external speech regions, \
-                        which is one of the formats that pysubs2 supports \
-                        and overrides the default method to find speech regions",
-                        nargs="?", metavar="path")
-    parser.add_argument('-F', '--format', help="Destination subtitle format",
-                        default=DEFAULT_SUBTITLE_FORMAT)
-    parser.add_argument('-S', '--src-language', help="Language spoken in source file",
-                        default=DEFAULT_SRC_LANGUAGE)
-    parser.add_argument('-D', '--dst-language', help="Desired language for the subtitles")
-    parser.add_argument('-K', '--api-key',
-                        help="The Google Translation API key to be used. \
-                        (Required for subtitle translation)")
-    parser.add_argument('-lf', '--list-formats', help="List all available subtitle formats",
-                        action='store_true')
-    parser.add_argument('-lsc', '--list-speech-to-text-codes',
-                        help="""List all available source language codes,
-                              which mean the speech-to-text
-                              available language codes.
-                              [WARNING]: Its name format is different from 
-                                         the destination language codes.
-                                         And it's Google who make that difference
-                                         not the developers of the autosub.
-                              Reference: https://cloud.google.com/speech-to-text/docs/languages""",
-                        action='store_true')
-    parser.add_argument('-ltc', '--list-translation-codes',
-                        help="""List all available destination language codes,
-                             which mean the translation
-                             language codes.
-                             [WARNING]: Its name format is different from 
-                                        the source language codes.
-                                        And it's Google who make that difference
-                                        not the developers of the autosub.
-                             Reference: https://cloud.google.com/translate/docs/languages""",
-                        action='store_true')
-    parser.add_argument('-C', '--concurrency', help="Number of concurrent API requests to make",
-                        type=int, default=DEFAULT_CONCURRENCY)
-    parser.add_argument('-htp', '--http-speech-to-text-api',
-                        help="Change the speech-to-text api url into the http one",
-                        action='store_true')
+
+    parser = argparse.ArgumentParser(
+        prog=metadata.NAME,
+        usage='\n  %(prog)s [options] <source_path>',
+        description=metadata.DESCRIPTION,
+        add_help=False
+    )
+
+    pgroup = parser.add_argument_group('Required')
+    ogroup = parser.add_argument_group('Options')
+
+    pgroup.add_argument(
+        'source_path',
+        nargs='?', metavar='path',
+        help="The path to the video or audio file needs to generate subtitle."
+    )
+
+    ogroup.add_argument(
+        '-o', '--output',
+        metavar='path',
+        help="""The output path for subtitle file.
+                The default is in the same directory
+                and the name is the source path 
+                combined with the destination language code."""
+    )
+
+    ogroup.add_argument(
+        '-esr', '--external-speech-regions',
+        nargs='?', metavar='path',
+        help="""Path to the external speech regions,
+                which is one of the formats that pysubs2 supports 
+                and overrides the default method to find speech regions."""
+    )
+
+    ogroup.add_argument(
+        '-F', '--format',
+        metavar='format',
+        default=constants.DEFAULT_SUBTITLES_FORMAT,
+        help="Destination subtitle format (default: %(default)s)."
+    )
+
+    ogroup.add_argument(
+        '-S', '--src-language',
+        metavar='locale',
+        default=constants.DEFAULT_SRC_LANGUAGE,
+        help="Locale of language spoken in source file (default: %(default)s)."
+    )
+
+    ogroup.add_argument(
+        '-D', '--dst-language',
+        metavar='locale',
+        help="Locale of desired language for the subtitles (default: %(default)s)."
+    )
+
+    ogroup.add_argument(
+        '-K', '--api-key',
+        metavar='key',
+        help="The Google Translate API key to be used. Required for subtitles translation."
+    )
+
+    ogroup.add_argument(
+        '-C', '--concurrency',
+        metavar='number',
+        type=int,
+        default=constants.DEFAULT_CONCURRENCY,
+        help="Number of concurrent API requests to make (default: %(default)s)."
+    )
+
+    ogroup.add_argument(
+        '-htp', '--http-speech-to-text-api',
+        action='store_true',
+        help="Change the speech-to-text api url into the http one."
+    )
+
+    ogroup.add_argument(
+        '-lf', '--list-formats',
+        action='store_true',
+        help="List all available subtitles formats."
+    )
+
+    ogroup.add_argument(
+        '-lsc', '--list-speech-to-text-codes',
+        action='store_true',
+        help="""List all available source language codes,
+                which mean the available speech-to-text
+                language codes.
+                [WARNING]: Its name format is different from 
+                           the destination language codes.
+                Reference: https://cloud.google.com/speech-to-text/docs/languages"""
+    )
+
+    ogroup.add_argument(
+        '-ltc', '--list-translation-codes',
+        action='store_true',
+        help="""List all available destination language codes,
+                which mean the available translation
+                language codes.
+                [WARNING]: Its name format is different from 
+                           the destination language codes.
+                Reference: https://cloud.google.com/speech-to-text/docs/languages"""
+    )
+
+    ogroup.add_argument(
+        '-h', '--help',
+        action='help',
+        help="Show %(prog)s help message and exit."
+    )
+
+    ogroup.add_argument(
+        '-V', '--version',
+        action='version',
+        version='%(prog)s ' + metadata.VERSION
+        + ' by ' + metadata.AUTHOR + ' <'
+        + metadata.AUTHOR_EMAIL + '>',
+        help="Show %(prog)s version and exit."
+    )
 
     args = parser.parse_args()
 
     if args.list_formats:
         print("List of formats:")
-        for subtitle_format in FORMATTERS:
-            print("{format}".format(format=subtitle_format))
+        for subtitles_format in formatters.FORMATTERS:
+            print("{format}".format(format=subtitles_format))
         return 0
 
     if args.list_speech_to_text_codes:
         print("List of all source language codes:")
-        for code, language in sorted(SPEECH_TO_TEXT_LANGUAGE_CODES.items()):
+        for code, language in sorted(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.items()):
             print("{code}\t{language}".format(code=code, language=language))
         return 0
 
     if args.list_translation_codes:
         print("List of all destination language codes:")
-        for code, language in sorted(TRANSLATION_LANGUAGE_CODES.items()):
+        for code, language in sorted(constants.TRANSLATION_LANGUAGE_CODES.items()):
             print("{code}\t{language}".format(code=code, language=language))
         return 0
 
@@ -485,36 +568,36 @@ def main():  # pylint: disable=too-many-branches
         if args.http_speech_to_text_api:
             api_url_scheme = "http://"
         else:
-            api_url_scheme = DEFAULT_API_URL_SCHEME
+            api_url_scheme = constants.DEFAULT_API_URL_SCHEME
 
         try:
             if args.external_speech_regions:
                 print("Using external speech regions.")
                 ext_regions = pysubs2.SSAFile.load(args.external_speech_regions)
-                subtitle_file_path = generate_subtitles(
+                subtitles_file_path = generate_subtitles(
                     source_path=args.source_path,
                     concurrency=args.concurrency,
                     src_language=args.src_language,
                     dst_language=args.dst_language,
                     api_url_scheme=api_url_scheme,
                     api_key=args.api_key,
-                    subtitle_file_format=args.format,
+                    subtitles_file_format=args.format,
                     output=args.output,
                     ext_regions=ext_regions
                 )
 
             else:
-                subtitle_file_path = generate_subtitles(
+                subtitles_file_path = generate_subtitles(
                     source_path=args.source_path,
                     concurrency=args.concurrency,
                     src_language=args.src_language,
                     dst_language=args.dst_language,
                     api_url_scheme=api_url_scheme,
                     api_key=args.api_key,
-                    subtitle_file_format=args.format,
+                    subtitles_file_format=args.format,
                     output=args.output
                 )
-            print("Subtitles file created at {}".format(subtitle_file_path))
+            print("\nSubtitles file created at \"{}\"".format(subtitles_file_path))
 
         except KeyboardInterrupt:
             return 1
