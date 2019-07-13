@@ -49,6 +49,7 @@ class SplitIntoFLACPiece(object): # pylint: disable=too-few-public-methods
     """
     Class for converting a region of an input audio or video file into a FLAC audio file
     """
+
     def __init__(self, source_path, include_before=0.25, include_after=0.25):
         self.source_path = source_path
         self.include_before = include_before
@@ -56,12 +57,14 @@ class SplitIntoFLACPiece(object): # pylint: disable=too-few-public-methods
 
     def __call__(self, region):
         try:
-            start, end = region
-            start = max(0, start - self.include_before)
+            start_ms, end_ms = region
+            start = float(start_ms) / 1000.0
+            end = float(end_ms) / 1000.0
+            start = max(0.0, start - self.include_before)
             end += self.include_after
             temp = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
             command = ["ffmpeg", "-ss", str(start), "-t", str(end - start),
-                       "-y", "-i", self.source_path,
+                       "-y", "-i", self.source_path, "-c", "copy",
                        "-loglevel", "error", temp.name]
             use_shell = True if os.name == "nt" else False
             subprocess.check_output(command, stdin=open(os.devnull), shell=use_shell)
@@ -80,7 +83,7 @@ class GoogleSpeechToTextV2(object): # pylint: disable=too-few-public-methods
     """
     def __init__(self, api_url, language="en",
                  rate=44100, retries=3, api_key=constants.GOOGLE_SPEECH_V2_API_KEY):
-                 # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments
         self.language = language
         self.rate = rate
         self.api_url = api_url
@@ -206,6 +209,9 @@ def find_speech_regions(# pylint: disable=too-many-locals
     """
     Perform voice activity detection on a given audio file.
     """
+    min_region_size = int(min_region_size) * 1000
+    max_region_size = int(max_region_size) * 1000
+
     reader = wave.open(filename)
     sample_width = reader.getsampwidth()
     rate = reader.getframerate()
@@ -224,18 +230,28 @@ def find_speech_regions(# pylint: disable=too-many-locals
     region_end = 0
 
     regions = []
-    region_start = None
+    region_start = 0
+
+    chunk_duration = int(chunk_duration * 1000)
 
     for energy in energies:
-        is_silence = energy <= threshold
-        max_exceeded = region_start and region_end - region_start >= max_region_size
+        is_silent = energy <= threshold
 
-        if (max_exceeded or is_silence) and region_start:
+        if region_start and (region_end - region_start) >= max_region_size:
+            max_exceeded = True
+        else:
+            max_exceeded = False
+
+        if (max_exceeded or is_silent) and region_start:
+            # if region need to be ended
+            # whether it is exceeded the max length
+            # or this chunk is silent
             if region_end - region_start >= min_region_size:
                 regions.append((region_start, region_end))
-                region_start = None
+                region_start = 0
 
-        elif (not region_start) and (not is_silence):
+        elif (not region_start) and (not is_silent):
+            # if region don't start and this chunk isn't silent
             region_start = region_end
         region_end += chunk_duration
     return regions
@@ -268,28 +284,28 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
         regions = []
 
         reader = wave.open(audio_wav)
-        audio_file_length = float(reader.getnframes()) / float(reader.getframerate())
+        audio_file_length = int(float(reader.getnframes()) / float(reader.getframerate())) * 1000
         reader.close()
 
         for event in ext_regions.events:
             if not event.is_comment:
                 # not a comment region
                 if event.duration <= ext_max_size_ms:
-                    regions.append((float(event.start) / 1000.0,
-                                    float(event.start + event.duration) / 1000.0))
+                    regions.append((event.start,
+                                   event.start + event.duration))
                 else:
                     # split too long regions
                     elapsed_time = event.duration
                     start_time = event.start
-                    if float(elapsed_time) / 1000.0 > audio_file_length:
-                        elapsed_time = math.floor(audio_file_length) * 1000
+                    if elapsed_time > audio_file_length:
+                        elapsed_time = audio_file_length
                     while elapsed_time > ext_max_size_ms:
-                        regions.append((float(start_time) / 1000.0,
-                                        float(start_time + ext_max_size_ms) / 1000.0))
+                        regions.append((start_time,
+                                        start_time + ext_max_size_ms))
                         elapsed_time = elapsed_time - ext_max_size_ms
                         start_time = start_time + ext_max_size_ms
-                    regions.append((float(start_time) / 1000.0,
-                                    float(start_time + elapsed_time) / 1000.0))
+                    regions.append((start_time,
+                                    start_time + elapsed_time))
 
     os.remove(audio_wav)
 
@@ -352,16 +368,44 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
 
     os.remove(audio_flac)
     timed_subtitles = [(r, t) for r, t in zip(regions, transcripts) if t]
-    formatter = formatters.FORMATTERS.get(subtitles_file_format)
-    if formatter:
-        formatted_subtitles = formatter(timed_subtitles)
+
+    if subtitles_file_format == 'srt':
+        formatted_subtitles = formatters.pysubs2_formatter(
+            subtitles=timed_subtitles,
+            sub_format=subtitles_file_format)
+    elif subtitles_file_format == 'ass':
+        formatted_subtitles = formatters.pysubs2_formatter(
+            subtitles=timed_subtitles,
+            sub_format=subtitles_file_format)
+    elif subtitles_file_format == 'vtt':
+        formatted_subtitles = formatters.vtt_formatter(
+            subtitles=timed_subtitles)
+    elif subtitles_file_format == 'json':
+        formatted_subtitles = formatters.json_formatter(
+            subtitles=timed_subtitles)
+    elif subtitles_file_format == 'txt':
+        formatted_subtitles = formatters.txt_formatter(
+            subtitles=timed_subtitles)
+    elif subtitles_file_format == 'sub':
+        formatted_subtitles = formatters.pysubs2_formatter(
+            subtitles=timed_subtitles,
+            sub_format=subtitles_file_format)
+    elif subtitles_file_format == 'mpl2':
+        formatted_subtitles = formatters.pysubs2_formatter(
+            subtitles=timed_subtitles,
+            sub_format=subtitles_file_format)
+    elif subtitles_file_format == 'tmp':
+        formatted_subtitles = formatters.pysubs2_formatter(
+            subtitles=timed_subtitles,
+            sub_format=subtitles_file_format)
     else:
         # fallback process
         print("Format \"{fmt}\" not supported. \
-Using \"{default_fmt} instead.\"".format(fmt=subtitles_file_format,
-                                         default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
-        formatter = formatters.FORMATTERS.get(constants.DEFAULT_SUBTITLES_FORMAT)
-        formatted_subtitles = formatter(timed_subtitles)
+        Using \"{default_fmt} instead.\"".format(fmt=subtitles_file_format,
+                                                 default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        formatted_subtitles = formatters.pysubs2_formatter(
+            subtitles=timed_subtitles,
+            sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
 
     try:
         input_m = raw_input

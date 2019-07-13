@@ -7,31 +7,29 @@ Defines subtitle formatters used by autosub.
 from __future__ import unicode_literals
 
 import json
-
-import pysrt
+import pysubs2
 import six
 
 
-def srt_formatter(subtitles, padding_before=0, padding_after=0):
+def pysubs2_formatter(subtitles, sub_format='srt'):
     """
-    Serialize a list of subtitles according to the SRT format, with optional time padding.
+    Serialize a list of subtitles according to the SRT format.
     """
-    sub_rip_file = pysrt.SubRipFile()
+    pysubs2_obj = pysubs2.SSAFile()
     for i, ((start, end), text) in enumerate(subtitles, start=1):
-        item = pysrt.SubRipItem()
-        item.index = i
-        item.text = six.text_type(text)
-        item.start.seconds = max(0, start - padding_before)
-        item.end.seconds = end + padding_after
-        sub_rip_file.append(item)
-    return '\n'.join(six.text_type(item) for item in sub_rip_file)
+        event = pysubs2.SSAEvent()
+        event.start = start
+        event.end = end
+        event.text = text
+        pysubs2_obj.events.append(event)
+    return pysubs2_obj.to_string(format_=sub_format)
 
 
-def vtt_formatter(subtitles, padding_before=0, padding_after=0):
+def vtt_formatter(subtitles):
     """
-    Serialize a list of subtitles according to the VTT format, with optional time padding.
+    Serialize a list of subtitles according to the VTT format.
     """
-    text = srt_formatter(subtitles, padding_before, padding_after)
+    text = pysubs2_formatter(subtitles)
     text = 'WEBVTT\n\n' + text.replace(',', '.')
     return text
 
@@ -42,26 +40,29 @@ def json_formatter(subtitles):
     """
     subtitle_dicts = [
         {
-            'start': start,
-            'end': end,
+            'start': start / 1000.0,
+            'end': end / 1000.0,
             'content': text,
         }
         for ((start, end), text)
         in subtitles
     ]
-    return json.dumps(subtitle_dicts)
+    return json.dumps(subtitle_dicts, indent=4, ensure_ascii=False)
 
 
-def raw_formatter(subtitles):
+def txt_formatter(subtitles):
     """
     Serialize a list of subtitles as a newline-delimited string.
     """
-    return ' '.join(text for (_rng, text) in subtitles)
-
+    return '\n'.join(text for (_rng, text) in subtitles)
 
 FORMATTERS = {
-    'srt': srt_formatter,
+    'srt': pysubs2_formatter,
+    'ass': pysubs2_formatter,
+    'ssa': pysubs2_formatter,
+    'sub': pysubs2_formatter,
+    'mpl2': pysubs2_formatter,
+    'tmp': pysubs2_formatter,
     'vtt': vtt_formatter,
-    'json': json_formatter,
-    'raw': raw_formatter,
+    'json': json_formatter
 }

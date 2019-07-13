@@ -73,7 +73,7 @@ ffmpeg支持的视频或者音频文件。程序会使用ffmpeg来将相关文�
 
 #### 输出
 
-目前支持的输出格式有`.srt`，`.vtt`，`.json`，`.raw`(也就是Aegisub的纯文本输出格式)。
+目前支持的输出格式有`.srt`，`.vtt`，`.json`，`.txt`(也就是Aegisub的纯文本输出格式)。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 

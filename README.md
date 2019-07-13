@@ -73,7 +73,7 @@ To see which, run the utility with the argument `-lsc` or `--list-speech-to-text
 
 #### Output
 
-Currently suppports `.srt`, `.vtt`, `.json`, `.raw`(the same as the Aegisub plain text output).
+Currently suppports `.srt`, `.vtt`, `.json`, `.txt`(the same as the Aegisub plain text output).
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
