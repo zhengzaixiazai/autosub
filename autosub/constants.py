@@ -6,8 +6,8 @@ Defines constants used by autosub.
 
 from __future__ import unicode_literals
 
-GOOGLE_SPEECH_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
-GOOGLE_SPEECH_API_URL = "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}" # pylint: disable=line-too-long
+GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
+GOOGLE_SPEECH_V2_API_URL = "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}" # pylint: disable=line-too-long
 
 DEFAULT_SUBTITLES_FORMAT = 'srt'
 DEFAULT_CONCURRENCY = 10

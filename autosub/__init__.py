@@ -29,6 +29,7 @@ from autosub import constants
 from autosub import formatters
 from autosub import metadata
 
+
 def percentile(arr, percent):
     """
     Calculate the given percentile of arr.
@@ -44,7 +45,7 @@ def percentile(arr, percent):
     return low_value + high_value
 
 
-class FLACConverter(object): # pylint: disable=too-few-public-methods
+class SplitIntoFLACPiece(object): # pylint: disable=too-few-public-methods
     """
     Class for converting a region of an input audio or video file into a FLAC audio file
     """
@@ -73,12 +74,12 @@ class FLACConverter(object): # pylint: disable=too-few-public-methods
             return None
 
 
-class SpeechRecognizer(object): # pylint: disable=too-few-public-methods
+class GoogleSpeechToTextV2(object): # pylint: disable=too-few-public-methods
     """
     Class for performing speech-to-text for an input FLAC file.
     """
     def __init__(self, api_url, language="en",
-                 rate=44100, retries=3, api_key=constants.GOOGLE_SPEECH_API_KEY):
+                 rate=44100, retries=3, api_key=constants.GOOGLE_SPEECH_V2_API_KEY):
                  # pylint: disable=too-many-arguments
         self.language = language
         self.rate = rate
@@ -110,7 +111,7 @@ class SpeechRecognizer(object): # pylint: disable=too-few-public-methods
             return None
 
 
-class Translator(object):  # pylint: disable=too-few-public-methods
+class GoogleTranslatorV2(object):  # pylint: disable=too-few-public-methods
     """
     Class for translating a sentence from a one language to another.
     """
@@ -143,7 +144,7 @@ class Translator(object):  # pylint: disable=too-few-public-methods
             return None
 
 
-def which(program):
+def which_exe(program):
     """
     Return the path for a given executable.
     """
@@ -170,18 +171,20 @@ def ffmpeg_check():
     """
     Return the ffmpeg executable name. "None" returned when no executable exists.
     """
-    if which("ffmpeg"):
+    if which_exe("ffmpeg"):
         return "ffmpeg"
-    if which("ffmpeg.exe"):
+    if which_exe("ffmpeg.exe"):
         return "ffmpeg.exe"
     return None
 
 
-def extract_audio(filename, channels=1, rate=16000):
+def source_to_audio(filename, channels=1,
+                    rate=48000, file_ext='.wav',
+                    ffmpeg_loglevel='error'):
     """
-    Extract audio from an input file to a temporary WAV file.
+    Convert input file to a temporary audio file.
     """
-    temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+    temp = tempfile.NamedTemporaryFile(suffix=file_ext, delete=False)
     if not os.path.isfile(filename):
         print("The given file does not exist: {}.".format(filename))
         raise Exception("Invalid filepath: {}.".format(filename))
@@ -190,14 +193,14 @@ def extract_audio(filename, channels=1, rate=16000):
         raise Exception("Dependency not found: ffmpeg.")
     command = [ffmpeg_check(), "-y", "-i", filename,
                "-ac", str(channels), "-ar", str(rate),
-               "-loglevel", "error", temp.name]
+               "-loglevel", ffmpeg_loglevel, temp.name]
     use_shell = True if os.name == "nt" else False
     subprocess.check_output(command, stdin=open(os.devnull), shell=use_shell)
-    return temp.name, rate
+    return temp.name
 
 
 def find_speech_regions(# pylint: disable=too-many-locals
-        filename, frame_width=4096,
+        filename, chunk_duration=0.25,
         min_region_size=constants.MIN_REGION_SIZE,
         max_region_size=constants.MAX_REGION_SIZE):
     """
@@ -207,7 +210,7 @@ def find_speech_regions(# pylint: disable=too-many-locals
     sample_width = reader.getsampwidth()
     rate = reader.getframerate()
     n_channels = reader.getnchannels()
-    chunk_duration = float(frame_width) / rate
+    frame_width = int(math.ceil(chunk_duration * rate))
 
     n_chunks = int(math.ceil(reader.getnframes()*1.0 / frame_width))
     energies = []
@@ -239,7 +242,7 @@ def find_speech_regions(# pylint: disable=too-many-locals
 
 
 def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
-        source_path,
+        source_file,
         output=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
@@ -255,20 +258,22 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
     """
     Given an input audio/video file, generate subtitles in the specified language and format.
     """
-    audio_filename, audio_rate = extract_audio(source_path)
+    audio_wav = source_to_audio(source_file)
 
     if not ext_regions:
-        regions = find_speech_regions(audio_filename,
+        regions = find_speech_regions(audio_wav,
                                       min_region_size=min_region_size,
                                       max_region_size=max_region_size)
     else:
         regions = []
+
+        reader = wave.open(audio_wav)
+        audio_file_length = float(reader.getnframes()) / float(reader.getframerate())
+        reader.close()
+
         for event in ext_regions.events:
             if not event.is_comment:
                 # not a comment region
-                reader = wave.open(audio_filename)
-                audio_file_length = float(reader.getnframes()) / float(reader.getframerate())
-                reader.close()
                 if event.duration <= ext_max_size_ms:
                     regions.append((float(event.start) / 1000.0,
                                     float(event.start + event.duration) / 1000.0))
@@ -286,11 +291,15 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
                     regions.append((float(start_time) / 1000.0,
                                     float(start_time + elapsed_time) / 1000.0))
 
+    os.remove(audio_wav)
+
+    audio_rate = 44100
+    audio_flac = source_to_audio(source_file, rate=audio_rate, file_ext='.flac')
     pool = multiprocessing.Pool(concurrency)
-    converter = FLACConverter(source_path=audio_filename)
-    recognizer = SpeechRecognizer(language=src_language, rate=audio_rate,
-                                  api_url=api_url_scheme + constants.GOOGLE_SPEECH_API_URL,
-                                  api_key=constants.GOOGLE_SPEECH_API_KEY)
+    converter = SplitIntoFLACPiece(source_path=audio_flac)
+    recognizer = GoogleSpeechToTextV2(language=src_language, rate=audio_rate,
+                                      api_url=api_url_scheme + constants.GOOGLE_SPEECH_V2_API_URL,
+                                      api_key=constants.GOOGLE_SPEECH_V2_API_KEY)
 
     transcripts = []
     if regions:
@@ -315,9 +324,9 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
             if src_language.split("-")[0] != dst_language.split("-")[0]:
                 if api_key:
                     google_translate_api_key = api_key
-                    translator = Translator(dst_language, google_translate_api_key,
-                                            dst=dst_language,
-                                            src=src_language)
+                    translator = GoogleTranslatorV2(dst_language, google_translate_api_key,
+                                                    dst=dst_language,
+                                                    src=src_language)
                     prompt = "Translating from {0} to {1}: ".format(src_language, dst_language)
                     widgets = [prompt, Percentage(), ' ', Bar(), ' ', ETA()]
                     pbar = ProgressBar(widgets=widgets, maxval=len(regions)).start()
@@ -341,6 +350,7 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
             print("Cancelling transcription.")
             return 1
 
+    os.remove(audio_flac)
     timed_subtitles = [(r, t) for r, t in zip(regions, transcripts) if t]
     formatter = formatters.FORMATTERS.get(subtitles_file_format)
     if formatter:
@@ -361,7 +371,7 @@ Using \"{default_fmt} instead.\"".format(fmt=subtitles_file_format,
     dest = output
 
     if not dest:
-        base = os.path.splitext(source_path)[0]
+        base = os.path.splitext(source_file)[0]
         dest = "{base}.{langcode}.{extension}".format(base=base,
                                                       langcode=dst_language,
                                                       extension=subtitles_file_format)
@@ -376,8 +386,6 @@ Using \"{default_fmt} instead.\"".format(fmt=subtitles_file_format,
 
     with open(dest, 'wb') as output_file:
         output_file.write(formatted_subtitles.encode("utf-8"))
-
-    os.remove(audio_filename)
 
     return dest
 
@@ -616,7 +624,7 @@ def main():  # pylint: disable=too-many-branches
                 print("Using external speech regions.")
                 ext_regions = pysubs2.SSAFile.load(args.external_speech_regions)
                 subtitles_file_path = generate_subtitles(
-                    source_path=args.source_path,
+                    source_file=args.source_path,
                     concurrency=args.concurrency,
                     src_language=args.src_language,
                     dst_language=args.dst_language,
@@ -631,7 +639,7 @@ def main():  # pylint: disable=too-many-branches
 
             else:
                 subtitles_file_path = generate_subtitles(
-                    source_path=args.source_path,
+                    source_file=args.source_path,
                     concurrency=args.concurrency,
                     src_language=args.src_language,
                     dst_language=args.dst_language,
