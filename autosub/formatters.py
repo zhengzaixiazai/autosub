@@ -8,7 +8,6 @@ from __future__ import unicode_literals
 
 import json
 import pysubs2
-import six
 
 
 def pysubs2_formatter(subtitles, sub_format='srt'):
@@ -16,7 +15,7 @@ def pysubs2_formatter(subtitles, sub_format='srt'):
     Serialize a list of subtitles according to the SRT format.
     """
     pysubs2_obj = pysubs2.SSAFile()
-    for i, ((start, end), text) in enumerate(subtitles, start=1):
+    for ((start, end), text) in subtitles:
         event = pysubs2.SSAEvent()
         event.start = start
         event.end = end

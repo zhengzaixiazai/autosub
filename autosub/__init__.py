@@ -237,10 +237,7 @@ def find_speech_regions(# pylint: disable=too-many-locals
     for energy in energies:
         is_silent = energy <= threshold
 
-        if region_start and (region_end - region_start) >= max_region_size:
-            max_exceeded = True
-        else:
-            max_exceeded = False
+        max_exceeded = region_start and (region_end - region_start) >= max_region_size
 
         if (max_exceeded or is_silent) and region_start:
             # if region need to be ended
@@ -292,7 +289,7 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
                 # not a comment region
                 if event.duration <= ext_max_size_ms:
                     regions.append((event.start,
-                                   event.start + event.duration))
+                                    event.start + event.duration))
                 else:
                     # split too long regions
                     elapsed_time = event.duration
