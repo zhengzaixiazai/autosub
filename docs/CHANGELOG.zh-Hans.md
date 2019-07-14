@@ -40,6 +40,7 @@
 - 修改文档。
 - 改进音频转码步骤来获得更好的音频质量用于处理。现在会从原始文件分别地创建出两个文件。一个是48kHz/16bit/单声道的.wav用于本地分句，一个是44.1kHz/24bit/单声道的.flac用于上传给api进行语音识别。需要指出的是[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)上面关于api可以接受的.flac声道数说的有问题，经过我的测试实际上api还是不支持两声道的.flac文件的。[agermanidis/autosub issue #155](https://github.com/agermanidis/autosub/issues/155)
 - 修改内部音频处理的时间单位为毫秒。[issue #23](https://github.com/BingLingGroup/autosub/issues/23)
+- 修改内部时间轴/分句处理为auditok。[issue #27](https://github.com/BingLingGroup/autosub/issues/27)
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 

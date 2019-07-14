@@ -1,7 +1,6 @@
-setuptools==40.6.2
-pysrt==1.1.1
 pysubs2==0.2.4
-six==1.12.0
 requests==2.21.0
+auditok==0.1.5
+setuptools==40.6.2
 google_api_python_client==1.7.9
 progressbar2==3.42.0

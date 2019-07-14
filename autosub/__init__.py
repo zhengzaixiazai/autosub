@@ -18,6 +18,7 @@ import re
 import json
 import requests
 import pysubs2
+import auditok
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
@@ -203,58 +204,6 @@ def source_to_audio(filename, channels=1,
     return temp.name
 
 
-def find_speech_regions(# pylint: disable=too-many-locals
-        filename, chunk_duration=0.25,
-        min_region_size=constants.MIN_REGION_SIZE,
-        max_region_size=constants.MAX_REGION_SIZE):
-    """
-    Perform voice activity detection on a given audio file.
-    """
-    min_region_size = int(min_region_size) * 1000
-    max_region_size = int(max_region_size) * 1000
-
-    reader = wave.open(filename)
-    sample_width = reader.getsampwidth()
-    rate = reader.getframerate()
-    n_channels = reader.getnchannels()
-    frame_width = int(math.ceil(chunk_duration * rate))
-
-    n_chunks = int(math.ceil(reader.getnframes()*1.0 / frame_width))
-    energies = []
-
-    for _ in range(n_chunks):
-        chunk = reader.readframes(frame_width)
-        energies.append(audioop.rms(chunk, sample_width * n_channels))
-
-    threshold = percentile(energies, 0.2)
-
-    region_end = 0
-
-    regions = []
-    region_start = 0
-
-    chunk_duration = int(chunk_duration * 1000)
-
-    for energy in energies:
-        is_silent = energy <= threshold
-
-        max_exceeded = region_start and (region_end - region_start) >= max_region_size
-
-        if (max_exceeded or is_silent) and region_start:
-            # if region need to be ended
-            # whether it is exceeded the max length
-            # or this chunk is silent
-            if region_end - region_start >= min_region_size:
-                regions.append((region_start, region_end))
-                region_start = 0
-
-        elif (not region_start) and (not is_silent):
-            # if region don't start and this chunk isn't silent
-            region_start = region_end
-        region_end += chunk_duration
-    return regions
-
-
 def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         source_file,
         output=None,
@@ -275,9 +224,24 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
     audio_wav = source_to_audio(source_file)
 
     if not ext_regions:
-        regions = find_speech_regions(audio_wav,
-                                      min_region_size=min_region_size,
-                                      max_region_size=max_region_size)
+        asource = auditok.ADSFactory.ads(
+            filename=audio_wav, record=True)
+        validator = auditok.AudioEnergyValidator(
+            sample_width=asource.get_sample_width(),
+            energy_threshold=65)
+        asource.open()
+        tokenizer = auditok.StreamTokenizer(
+            validator=validator,
+            min_length=int(min_region_size * 100),
+            max_length=int(max_region_size * 100),
+            max_continuous_silence=30,
+            mode=auditok.StreamTokenizer.STRICT_MIN_LENGTH
+            | auditok.StreamTokenizer.DROP_TRAILING_SILENCE)
+        tokens = tokenizer.tokenize(asource)
+        regions = []
+        for token in tokens:
+            regions.append((token[1] * 10, token[2] * 10))
+        asource.close()
     else:
         regions = []
 
