@@ -7,8 +7,8 @@ Defines constants used by autosub.
 from __future__ import unicode_literals
 
 GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
-GOOGLE_SPEECH_V2_API_URL = "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}" # pylint: disable=line-too-long
-
+GOOGLE_SPEECH_V2_API_URL = \
+    "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"
 DEFAULT_SUBTITLES_FORMAT = 'srt'
 DEFAULT_CONCURRENCY = 10
 DEFAULT_SRC_LANGUAGE = 'en-US'
@@ -250,4 +250,16 @@ TRANSLATION_LANGUAGE_CODES = {
     'zh-CN': 'Chinese (Simplified)',
     'zh-TW': 'Chinese (Traditional)',
     'zu': 'Zulu'
+}
+
+FORMATTERS = {
+    'srt': 'SubRip',
+    'ass': 'Advanced SubStation Alpha',
+    'ssa': 'SubStation Alpha',
+    'sub': 'MicroDVD Subtitle',
+    'mpl2': 'Similar to MicroDVD(extension is \".mpl2.txt\")',
+    'tmp': 'TMP Player Subtitle Format',
+    'vtt': 'WebVTT',
+    'json': 'json',
+    'txt': 'Plain Text(Only text without times)'
 }

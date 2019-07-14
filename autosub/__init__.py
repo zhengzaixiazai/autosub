@@ -14,6 +14,7 @@ import os
 import subprocess
 import tempfile
 import wave
+import re
 import json
 import requests
 import pysubs2
@@ -366,6 +367,11 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
     os.remove(audio_flac)
     timed_subtitles = [(r, t) for r, t in zip(regions, transcripts) if t]
 
+    try:
+        input_m = raw_input
+    except NameError:
+        input_m = input
+
     if subtitles_file_format == 'srt':
         formatted_subtitles = formatters.pysubs2_formatter(
             subtitles=timed_subtitles,
@@ -384,13 +390,55 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
         formatted_subtitles = formatters.txt_formatter(
             subtitles=timed_subtitles)
     elif subtitles_file_format == 'sub':
+        subtitles_file_format = 'microdvd'
+        # ref https://pysubs2.readthedocs.io/en/latest
+        # /api-reference.html#supported-input-output-formats
+        try:
+            command = ["ffprobe", "-v", "0", "-of", "csv=p=0",
+                       "-select_streams", "v:0", "-show_entries",
+                       "stream=r_frame_rate", source_file]
+            use_shell = True if os.name == "nt" else False
+            fps_str = subprocess.check_output(command, stdin=open(os.devnull), shell=use_shell)
+            num_list = map(int, re.findall(r'\d+', fps_str))
+            if len(num_list) == 2:
+                fps = float(num_list[0]) / float(num_list[1])
+            else:
+                print("Can't use ffprobe(ffmpeg) to get video fps.\n"
+                      "Video fps is necessary when output is \".sub\".")
+                fps_str = input_m("Input your video fps. "
+                                  "Any illegal value will regard as \".srt\" instead.")
+                num_list = map(float, re.findall(r'\d+', fps_str))
+                if num_list and num_list[0] > 0.0:
+                    fps = num_list[0]
+                else:
+                    print("Using \".srt\" instead.")
+                    subtitles_file_format = 'srt'
+                    fps = 0.0
+
+        except subprocess.CalledProcessError:
+            print("Can't use ffprobe(ffmpeg) to get video fps.\n"
+                  "It is necessary when output is \".sub\".")
+            fps_str = input_m("Input your video fps. "
+                              "Any illegal value will regard as \".srt\" instead.")
+            num_list = map(float, re.findall(r'\d+', fps_str))
+            if num_list and num_list[0] > 0.0:
+                fps = num_list[0]
+            else:
+                print("Using \".srt\" instead.")
+                subtitles_file_format = 'srt'
+                fps = 0.0
+
         formatted_subtitles = formatters.pysubs2_formatter(
             subtitles=timed_subtitles,
-            sub_format=subtitles_file_format)
+            sub_format=subtitles_file_format,
+            fps=fps)
+        subtitles_file_format = 'sub'
+
     elif subtitles_file_format == 'mpl2':
         formatted_subtitles = formatters.pysubs2_formatter(
             subtitles=timed_subtitles,
             sub_format=subtitles_file_format)
+        subtitles_file_format = 'mpl2.txt'
     elif subtitles_file_format == 'tmp':
         formatted_subtitles = formatters.pysubs2_formatter(
             subtitles=timed_subtitles,
@@ -403,11 +451,6 @@ def generate_subtitles( # pylint: disable=too-many-locals,too-many-arguments,too
         formatted_subtitles = formatters.pysubs2_formatter(
             subtitles=timed_subtitles,
             sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
-
-    try:
-        input_m = raw_input
-    except NameError:
-        input_m = input
 
     dest = output
 
@@ -439,17 +482,18 @@ def validate(args):
         print("Error: You need to specify a source path.")
         return False
 
-    if args.format not in formatters.FORMATTERS:
+    if args.format not in constants.FORMATTERS.keys():
         print(
             "Subtitle format not supported. "
-            "Run with --list-formats to see all supported formats."
+            "Run with \"-lf\" or \"--list-formats\" to see all supported formats.\n"
+            "Or use ffmpeg or SubtitleEdit to convert the formats."
         )
         return False
 
     if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
         print(
             "Source language not supported. "
-            "Run with -lsc or --list-speech-to-text-codes "
+            "Run with \"-lsc\" or \"--list-speech-to-text-codes\" "
             "to see all supported languages."
         )
         return False
@@ -470,7 +514,7 @@ def validate(args):
     elif args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
         print(
             "Destination language not supported. "
-            "Run with -ltc or --list-translation-codes "
+            "Run with \"-ltc\" or \"--list-translation-codes\" "
             "to see all supported languages."
         )
         return False
@@ -556,7 +600,8 @@ def main():  # pylint: disable=too-many-branches
     ogroup.add_argument(
         '-K', '--api-key',
         metavar='key',
-        help="The Google Translate API key to be used. Required for subtitles translation."
+        help="The Google Translate API key to be used. "
+             "Required for subtitles translation."
     )
 
     ogroup.add_argument(
@@ -594,7 +639,8 @@ def main():  # pylint: disable=too-many-branches
     ogroup.add_argument(
         '-lf', '--list-formats',
         action='store_true',
-        help="List all available subtitles formats."
+        help="List all available subtitles formats. "
+             "Or use ffmpeg or SubtitleEdit to convert the formats."
     )
 
     ogroup.add_argument(
@@ -638,8 +684,8 @@ def main():  # pylint: disable=too-many-branches
 
     if args.list_formats:
         print("List of formats:")
-        for subtitles_format in formatters.FORMATTERS:
-            print("{format}".format(format=subtitles_format))
+        for subtitles_format, format_description in sorted(constants.FORMATTERS.items()):
+            print("{sf}\t{fd}".format(sf=subtitles_format, fd=format_description))
         return 0
 
     if args.list_speech_to_text_codes:

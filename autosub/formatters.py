@@ -10,18 +10,20 @@ import json
 import pysubs2
 
 
-def pysubs2_formatter(subtitles, sub_format='srt'):
+def pysubs2_formatter(subtitles, sub_format='srt', fps=0.0):
     """
     Serialize a list of subtitles according to the SRT format.
     """
     pysubs2_obj = pysubs2.SSAFile()
+    if fps != 0.0:
+        pysubs2_obj.fps = fps
     for ((start, end), text) in subtitles:
         event = pysubs2.SSAEvent()
         event.start = start
         event.end = end
         event.text = text
         pysubs2_obj.events.append(event)
-    return pysubs2_obj.to_string(format_=sub_format)
+    return pysubs2_obj.to_string(format_=sub_format, fps=pysubs2_obj.fps)
 
 
 def vtt_formatter(subtitles):
@@ -54,14 +56,3 @@ def txt_formatter(subtitles):
     Serialize a list of subtitles as a newline-delimited string.
     """
     return '\n'.join(text for (_rng, text) in subtitles)
-
-FORMATTERS = {
-    'srt': pysubs2_formatter,
-    'ass': pysubs2_formatter,
-    'ssa': pysubs2_formatter,
-    'sub': pysubs2_formatter,
-    'mpl2': pysubs2_formatter,
-    'tmp': pysubs2_formatter,
-    'vtt': vtt_formatter,
-    'json': json_formatter
-}

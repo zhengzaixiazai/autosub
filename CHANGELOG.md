@@ -28,6 +28,7 @@ Click up arrow to go back to TOC.
 - Add metadata.py. [issue #5](https://github.com/BingLingGroup/autosub/issues/5)
 - Add output file name detection to avoid any file overwritting.
 - Add new dev branch for latest dev codes to push.
+- Add more output format(ass, ssa, sub, mpl2, tmp). [issue #20](https://github.com/BingLingGroup/autosub/issues/20)
 
 #### Changed(Unreleased)
 
@@ -39,6 +40,7 @@ Click up arrow to go back to TOC.
 - Use alpha branch for alpha releases.
 - Change docs.
 - Change audio conversion workflow to get a better audio quality to process. Currently will create two files from the original source file separately. 48kHz/16bit/mono .wav for local speech regions finding. 44.1kHz/24bit/mono .flac for google speech v2 api upload or in other words, speech recognition. Need to point out that [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2) is wrong on the supported .flac audio channel number. According to my test the api doesn't support the 2-channel .flac file. [agermanidis/autosub issue #155](https://github.com/agermanidis/autosub/issues/155)
+- Refactor internal regions unit to millisecond. [issue #23](https://github.com/BingLingGroup/autosub/issues/23)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
