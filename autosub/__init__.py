@@ -193,12 +193,12 @@ def api_gen_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
     return timed_subtitles
 
 
-def list_to_sub_file(
+def list_to_sub_file(  # pylint: disable=too-many-arguments
         timed_subtitles,
         output,
         fps=30.0,
         subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
-        input_m=input
+        input_m=input,
 ):
     """
     Given an input timedsub list, format it and write it to file.
@@ -252,7 +252,7 @@ def list_to_sub_file(
 
     dest = output
 
-    while os.path.isfile(dest):
+    while input_m and os.path.isfile(dest):
         print("There is already a file with the same name"
               " in this location: \"{dest_name}\".".format(dest_name=dest))
         dest = input_m("Input a new path (including directory and file name) for output file.\n")
@@ -383,6 +383,12 @@ def get_cmd_args():
                 The default is in the same directory
                 and the name is the source path 
                 combined with the destination language code."""
+    )
+
+    ogroup.add_argument(
+        '-y', '--yes',
+        action='store_true',
+        help="Avoid any pause and overwriting files."
     )
 
     ogroup.add_argument(
@@ -539,12 +545,15 @@ def main():  # pylint: disable=too-many-branches
     Run autosub as a command-line program.
     """
 
-    try:
-        input_m = raw_input
-    except NameError:
-        input_m = input
-
     args = get_cmd_args()
+
+    if not args.yes:
+        try:
+            input_m = raw_input
+        except NameError:
+            input_m = input
+    else:
+        input_m = None
 
     if validate(args):
         if args.http_speech_to_text_api:
@@ -557,7 +566,10 @@ def main():  # pylint: disable=too-many-branches
                     args.source_path,
                     input_m=input_m)
                 if fps == 0.0:
-                    args.format = 'srt'
+                    if not args.yes:
+                        args.format = 'srt'
+                    else:
+                        raise pysubs2.exceptions.Pysubs2Error
             else:
                 fps = 0.0
 

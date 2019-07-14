@@ -29,6 +29,7 @@
 - 添加新的dev分支用于推送最新的代码。
 - 添加多个输出格式(ass, ssa, sub, mpl2, tmp)。[issue #20](https://github.com/BingLingGroup/autosub/issues/20)
 - 添加参数用于控制[auditok.StreamTokenizer](https://auditok.readthedocs.io/en/latest/core.html#class-summary)和[energy_threshold](https://auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data)。[issue #30](https://github.com/BingLingGroup/autosub/issues/30)
+- 添加覆写参数`-y`用于输出文件覆写并且取消任何运行时暂停。[issue #29](https://github.com/BingLingGroup/autosub/issues/29)
 
 #### 改动(未发布的部分)
 

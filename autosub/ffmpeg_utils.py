@@ -64,8 +64,12 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
         if len(num_list) == 2:
             fps = float(num_list[0]) / float(num_list[1])
         else:
-            print("Can't use ffprobe(ffmpeg) to get video fps.\n"
-                  "Video fps is necessary when output is \".sub\".")
+            raise ValueError
+
+    except (subprocess.CalledProcessError, ValueError):
+        print("Can't use ffprobe(ffmpeg) to get video fps.\n"
+              "It is necessary when output is \".sub\".")
+        if input_m:
             input_str = input_m("Input your video fps. "
                                 "Any illegal value will regard as \".srt\" instead.\n")
             try:
@@ -75,19 +79,8 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
             except ValueError:
                 print("Using \".srt\" instead.")
                 fps = 0.0
-
-    except subprocess.CalledProcessError:
-        print("Can't use ffprobe(ffmpeg) to get video fps.\n"
-              "It is necessary when output is \".sub\".")
-        input_str = input_m("Input your video fps. "
-                            "Any illegal value will regard as \".srt\" instead.\n")
-        try:
-            fps = float(input_str[0])
-            if fps <= 0.0:
-                raise ValueError
-        except ValueError:
-            print("Using \".srt\" instead.")
-            fps = 0.0
+        else:
+            return 0.0
 
     return fps
 

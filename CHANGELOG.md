@@ -30,6 +30,7 @@ Click up arrow to go back to TOC.
 - Add new dev branch for latest dev codes to push.
 - Add more output format(ass, ssa, sub, mpl2, tmp). [issue #20](https://github.com/BingLingGroup/autosub/issues/20)
 - Add arguments for [auditok.StreamTokenizer](https://auditok.readthedocs.io/en/latest/core.html#class-summary) and [energy_threshold](https://auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data). [issue #30](https://github.com/BingLingGroup/autosub/issues/30)
+- Add overwrite option '-y' for output overwrite and no input pause. [issue #29](https://github.com/BingLingGroup/autosub/issues/29)
 
 #### Changed(Unreleased)
 
