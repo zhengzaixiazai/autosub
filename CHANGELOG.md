@@ -29,6 +29,7 @@ Click up arrow to go back to TOC.
 - Add output file name detection to avoid any file overwritting.
 - Add new dev branch for latest dev codes to push.
 - Add more output format(ass, ssa, sub, mpl2, tmp). [issue #20](https://github.com/BingLingGroup/autosub/issues/20)
+- Add arguments for [auditok.StreamTokenizer](https://auditok.readthedocs.io/en/latest/core.html#class-summary) and [energy_threshold](https://auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data). [issue #30](https://github.com/BingLingGroup/autosub/issues/30)
 
 #### Changed(Unreleased)
 
@@ -42,6 +43,7 @@ Click up arrow to go back to TOC.
 - Change audio conversion workflow to get a better audio quality to process. Currently will create two files from the original source file separately. 48kHz/16bit/mono .wav for local speech regions finding. 44.1kHz/24bit/mono .flac for google speech v2 api upload or in other words, speech recognition. Need to point out that [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2) is wrong on the supported .flac audio channel number. According to my test the api doesn't support the 2-channel .flac file. [agermanidis/autosub issue #155](https://github.com/agermanidis/autosub/issues/155)
 - Refactor internal regions unit to millisecond. [issue #23](https://github.com/BingLingGroup/autosub/issues/23)
 - Refactor speech regions detection by using auditok. [issue #27](https://github.com/BingLingGroup/autosub/issues/27)
+- Refactor generate_subtitles into 3 parts. [issue #24](https://github.com/BingLingGroup/autosub/issues/24)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
