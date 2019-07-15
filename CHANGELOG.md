@@ -33,6 +33,8 @@ Click up arrow to go back to TOC.
 - Add overwrite option `-y` for output overwrite and no input pause. [issue #29](https://github.com/BingLingGroup/autosub/issues/29)
 - Add specific .ass style when output format is .ass. [issue #21](https://github.com/BingLingGroup/autosub/issues/21)
 - Add timings generating function instead of using speech-to-text api. [issue #14](https://github.com/BingLingGroup/autosub/issues/14)
+- Add arguments for [confidence](https://github.com/gillesdemey/google-speech-v2#response) control. [issue #6](https://github.com/BingLingGroup/autosub/issues/6)
+- Add arguments for dropping empty lines from speech-to-text results.
 
 #### Changed(Unreleased)
 
@@ -50,6 +52,7 @@ Click up arrow to go back to TOC.
 - [issue #8](https://github.com/BingLingGroup/autosub/issues/8)
   - Fix python3 compatibility issues.
   - Fix Nuitka build after updating Nuitka to 0.6.4(Environment Anaconda2 python3.5).
+- Refactor api_gen_text to 2 parts. One is speech_to_text. Another is text_translation. [issue #33](https://github.com/BingLingGroup/autosub/issues/33)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 

@@ -16,9 +16,10 @@ import auditok
 
 # Any changes to the path and your own modules
 from autosub import constants
-from autosub import metadata
-from autosub import ffmpeg_utils
 from autosub import core
+from autosub import ffmpeg_utils
+from autosub import metadata
+from autosub import sub_utils
 
 
 def get_cmd_args():
@@ -27,7 +28,7 @@ def get_cmd_args():
     """
     parser = argparse.ArgumentParser(
         prog=metadata.NAME,
-        usage='\n  %(prog)s source_path [options]',
+        usage='\n  %(prog)s <source_path> [options]',
         description=metadata.DESCRIPTION,
         epilog="""Make sure the argument with space is in quotes.
 The default value is used 
@@ -94,7 +95,7 @@ Bug report: https://github.com/agermanidis/autosub\n
 
     output_group.add_argument(
         '-fps', '--sub-fps',
-        metavar='number',
+        metavar='float',
         type=float,
         help="Valid when your output format is sub. "
              "If input, it will override the fps check "
@@ -105,7 +106,7 @@ Bug report: https://github.com/agermanidis/autosub\n
     )
 
     output_group.add_argument(
-        '-aty', '--ass-styles',
+        '-sty', '--ass-styles',
         nargs='?', metavar='path',
         default=' ',
         help="""Valid when your output format is ass/ssa.
@@ -135,6 +136,25 @@ Bug report: https://github.com/agermanidis/autosub\n
              "(arg_num = 1) (default: %(default)s)"
     )
 
+    speech_group.add_argument(
+        '-mnc', '--min-confidence',
+        metavar='float',
+        type=float,
+        help="GoogleSpeechV2 API response for text confidence. "
+             "A float value between 0 and 1. "
+             "Confidence bigger means result better. "
+             "Input this argument will drop any result below it. "
+             "Ref: https://github.com/BingLingGroup/google-speech-v2#response "
+             "(arg_num = 1)"
+    )
+
+    speech_group.add_argument(
+        '-der', '--drop-empty-regions',
+        action='store_true',
+        help="Drop any regions without speech-to-text result. "
+             "(arg_num = 0)"
+    )
+
     trans_group.add_argument(
         '-D', '--dst-language',
         metavar='locale',
@@ -152,7 +172,7 @@ Bug report: https://github.com/agermanidis/autosub\n
 
     options_group.add_argument(
         '-C', '--concurrency',
-        metavar='number',
+        metavar='integer',
         type=int,
         default=constants.DEFAULT_CONCURRENCY,
         help="Number of concurrent API requests to make. "
@@ -219,7 +239,7 @@ Bug report: https://github.com/agermanidis/autosub\n
         '-mxcs', '--max-continuous-silence',
         metavar='second',
         type=float,
-        default=constants.MAX_CONTINUOUS_SILENCE,
+        default=constants.DEFAULT_CONTINUOUS_SILENCE,
         help="Maximum length of a tolerated silence within a valid audio activity. "
              "Same docs above. "
              "(arg_num = 1) (default: %(default)s)"
@@ -280,7 +300,7 @@ Reference: https://cloud.google.com/speech-to-text/docs/languages
     return parser.parse_args()
 
 
-def validate(args):  # pylint: disable=too-many-branches,too-many-return-statements
+def validate(args):  # pylint: disable=too-many-branches,too-many-return-statements, too-many-statements
     """
     Check that the CLI arguments passed to autosub are valid.
     """
@@ -328,21 +348,35 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
                 "Destination language not provided. "
                 "Only performing speech recognition."
             )
-            args.dst_language = args.src_language
 
-        elif args.dst_language == args.src_language:
+        else:
+            if args.min_confidence < 0.0 or args.min_confidence > 1.0:
+                print(
+                    "Error: min_confidence's value isn't legal."
+                )
+                return False
+
+            if not args.api_key:
+                print(
+                    "Error: Subtitle translation requires specified Google Translate API key. "
+                )
+                return False
+
+            if args.dst_language and \
+                    args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
+                print(
+                    "Error: Destination language not supported. "
+                    "Run with \"-ltc\" or \"--list-translation-codes\" "
+                    "to see all supported languages."
+                )
+                return False
+
+        if args.dst_language == args.src_language:
             print(
                 "Source language is the same as the Destination language. "
                 "Only performing speech recognition."
             )
-
-        elif args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
-            print(
-                "Error: Destination language not supported. "
-                "Run with \"-ltc\" or \"--list-translation-codes\" "
-                "to see all supported languages."
-            )
-            return False
+            args.dst_language = None
 
     else:
         if args.format == 'txt':
@@ -367,6 +401,7 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
 
     if not args.ass_styles:
         # when args.ass_styles is used but without option
+        # its value is ' '
         if not args.external_speech_regions:
             print(
                 "Error: External speech regions file not provided."
@@ -375,6 +410,7 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
         else:
             args.ass_styles = args.external_speech_regions
     else:
+        # then set it to None
         args.ass_styles = None
 
     if not args.external_speech_regions:
@@ -398,9 +434,9 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
             print(
                 "Your maximum continuous silence {mxcs} is smaller than 0.\n"
                 "Now reset to {dmxcs}".format(mxcs=args.max_continuous_silence,
-                                              dmxcs=constants.MAX_CONTINUOUS_SILENCE)
+                                              dmxcs=constants.DEFAULT_CONTINUOUS_SILENCE)
             )
-            args.max_continuous_silence = constants.MAX_CONTINUOUS_SILENCE
+            args.max_continuous_silence = constants.DEFAULT_CONTINUOUS_SILENCE
 
     return True
 
@@ -443,7 +479,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         else:
             fps = 0.0
 
-        if not args.dst_language:
+        if not args.src_language and not args.dst_language:
+            # valid when generating times
+            # in this case, program only use args.dst_language as a name tail
             args.dst_language = 'times'
 
         if not args.output:
@@ -460,13 +498,15 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                   "Now file path set to {new}".format(new=args.output))
 
         if args.external_speech_regions:
+            # use external speech regions
             print("Using external speech regions.")
-            regions = core.sub_gen_speech_regions(
+            regions = sub_utils.sub_to_speech_regions(
                 source_file=args.source_path,
                 sub_file=args.external_speech_regions
             )
 
         else:
+            # use auditok_gen_speech_regions
             mode = 0
             if args.strict_min_length:
                 mode = auditok.StreamTokenizer.STRICT_MIN_LENGTH
@@ -480,27 +520,45 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 energy_threshold=args.energy_threshold,
                 min_region_size=constants.MIN_REGION_SIZE,
                 max_region_size=constants.MAX_REGION_SIZE,
-                max_continuous_silence=constants.MAX_CONTINUOUS_SILENCE,
+                max_continuous_silence=constants.DEFAULT_CONTINUOUS_SILENCE,
                 mode=mode
             )
 
         if args.src_language:
-            timed_subtitles = core.api_gen_text(
+            # speech to text
+            text_list = core.speech_to_text(
                 source_file=args.source_path,
                 api_url=api_url,
                 regions=regions,
-                api_key=args.api_key,
                 concurrency=args.concurrency,
                 src_language=args.src_language,
-                dst_language=args.dst_language
+                min_confidence=args.min_confidence
             )
 
+            if args.dst_language:
+                # text translation
+                translated_text = core.text_translation(
+                    text_list=text_list,
+                    api_key=args.api_key,
+                    concurrency=args.concurrency,
+                    src_language=args.src_language,
+                    dst_language=args.dst_language
+                )
+                text_list = translated_text
+                # drop src_language text_list
+
+            if not args.drop_empty_regions:
+                timed_text = [(region, text) for region, text in zip(regions, text_list)]
+            else:
+                timed_text = [(region, text) for region, text in zip(regions, text_list) if text]
+
             subtitles_string, extension = core.list_to_sub_str(
-                timed_subtitles=timed_subtitles,
+                timed_subtitles=timed_text,
                 fps=fps,
                 subtitles_file_format=args.format,
                 ass_styles_file=args.ass_styles
             )
+            # formatting timed_text to subtitles string
 
         else:
             subtitles_string, extension = core.times_to_sub_str(
@@ -509,6 +567,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 subtitles_file_format=args.format,
                 ass_styles_file=args.ass_styles
             )
+            # times to subtitles string
 
         subtitles_file_path = core.str_to_file(
             str_=subtitles_string,
@@ -516,6 +575,8 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
             extension=extension,
             input_m=input_m
         )
+        # subtitles string to file
+
         print("\nSubtitles file created at \"{}\"".format(subtitles_file_path))
 
     except KeyboardInterrupt:

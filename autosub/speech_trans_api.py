@@ -7,15 +7,15 @@ Defines speech and translation api used by autosub.
 from __future__ import absolute_import, unicode_literals
 
 # Import built-in modules
-
-# Import third-party modules
 import json
-import requests
-from googleapiclient.discovery import build
 try:
     from json.decoder import JSONDecodeError
 except ImportError:
     JSONDecodeError = ValueError
+
+# Import third-party modules
+import requests
+from googleapiclient.discovery import build
 
 # Any changes to the path and your own modules
 from autosub import constants
@@ -25,10 +25,16 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
     """
     Class for performing speech-to-text for an input FLAC file.
     """
-    def __init__(self, api_url, language="en",
-                 rate=44100, retries=3, api_key=constants.GOOGLE_SPEECH_V2_API_KEY):
+    def __init__(self,
+                 api_url,
+                 min_confidence=0.0,
+                 lang_code="en",
+                 rate=44100,
+                 api_key=constants.GOOGLE_SPEECH_V2_API_KEY,
+                 retries=3):
         # pylint: disable=too-many-arguments
-        self.language = language
+        self.min_confidence = min_confidence
+        self.lang_code = lang_code
         self.rate = rate
         self.api_url = api_url
         self.api_key = api_key
@@ -37,7 +43,7 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
     def __call__(self, data):
         try:
             for _ in range(self.retries):
-                url = self.api_url.format(lang=self.language, key=self.api_key)
+                url = self.api_url.format(lang=self.lang_code, key=self.api_key)
                 headers = {"Content-Type": "audio/x-flac; rate=%d" % self.rate}
 
                 try:
@@ -48,14 +54,26 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
                 for line in resp.content.decode('utf-8').split("\n"):
                     try:
                         line = json.loads(line)
+                        line_dict = line
                         line = line['result'][0]['alternative'][0]['transcript']
-                        return line[:1].upper() + line[1:]
-                    except (JSONDecodeError, ValueError, IndexError):
+                    except (JSONDecodeError, ValueError, IndexError, KeyError):
                         # no result
                         continue
 
+                    try:
+                        confidence = float(line_dict['result'][0]['alternative'][0]['confidence'])
+                        if confidence > self.min_confidence:
+                            return line[:1].upper() + line[1:]
+                        return ""
+                    except KeyError:
+                        # can't find confidence in json
+                        # means it's 100% confident
+                        return line[:1].upper() + line[1:]
+
         except KeyboardInterrupt:
             return None
+
+        return ""
 
 
 class GoogleTranslatorV2(object):  # pylint: disable=too-few-public-methods

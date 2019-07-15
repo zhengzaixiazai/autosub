@@ -32,6 +32,8 @@
 - 添加覆写参数`-y`用于输出文件覆写并且取消任何运行时暂停。[issue #29](https://github.com/BingLingGroup/autosub/issues/29)
 - 添加ass样式文件输入并在输出格式是ass时起作用。[issue #21](https://github.com/BingLingGroup/autosub/issues/21)
 - 添加自动分句/自动生成时间轴功能，而不需要调用speech-to-text api。[issue #14](https://github.com/BingLingGroup/autosub/issues/14)
+- 添加参数用于控制识别结果[可信度](https://github.com/gillesdemey/google-speech-v2#response)。[issue #6](https://github.com/BingLingGroup/autosub/issues/6)
+- 添加参数用于删除在语音转文字后产生的空行。
 
 #### 改动(未发布的部分)
 
@@ -49,6 +51,7 @@
 - [issue #8](https://github.com/BingLingGroup/autosub/issues/8)
   - 修复python3兼容性问题。
   - 修复Nuitka构建问题（Nuitka更新至0.6.4后解决，环境Anaconda2 python3.5）。
+- 重构内部函数api_gen_text为两部分。一个是speech_to_text。另一个是text_translation。[issue #33](https://github.com/BingLingGroup/autosub/issues/33)
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 

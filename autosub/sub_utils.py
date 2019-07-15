@@ -6,8 +6,59 @@ Defines subtitle formatters used by autosub.
 
 from __future__ import absolute_import, unicode_literals
 
+# Import built-in modules
+import os
+import wave
 import json
+
+# Import third-party modules
 import pysubs2
+
+# Any changes to the path and your own modules
+from autosub import constants
+from autosub import ffmpeg_utils
+
+
+def sub_to_speech_regions(
+        source_file,
+        sub_file,
+        ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000
+):
+    """
+    Given an input audio/video file and subtitles file, generate proper speech regions.
+    """
+    regions = []
+    audio_wav = ffmpeg_utils.source_to_audio(source_file)
+    reader = wave.open(audio_wav)
+    audio_file_length = int(float(reader.getnframes()) / float(reader.getframerate())) * 1000
+    reader.close()
+
+    ext_regions = pysubs2.SSAFile.load(sub_file)
+
+    for event in ext_regions.events:
+        if not event.is_comment:
+            # not a comment region
+            if event.duration <= ext_max_size_ms:
+                regions.append((event.start,
+                                event.start + event.duration))
+            else:
+                # split too long regions
+                elapsed_time = event.duration
+                start_time = event.start
+                if elapsed_time > audio_file_length:
+                    # even longer than the source file length
+                    elapsed_time = audio_file_length
+                while elapsed_time > ext_max_size_ms:
+                    # longer than the max size limit
+                    regions.append((start_time,
+                                    start_time + ext_max_size_ms))
+                    elapsed_time = elapsed_time - ext_max_size_ms
+                    start_time = start_time + ext_max_size_ms
+                regions.append((start_time,
+                                start_time + elapsed_time))
+
+    os.remove(audio_wav)
+    return regions
 
 
 def pysubs2_formatter(subtitles,

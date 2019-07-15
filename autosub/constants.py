@@ -16,7 +16,7 @@ DEFAULT_DST_LANGUAGE = 'en-US'
 DEFAULT_ENERGY_THRESHOLD = 45
 MAX_REGION_SIZE = 6.0
 MIN_REGION_SIZE = 0.5
-MAX_CONTINUOUS_SILENCE = 0.3
+DEFAULT_CONTINUOUS_SILENCE = 0.3
 MAX_EXT_REGION_SIZE = 10
 # Maximum speech to text region length in milliseconds
 # when using external speech region control
