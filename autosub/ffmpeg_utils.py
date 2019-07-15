@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""description
 """
+Defines ffmpeg command line calling functionality.
+"""
+
+from __future__ import absolute_import, print_function, unicode_literals
 
 # Import built-in modules
 import subprocess

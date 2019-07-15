@@ -4,6 +4,8 @@
 Defines speech and translation api used by autosub.
 """
 
+from __future__ import absolute_import, unicode_literals
+
 # Import built-in modules
 
 # Import third-party modules

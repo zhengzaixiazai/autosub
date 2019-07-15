@@ -4,6 +4,8 @@
 Defines autosub's metadata.
 """
 
+from __future__ import unicode_literals
+
 NAME = 'autosub'
 VERSION = '0.4.1-alpha'
 DESCRIPTION = 'Auto-generates subtitles for any video or audio file.'

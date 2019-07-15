@@ -4,25 +4,39 @@
 Defines subtitle formatters used by autosub.
 """
 
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
 import json
 import pysubs2
 
 
-def pysubs2_formatter(subtitles, sub_format='srt', fps=0.0):
+def pysubs2_formatter(subtitles,
+                      sub_format='srt',
+                      fps=0.0,
+                      ass_styles=None):
     """
     Serialize a list of subtitles according to the SRT format.
     """
     pysubs2_obj = pysubs2.SSAFile()
     if fps != 0.0:
         pysubs2_obj.fps = fps
-    for ((start, end), text) in subtitles:
-        event = pysubs2.SSAEvent()
-        event.start = start
-        event.end = end
-        event.text = text
-        pysubs2_obj.events.append(event)
+    if ass_styles:
+        pysubs2_obj.styles = ass_styles
+        style_name = ass_styles.popitem()[0]
+        for ((start, end), text) in subtitles:
+            event = pysubs2.SSAEvent()
+            event.start = start
+            event.end = end
+            event.text = text
+            event.style = style_name
+            pysubs2_obj.events.append(event)
+    else:
+        for ((start, end), text) in subtitles:
+            event = pysubs2.SSAEvent()
+            event.start = start
+            event.end = end
+            event.text = text
+            pysubs2_obj.events.append(event)
     return pysubs2_obj.to_string(format_=sub_format, fps=pysubs2_obj.fps)
 
 
