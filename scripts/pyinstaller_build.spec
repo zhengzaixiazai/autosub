@@ -4,8 +4,11 @@ block_cipher = None
 
 
 a = Analysis([r"..\autosub\__main__.py",
-             r"..\autosub\constants.py",
              r"..\autosub\__init__.py",
+             r"..\autosub\constants.py",
+             r"..\autosub\ffmpeg_utils.py",
+             r"..\autosub\metadata.py",
+             r"..\autosub\speech_trans_api.py",
              r"..\autosub\formatters.py"],
              binaries=[],
              datas=[],

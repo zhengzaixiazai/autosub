@@ -7,5 +7,5 @@ set package_name="autosub"
 
 @echo on
 cd %~dp0
-call nuitka "../%package_name:~1,-1%" --standalone --output-dir %output_dir% --show-progress --show-scons --show-modules --windows-icon=%icon_dir% --plugin-enable=multiprocessing --force-dll-dependency-cache-update --lto --generate-c-only 1>%log_name% 2>&1 3>&1
+call nuitka "../%package_name:~1,-1%" --standalone --output-dir %output_dir% --show-progress --show-scons --show-modules --windows-icon=%icon_dir% --recurse-to=multiprocessing --plugin-enable=multiprocessing --lto 1>%log_name% 2>&1 3>&1
 pause>nul

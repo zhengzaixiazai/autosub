@@ -44,6 +44,9 @@
 - 修改内部音频处理的时间单位为毫秒。[issue #23](https://github.com/BingLingGroup/autosub/issues/23)
 - 修改内部时间轴/分句处理为auditok。[issue #27](https://github.com/BingLingGroup/autosub/issues/27)
 - 重构内部函数generate_subtitles为3个独立的部分。[issue #24](https://github.com/BingLingGroup/autosub/issues/24)
+- [issue #8](https://github.com/BingLingGroup/autosub/issues/8)
+  - 修复python3兼容性问题。
+  - 修复Nuitka构建问题（Nuitka更新至0.6.4后解决，环境Anaconda2 python3.5）。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 

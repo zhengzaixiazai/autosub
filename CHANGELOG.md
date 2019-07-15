@@ -30,7 +30,7 @@ Click up arrow to go back to TOC.
 - Add new dev branch for latest dev codes to push.
 - Add more output format(ass, ssa, sub, mpl2, tmp). [issue #20](https://github.com/BingLingGroup/autosub/issues/20)
 - Add arguments for [auditok.StreamTokenizer](https://auditok.readthedocs.io/en/latest/core.html#class-summary) and [energy_threshold](https://auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data). [issue #30](https://github.com/BingLingGroup/autosub/issues/30)
-- Add overwrite option '-y' for output overwrite and no input pause. [issue #29](https://github.com/BingLingGroup/autosub/issues/29)
+- Add overwrite option `-y` for output overwrite and no input pause. [issue #29](https://github.com/BingLingGroup/autosub/issues/29)
 
 #### Changed(Unreleased)
 
@@ -45,6 +45,9 @@ Click up arrow to go back to TOC.
 - Refactor internal regions unit to millisecond. [issue #23](https://github.com/BingLingGroup/autosub/issues/23)
 - Refactor speech regions detection by using auditok. [issue #27](https://github.com/BingLingGroup/autosub/issues/27)
 - Refactor generate_subtitles into 3 parts. [issue #24](https://github.com/BingLingGroup/autosub/issues/24)
+- [issue #8](https://github.com/BingLingGroup/autosub/issues/8)
+  - Fix python3 compatibility issues.
+  - Fix Nuitka build after updating Nuitka to 0.6.4(Environment Anaconda2 python3.5).
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 

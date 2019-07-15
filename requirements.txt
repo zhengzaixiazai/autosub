@@ -1,6 +1,6 @@
-pysubs2==0.2.4
 requests==2.21.0
-auditok==0.1.5
+pysubs2==0.2.4
 setuptools==40.6.2
+auditok==0.1.5
 google_api_python_client==1.7.9
 progressbar2==3.42.0
