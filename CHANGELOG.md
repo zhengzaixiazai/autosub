@@ -32,6 +32,7 @@ Click up arrow to go back to TOC.
 - Add arguments for [auditok.StreamTokenizer](https://auditok.readthedocs.io/en/latest/core.html#class-summary) and [energy_threshold](https://auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data). [issue #30](https://github.com/BingLingGroup/autosub/issues/30)
 - Add overwrite option `-y` for output overwrite and no input pause. [issue #29](https://github.com/BingLingGroup/autosub/issues/29)
 - Add specific .ass style when output format is .ass. [issue #21](https://github.com/BingLingGroup/autosub/issues/21)
+- Add timings generating function instead of using speech-to-text api. [issue #14](https://github.com/BingLingGroup/autosub/issues/14)
 
 #### Changed(Unreleased)
 

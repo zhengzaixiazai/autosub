@@ -31,6 +31,7 @@
 - 添加参数用于控制[auditok.StreamTokenizer](https://auditok.readthedocs.io/en/latest/core.html#class-summary)和[energy_threshold](https://auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data)。[issue #30](https://github.com/BingLingGroup/autosub/issues/30)
 - 添加覆写参数`-y`用于输出文件覆写并且取消任何运行时暂停。[issue #29](https://github.com/BingLingGroup/autosub/issues/29)
 - 添加ass样式文件输入并在输出格式是ass时起作用。[issue #21](https://github.com/BingLingGroup/autosub/issues/21)
+- 添加自动分句/自动生成时间轴功能，而不需要调用speech-to-text api。[issue #14](https://github.com/BingLingGroup/autosub/issues/14)
 
 #### 改动(未发布的部分)
 

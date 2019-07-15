@@ -191,16 +191,14 @@ def api_gen_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
     return timed_subtitles
 
 
-def list_to_sub_file(  # pylint: disable=too-many-arguments
+def list_to_sub_str(  # pylint: disable=too-many-arguments
         timed_subtitles,
-        output,
         fps=30.0,
         subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
-        input_m=input,
         ass_styles_file=None
 ):
     """
-    Given an input timedsub list, format it and write it to file.
+    Given an input timedsub list, format it to a string.
     """
 
     if subtitles_file_format == 'srt' \
@@ -259,6 +257,83 @@ def list_to_sub_file(  # pylint: disable=too-many-arguments
             subtitles=timed_subtitles,
             sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
 
+    return formatted_subtitles
+
+
+def times_to_sub_str(  # pylint: disable=too-many-arguments
+        times,
+        fps=30.0,
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
+        ass_styles_file=None
+):
+    """
+    Given an input timedsub list, format it to a string.
+    """
+
+    if subtitles_file_format == 'srt' \
+            or subtitles_file_format == 'tmp':
+        formatted_subtitles = formatters.pysubs2_times_formatter(
+            times=times,
+            sub_format=subtitles_file_format)
+
+    elif subtitles_file_format == 'ass' \
+            or subtitles_file_format == 'ssa':
+        if ass_styles_file:
+            ass_file = pysubs2.SSAFile.load(ass_styles_file)
+            ass_styles = ass_file.styles
+        else:
+            ass_styles = None
+        formatted_subtitles = formatters.pysubs2_times_formatter(
+            times=times,
+            sub_format=subtitles_file_format,
+            ass_styles=ass_styles)
+
+    elif subtitles_file_format == 'vtt':
+        formatted_subtitles = formatters.vtt_times_formatter(
+            times=times)
+
+    elif subtitles_file_format == 'json':
+        formatted_subtitles = formatters.json_times_formatter(
+            times=times)
+
+    elif subtitles_file_format == 'sub':
+        subtitles_file_format = 'microdvd'
+        formatted_subtitles = formatters.pysubs2_times_formatter(
+            times=times,
+            sub_format=subtitles_file_format,
+            fps=fps)
+        # sub format need fps
+        # ref https://pysubs2.readthedocs.io/en/latest
+        # /api-reference.html#supported-input-output-formats
+        subtitles_file_format = 'sub'
+
+    elif subtitles_file_format == 'mpl2':
+        formatted_subtitles = formatters.pysubs2_times_formatter(
+            times=times,
+            sub_format=subtitles_file_format)
+        subtitles_file_format = 'mpl2.txt'
+
+    else:
+        # fallback process
+        print("Format \"{fmt}\" not supported. \
+        Using \"{default_fmt}\" instead.".format(fmt=subtitles_file_format,
+                                                 default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        formatted_subtitles = formatters.pysubs2_times_formatter(
+            times=times,
+            sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
+
+    return formatted_subtitles, subtitles_file_format
+
+
+def str_to_file(
+        str_,
+        output,
+        extension,
+        input_m=input,
+):
+    """
+    Given a string and write it to file
+    """
     dest = output
 
     while input_m and os.path.isfile(dest):
@@ -267,9 +342,9 @@ def list_to_sub_file(  # pylint: disable=too-many-arguments
         dest = input_m("Input a new path (including directory and file name) for output file.\n")
         dest = os.path.splitext(dest)[0]
         dest = "{base}.{extension}".format(base=dest,
-                                           extension=subtitles_file_format)
+                                           extension=extension)
 
     with open(dest, 'wb') as output_file:
-        output_file.write(formatted_subtitles.encode("utf-8"))
+        output_file.write(str_.encode("utf-8"))
 
     return dest

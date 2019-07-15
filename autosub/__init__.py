@@ -65,6 +65,7 @@ Bug report: https://github.com/agermanidis/autosub\n
         'source_path',
         nargs='?', metavar='path',
         help="The path to the video or audio file needs to generate subtitle. "
+             "If Speech Options not given, it will only generate the times."
              "(arg_num = 1)"
     )
 
@@ -130,7 +131,6 @@ Bug report: https://github.com/agermanidis/autosub\n
     speech_group.add_argument(
         '-S', '--src-language',
         metavar='locale',
-        default=constants.DEFAULT_SRC_LANGUAGE,
         help="Locale of language spoken in source file. "
              "(arg_num = 1) (default: %(default)s)"
     )
@@ -314,34 +314,56 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
         )
         return False
 
-    if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
-        print(
-            "Error: Source language not supported. "
-            "Run with \"-lsc\" or \"--list-speech-to-text-codes\" "
-            "to see all supported languages."
-        )
-        return False
+    if args.src_language:
+        if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
+            print(
+                "Error: Source language not supported. "
+                "Run with \"-lsc\" or \"--list-speech-to-text-codes\" "
+                "to see all supported languages."
+            )
+            return False
 
-    if args.dst_language is None:
-        print(
-            "Destination language not provided. "
-            "Only performing speech recognition."
-        )
-        args.dst_language = args.src_language
+        if args.dst_language is None:
+            print(
+                "Destination language not provided. "
+                "Only performing speech recognition."
+            )
+            args.dst_language = args.src_language
 
-    elif args.dst_language == args.src_language:
-        print(
-            "Source language is the same as the Destination language. "
-            "Only performing speech recognition."
-        )
+        elif args.dst_language == args.src_language:
+            print(
+                "Source language is the same as the Destination language. "
+                "Only performing speech recognition."
+            )
 
-    elif args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
-        print(
-            "Error: Destination language not supported. "
-            "Run with \"-ltc\" or \"--list-translation-codes\" "
-            "to see all supported languages."
-        )
-        return False
+        elif args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
+            print(
+                "Error: Destination language not supported. "
+                "Run with \"-ltc\" or \"--list-translation-codes\" "
+                "to see all supported languages."
+            )
+            return False
+
+    else:
+        if args.format == 'txt':
+            print(
+                "Plain text don't include times. "
+                "No works done."
+            )
+            return False
+
+        if args.external_speech_regions:
+            print(
+                "You've already input times. "
+                "No works done."
+            )
+            return False
+
+        else:
+            print(
+                "Source language not provided. "
+                "Only performing speech regions detection."
+            )
 
     if not args.ass_styles:
         # when args.ass_styles is used but without option
@@ -355,29 +377,30 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
     else:
         args.ass_styles = None
 
-    if args.min_region_size < constants.MIN_REGION_SIZE:
-        print(
-            "Your minimum region size {mrs0} is smaller than {mrs}.\n"
-            "Now reset to {mrs}".format(mrs0=args.min_region_size,
-                                        mrs=constants.MIN_REGION_SIZE)
-        )
-        args.min_region_size = constants.MIN_REGION_SIZE
+    if not args.external_speech_regions:
+        if args.min_region_size < constants.MIN_REGION_SIZE:
+            print(
+                "Your minimum region size {mrs0} is smaller than {mrs}.\n"
+                "Now reset to {mrs}".format(mrs0=args.min_region_size,
+                                            mrs=constants.MIN_REGION_SIZE)
+            )
+            args.min_region_size = constants.MIN_REGION_SIZE
 
-    if args.max_region_size > constants.MAX_EXT_REGION_SIZE:
-        print(
-            "Your maximum region size {mrs0} is larger than {mrs}.\n"
-            "Now reset to {mrs}".format(mrs0=args.max_region_size,
-                                        mrs=constants.MAX_EXT_REGION_SIZE)
-        )
-        args.max_region_size = constants.MAX_EXT_REGION_SIZE
+        if args.max_region_size > constants.MAX_EXT_REGION_SIZE:
+            print(
+                "Your maximum region size {mrs0} is larger than {mrs}.\n"
+                "Now reset to {mrs}".format(mrs0=args.max_region_size,
+                                            mrs=constants.MAX_EXT_REGION_SIZE)
+            )
+            args.max_region_size = constants.MAX_EXT_REGION_SIZE
 
-    if args.max_continuous_silence < 0:
-        print(
-            "Your maximum continuous silence {mxcs} is smaller than 0.\n"
-            "Now reset to {dmxcs}".format(mxcs=args.max_continuous_silence,
-                                          dmxcs=constants.MAX_CONTINUOUS_SILENCE)
-        )
-        args.max_continuous_silence = constants.MAX_CONTINUOUS_SILENCE
+        if args.max_continuous_silence < 0:
+            print(
+                "Your maximum continuous silence {mxcs} is smaller than 0.\n"
+                "Now reset to {dmxcs}".format(mxcs=args.max_continuous_silence,
+                                              dmxcs=constants.MAX_CONTINUOUS_SILENCE)
+            )
+            args.max_continuous_silence = constants.MAX_CONTINUOUS_SILENCE
 
     return True
 
@@ -420,6 +443,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
         else:
             fps = 0.0
 
+        if not args.dst_language:
+            args.dst_language = 'times'
+
         if not args.output:
             base = os.path.splitext(args.source_path)[0]
             args.output = "{base}.{langcode}.{extension}".format(base=base,
@@ -458,23 +484,37 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 mode=mode
             )
 
-        timed_subtitles = core.api_gen_text(
-            source_file=args.source_path,
-            api_url=api_url,
-            regions=regions,
-            api_key=args.api_key,
-            concurrency=args.concurrency,
-            src_language=args.src_language,
-            dst_language=args.dst_language
-        )
+        if args.src_language:
+            timed_subtitles = core.api_gen_text(
+                source_file=args.source_path,
+                api_url=api_url,
+                regions=regions,
+                api_key=args.api_key,
+                concurrency=args.concurrency,
+                src_language=args.src_language,
+                dst_language=args.dst_language
+            )
 
-        subtitles_file_path = core.list_to_sub_file(
-            timed_subtitles=timed_subtitles,
+            subtitles_string, extension = core.list_to_sub_str(
+                timed_subtitles=timed_subtitles,
+                fps=fps,
+                subtitles_file_format=args.format,
+                ass_styles_file=args.ass_styles
+            )
+
+        else:
+            subtitles_string, extension = core.times_to_sub_str(
+                times=regions,
+                fps=fps,
+                subtitles_file_format=args.format,
+                ass_styles_file=args.ass_styles
+            )
+
+        subtitles_file_path = core.str_to_file(
+            str_=subtitles_string,
             output=args.output,
-            fps=fps,
-            subtitles_file_format=args.format,
-            input_m=input_m,
-            ass_styles_file=args.ass_styles
+            extension=extension,
+            input_m=input_m
         )
         print("\nSubtitles file created at \"{}\"".format(subtitles_file_path))
 
