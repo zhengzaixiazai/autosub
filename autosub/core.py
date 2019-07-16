@@ -9,11 +9,14 @@ from __future__ import absolute_import, print_function, unicode_literals
 # Import built-in modules
 import os
 import multiprocessing
+import time
 
 # Import third-party modules
 import progressbar
 import pysubs2
 import auditok
+import googletrans
+import langcodes
 
 # Any changes to the path and your own modules
 from autosub import speech_trans_api
@@ -65,6 +68,7 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
         source_file,
         api_url,
         regions,
+        api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
         min_confidence=0.0
@@ -81,12 +85,20 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
     pool = multiprocessing.Pool(concurrency)
     converter = ffmpeg_utils.SplitIntoFLACPiece(source_path=audio_flac)
 
-    recognizer = speech_trans_api.GoogleSpeechToTextV2(
-        api_url=api_url,
-        min_confidence=min_confidence,
-        lang_code=src_language,
-        rate=audio_rate,
-        api_key=constants.GOOGLE_SPEECH_V2_API_KEY)
+    if api_key:
+        recognizer = speech_trans_api.GoogleSpeechToTextV2(
+            api_url=api_url,
+            api_key=api_key,
+            min_confidence=min_confidence,
+            lang_code=src_language,
+            rate=audio_rate)
+    else:
+        recognizer = speech_trans_api.GoogleSpeechToTextV2(
+            api_url=api_url,
+            api_key=constants.GOOGLE_SPEECH_V2_API_KEY,
+            min_confidence=min_confidence,
+            lang_code=src_language,
+            rate=audio_rate)
 
     text_list = []
     widgets = ["Converting speech regions to FLAC files: ",
@@ -123,15 +135,16 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
     return text_list
 
 
-def text_translation(
+def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
         text_list,
-        api_key,
+        api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
-        dst_language=constants.DEFAULT_DST_LANGUAGE
+        dst_language=constants.DEFAULT_DST_LANGUAGE,
+        lines_per_trans=constants.DEFAULT_LINES_PER_TRANS
 ):
     """
-    Given a text list, generate translated text list from translation api.
+    Given a text list, generate translated text list from GoogleTranslatorV2 api.
     """
 
     if not text_list:
@@ -140,25 +153,120 @@ def text_translation(
     pool = multiprocessing.Pool(concurrency)
     google_translate_api_key = api_key
     translator = \
-        speech_trans_api.GoogleTranslatorV2(dst_language,
-                                            google_translate_api_key,
-                                            dst=dst_language,
-                                            src=src_language)
+        speech_trans_api.GoogleTranslatorV2(api_key=google_translate_api_key,
+                                            src=src_language,
+                                            dst=dst_language)
+
     prompt = "Translating from {0} to {1}: ".format(src_language, dst_language)
+
+    if len(text_list) > lines_per_trans:
+        trans_list =\
+            [text_list[i:i + lines_per_trans] for i in range(0, len(text_list), lines_per_trans)]
+    else:
+        trans_list = [text_list]
+
     widgets = [prompt, progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
-    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(text_list)).start()
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(trans_list)).start()
+
     try:
         translated_text = []
-        for i, transcript in enumerate(pool.imap(translator, text_list)):
-            translated_text.append(transcript)
+        for i, transcript in enumerate(pool.imap(translator, trans_list)):
+            if transcript:
+                translated_text.append(transcript)
+            else:
+                translated_text.append([""] * len(trans_list[i]))
             pbar.update(i)
         pbar.finish()
     except KeyboardInterrupt:
         pbar.finish()
         pool.terminate()
         pool.join()
+        print("Cancelling transcription.")
+        return 1
+
+    return translated_text
+
+
+def list_to_googletrans(  # pylint: disable=too-many-locals
+        text_list,
+        src_language=constants.DEFAULT_SRC_LANGUAGE,
+        dst_language=constants.DEFAULT_DST_LANGUAGE,
+        size_per_trans=constants.DEFAULT_SIZE_PER_TRANS,
+        sleep_seconds=constants.DEFAULT_SLEEP_SECONDS
+):
+    """
+    Given a text list, generate translated text list from GoogleTranslatorV2 api.
+    """
+
+    if not text_list:
+        return None
+
+    best_match_dst_lang = langcodes.best_match(
+        dst_language,
+        list(googletrans.constants.LANGUAGES.keys()))[0]
+
+    best_match_src_lang = langcodes.best_match(
+        src_language,
+        list(googletrans.constants.LANGUAGES.keys()))[0]
+
+    prompt = "Translating from {0} to {1}: ".format(best_match_src_lang, best_match_dst_lang)
+
+    size = 0
+    i = 0
+    partial_index = []
+    valid_index = []
+    for text in text_list:
+        if text:
+            size = size + len(text)
+            if size > size_per_trans:
+                # use size_per_trans to split the list
+                partial_index.append(i)
+            valid_index.append(i)
+        i = i + 1
+    length = i
+
+    if not partial_index:
+        partial_index.append(length)
+        # python sequence
+
+    widgets = [prompt, progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=length).start()
+
+    try:
+        translated_text = []
+        i = 0
+        translator = googletrans.Translator()
+
+        for index in partial_index:
+            content_to_trans = '\n'.join(text_list[i:index])
+            translation = translator.translate(text=content_to_trans,
+                                               dest=best_match_dst_lang,
+                                               src=best_match_src_lang)
+            result_list = translation.text.split('\n')
+
+            j = 0
+
+            while i < index:
+                if i == valid_index[j]:
+                    # if text is the valid one, append it
+                    translated_text.append(result_list[valid_index[j]])
+                    j = j + 1
+                else:
+                    # else append an empty one
+                    translated_text.append("")
+                i = i + 1
+                pbar.update(i)
+
+            if len(partial_index) > 1:
+                time.sleep(sleep_seconds)
+        pbar.finish()
+
+    except KeyboardInterrupt:
+        pbar.finish()
         print("Cancelling transcription.")
         return 1
 

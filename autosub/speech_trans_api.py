@@ -18,7 +18,6 @@ import requests
 from googleapiclient.discovery import build
 
 # Any changes to the path and your own modules
-from autosub import constants
 
 
 class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
@@ -27,10 +26,10 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
     """
     def __init__(self,
                  api_url,
+                 api_key,
                  min_confidence=0.0,
                  lang_code="en",
                  rate=44100,
-                 api_key=constants.GOOGLE_SPEECH_V2_API_KEY,
                  retries=3):
         # pylint: disable=too-many-arguments
         self.min_confidence = min_confidence
@@ -41,34 +40,43 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
         self.retries = retries
 
     def __call__(self, data):
-        try:
+        try:  # pylint: disable=too-many-nested-blocks
             for _ in range(self.retries):
                 url = self.api_url.format(lang=self.lang_code, key=self.api_key)
                 headers = {"Content-Type": "audio/x-flac; rate=%d" % self.rate}
 
                 try:
-                    resp = requests.post(url, data=data, headers=headers)
+                    result = requests.post(url, data=data, headers=headers)
                 except requests.exceptions.ConnectionError:
                     continue
 
-                for line in resp.content.decode('utf-8').split("\n"):
+                for line in result.content.decode('utf-8').split("\n"):
                     try:
                         line = json.loads(line)
                         line_dict = line
-                        line = line['result'][0]['alternative'][0]['transcript']
-                    except (JSONDecodeError, ValueError, IndexError, KeyError):
+                        if 'result' in line and line['result'] \
+                                and 'alternative' in line['result'][0] \
+                                and line['result'][0]['alternative'] \
+                                and 'transcript' in line['result'][0]['alternative'][0]:
+                            line = line['result'][0]['alternative'][0]['transcript']
+
+                            if 'confidence' in line_dict['result'][0]['alternative'][0]:
+                                confidence = \
+                                    float(line_dict['result'][0]['alternative'][0]['confidence'])
+                                if confidence > self.min_confidence:
+                                    return line[:1].upper() + line[1:]
+                                return ""
+
+                            else:
+                                # can't find confidence in json
+                                # means it's 100% confident
+                                return line[:1].upper() + line[1:]
+                        else:
+                            continue
+
+                    except (JSONDecodeError, ValueError, IndexError):
                         # no result
                         continue
-
-                    try:
-                        confidence = float(line_dict['result'][0]['alternative'][0]['confidence'])
-                        if confidence > self.min_confidence:
-                            return line[:1].upper() + line[1:]
-                        return ""
-                    except KeyError:
-                        # can't find confidence in json
-                        # means it's 100% confident
-                        return line[:1].upper() + line[1:]
 
         except KeyboardInterrupt:
             return None
@@ -78,30 +86,31 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
 
 class GoogleTranslatorV2(object):  # pylint: disable=too-few-public-methods
     """
-    Class for translating a sentence from a one language to another.
+    Class for GoogleTranslatorV2 translating text from one language to another.
     """
-    def __init__(self, language, api_key, src, dst):
-        self.language = language
+    def __init__(self, api_key, src, dst):
         self.api_key = api_key
         self.service = build('translate', 'v2',
                              developerKey=self.api_key)
         self.src = src
         self.dst = dst
 
-    def __call__(self, sentence):
+    def __call__(self, trans_list):
         try:
-            if not sentence:
+            if not trans_list:
                 return None
 
-            result = self.service.translations().list( # pylint: disable=no-member
+            trans_str = '\n'.join(trans_list)
+
+            result = self.service.translations().list(  # pylint: disable=no-member
                 source=self.src,
                 target=self.dst,
-                q=[sentence]
+                q=[trans_str]
             ).execute()
 
             if 'translations' in result and result['translations'] and \
                     'translatedText' in result['translations'][0]:
-                return result['translations'][0]['translatedText']
+                return '\n'.split(result['translations'][0]['translatedText'])
 
             return None
 

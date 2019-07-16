@@ -35,6 +35,7 @@ Click up arrow to go back to TOC.
 - Add timings generating function instead of using speech-to-text api. [issue #14](https://github.com/BingLingGroup/autosub/issues/14)
 - Add arguments for [confidence](https://github.com/gillesdemey/google-speech-v2#response) control. [issue #6](https://github.com/BingLingGroup/autosub/issues/6)
 - Add arguments for dropping empty lines from speech-to-text results.
+- Add free api to use by importing the [googletrans](https://github.com/ssut/py-googletrans). [issue #25](https://github.com/BingLingGroup/autosub/issues/25)
 
 #### Changed(Unreleased)
 

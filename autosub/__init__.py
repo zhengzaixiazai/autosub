@@ -65,7 +65,7 @@ Bug report: https://github.com/agermanidis/autosub\n
     required_group.add_argument(
         'source_path',
         nargs='?', metavar='path',
-        help="The path to the video or audio file needs to generate subtitle. "
+        help="The path to the video or audio file needs to generate subtitles. "
              "If Speech Options not given, it will only generate the times."
              "(arg_num = 1)"
     )
@@ -73,7 +73,7 @@ Bug report: https://github.com/agermanidis/autosub\n
     output_group.add_argument(
         '-o', '--output',
         metavar='path',
-        help="""The output path for subtitle file.
+        help="""The output path for subtitles file.
                 (default: the source_path combined 
                 with the destination language code) (arg_num = 1)"""
     )
@@ -89,7 +89,7 @@ Bug report: https://github.com/agermanidis/autosub\n
         '-F', '--format',
         metavar='format',
         default=constants.DEFAULT_SUBTITLES_FORMAT,
-        help="Destination subtitle format. "
+        help="Destination subtitles format. "
              "(arg_num = 1) (default: %(default)s)"
     )
 
@@ -119,6 +119,21 @@ Bug report: https://github.com/agermanidis/autosub\n
              (arg_num = 0 or 1)"""
     )
 
+    output_group.add_argument(
+        '-der', '--drop-empty-regions',
+        action='store_true',
+        help="Drop any regions without text. "
+             "(arg_num = 0)"
+    )
+
+    speech_group.add_argument(
+        '-gsv2', '--gspeechv2',
+        metavar='key',
+        help="The Google Speech V2 API key to be used. "
+             "If not provided, use free api key instead."
+             "(arg_num = 1)"
+    )
+
     speech_group.add_argument(
         '-esr', '--external-speech-regions',
         nargs='?', metavar='path',
@@ -140,19 +155,22 @@ Bug report: https://github.com/agermanidis/autosub\n
         '-mnc', '--min-confidence',
         metavar='float',
         type=float,
+        default=0.0,
         help="GoogleSpeechV2 API response for text confidence. "
              "A float value between 0 and 1. "
-             "Confidence bigger means result better. "
+             "Confidence bigger means the result is better. "
              "Input this argument will drop any result below it. "
              "Ref: https://github.com/BingLingGroup/google-speech-v2#response "
-             "(arg_num = 1)"
+             "(arg_num = 1) (default: %(default)s)"
     )
 
     speech_group.add_argument(
-        '-der', '--drop-empty-regions',
-        action='store_true',
-        help="Drop any regions without speech-to-text result. "
-             "(arg_num = 0)"
+        '-sc', '--speech-concurrency',
+        metavar='integer',
+        type=int,
+        default=constants.DEFAULT_CONCURRENCY,
+        help="Number of concurrent speech-to-text API requests to make. "
+             "(arg_num = 1) (default: %(default)s)"
     )
 
     trans_group.add_argument(
@@ -163,19 +181,37 @@ Bug report: https://github.com/agermanidis/autosub\n
     )
 
     trans_group.add_argument(
-        '-K', '--api-key',
+        '-gtv2', '--gtransv2',
         metavar='key',
-        help="The Google Translate API key to be used. "
-             "Required for subtitles translation. "
+        help="The Google Translate V2 API key to be used. "
+             "If not provided, use free api instead."
              "(arg_num = 1)"
     )
 
-    options_group.add_argument(
-        '-C', '--concurrency',
+    trans_group.add_argument(
+        '-lpt', '--lines-per-trans',
+        metavar='integer',
+        type=int,
+        default=constants.DEFAULT_LINES_PER_TRANS,
+        help="Number of lines per translation request. "
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    trans_group.add_argument(
+        '-slp', '--sleep-seconds',
+        metavar='second',
+        type=int,
+        default=constants.DEFAULT_SLEEP_SECONDS,
+        help="Seconds to sleep between two translation requests. "
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    trans_group.add_argument(
+        '-tc', '--trans-concurrency',
         metavar='integer',
         type=int,
         default=constants.DEFAULT_CONCURRENCY,
-        help="Number of concurrent API requests to make. "
+        help="Number of concurrent translation API requests to make. "
              "(arg_num = 1) (default: %(default)s)"
     )
 
@@ -334,6 +370,12 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
         )
         return False
 
+    if args.sleep_seconds < 0 or args.lines_per_trans < 0:
+        print(
+            "Error: Argument's value illegal. "
+        )
+        return False
+
     if args.src_language:
         if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
             print(
@@ -353,12 +395,6 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
             if args.min_confidence < 0.0 or args.min_confidence > 1.0:
                 print(
                     "Error: min_confidence's value isn't legal."
-                )
-                return False
-
-            if not args.api_key:
-                print(
-                    "Error: Subtitle translation requires specified Google Translate API key. "
                 )
                 return False
 
@@ -441,7 +477,7 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
     return True
 
 
-def main():  # pylint: disable=too-many-branches, too-many-statements
+def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
     """
     Run autosub as a command-line program.
     """
@@ -530,27 +566,41 @@ def main():  # pylint: disable=too-many-branches, too-many-statements
                 source_file=args.source_path,
                 api_url=api_url,
                 regions=regions,
-                concurrency=args.concurrency,
+                api_key=args.gspeechv2,
+                concurrency=args.speech_concurrency,
                 src_language=args.src_language,
                 min_confidence=args.min_confidence
             )
 
             if args.dst_language:
                 # text translation
-                translated_text = core.text_translation(
-                    text_list=text_list,
-                    api_key=args.api_key,
-                    concurrency=args.concurrency,
-                    src_language=args.src_language,
-                    dst_language=args.dst_language
-                )
+                if args.gtransv2:
+                    translated_text = core.list_to_gtv2(
+                        text_list=text_list,
+                        api_key=args.gtransv2,
+                        concurrency=args.trans_concurrency,
+                        src_language=args.src_language,
+                        dst_language=args.dst_language,
+                        lines_per_trans=args.lines_per_trans
+                    )
+                else:
+                    translated_text = core.list_to_googletrans(
+                        text_list,
+                        src_language=args.src_language,
+                        dst_language=args.dst_language,
+                        sleep_seconds=args.sleep_seconds
+                    )
                 text_list = translated_text
-                # drop src_language text_list
+                # drop text_list
 
-            if not args.drop_empty_regions:
-                timed_text = [(region, text) for region, text in zip(regions, text_list)]
-            else:
+            if args.drop_empty_regions:
                 timed_text = [(region, text) for region, text in zip(regions, text_list) if text]
+            else:
+                timed_text = []
+                i = 0
+                for region in regions:
+                    timed_text.append((region, text_list[i]))
+                    i = i + 1
 
             subtitles_string, extension = core.list_to_sub_str(
                 timed_subtitles=timed_text,

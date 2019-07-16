@@ -9,10 +9,8 @@ from __future__ import unicode_literals
 GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
 GOOGLE_SPEECH_V2_API_URL = \
     "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"
-DEFAULT_SUBTITLES_FORMAT = 'srt'
 DEFAULT_CONCURRENCY = 10
 DEFAULT_SRC_LANGUAGE = 'en-US'
-DEFAULT_DST_LANGUAGE = 'en-US'
 DEFAULT_ENERGY_THRESHOLD = 45
 MAX_REGION_SIZE = 6.0
 MIN_REGION_SIZE = 0.5
@@ -20,6 +18,13 @@ DEFAULT_CONTINUOUS_SILENCE = 0.3
 MAX_EXT_REGION_SIZE = 10
 # Maximum speech to text region length in milliseconds
 # when using external speech region control
+
+DEFAULT_DST_LANGUAGE = 'en-US'
+DEFAULT_LINES_PER_TRANS = 15
+DEFAULT_SIZE_PER_TRANS = 3000
+DEFAULT_SLEEP_SECONDS = 5
+
+DEFAULT_SUBTITLES_FORMAT = 'srt'
 
 SPEECH_TO_TEXT_LANGUAGE_CODES = {
     'af-ZA': 'Afrikaans (South Africa)',

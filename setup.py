@@ -37,6 +37,8 @@ setup(
         'pysubs2>=0.2.4',
         'progressbar2>=3.34.3',
         'auditok>=0.1.5',
+        'googletrans>=2.4.0',
+        'langcodes-py2>=1.2.0'
     ],
     license=open("LICENSE").read()
 )

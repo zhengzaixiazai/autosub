@@ -34,6 +34,7 @@
 - 添加自动分句/自动生成时间轴功能，而不需要调用speech-to-text api。[issue #14](https://github.com/BingLingGroup/autosub/issues/14)
 - 添加参数用于控制识别结果[可信度](https://github.com/gillesdemey/google-speech-v2#response)。[issue #6](https://github.com/BingLingGroup/autosub/issues/6)
 - 添加参数用于删除在语音转文字后产生的空行。
+- 添加来自[googletrans](https://github.com/ssut/py-googletrans)的免费API用于翻译。[issue #25](https://github.com/BingLingGroup/autosub/issues/25)
 
 #### 改动(未发布的部分)
 
