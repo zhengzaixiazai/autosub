@@ -22,13 +22,18 @@ from autosub import metadata
 from autosub import sub_utils
 
 
-class WorksDoneException(Exception):
+class PrintAndStopException(Exception):
     """
-    Raised when nothing else need to be done in main().
+    Raised when something need to print
+    and works need to be stopped in main().
     """
 
-    def __init__(self):
-        Exception.__init__(self)
+    def __init__(self, msg):
+        super(PrintAndStopException, self).__init__(msg)
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
 
 
 def get_cmd_args():
@@ -403,27 +408,32 @@ def validate_args(args):  # pylint: disable=too-many-branches,too-many-return-st
         print("Error: You need to specify a valid source path.")
         return False
 
+    if isinstance(args.output_files, str):
+        args.output_files = {args.output_files}
+    else:
+        args.output_files = set(args.output_files)
+
     if len(args.output_files) > 4:
         print(
-            "Error: Too much \"-om\" or \"--output-modes\" arguments."
+            "Error: Too much \"-of\"/\"--output-files\" arguments."
         )
         return False
     else:
         if "all" in args.output_files:
             args.output_files = constants.DEFAULT_MODE_SET
         else:
-            args.output_files = set(args.output_files) & \
+            args.output_files = args.output_files & \
                                 constants.DEFAULT_MODE_SET
             if not args.output_files:
                 print(
-                    "Error: No valid \"-om\" or \"--output-modes\" arguments."
+                    "Error: No valid \"-of\"/\"--output-files\" arguments."
                 )
                 return False
 
     if args.format not in constants.FORMATTERS.keys():
         print(
             "Error: Subtitle format not supported. "
-            "Run with \"-lf\" or \"--list-formats\" to see all supported formats.\n"
+            "Run with \"-lf\"/\"--list-formats\" to see all supported formats.\n"
             "Or use ffmpeg or SubtitleEdit to convert the formats."
         )
         return False
@@ -438,7 +448,7 @@ def validate_args(args):  # pylint: disable=too-many-branches,too-many-return-st
         if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
             print(
                 "Error: Source language not supported. "
-                "Run with \"-lsc\" or \"--list-speech-to-text-codes\" "
+                "Run with \"-lsc\"/\"--list-speech-to-text-codes\" "
                 "to see all supported languages."
             )
             return False
@@ -460,7 +470,7 @@ def validate_args(args):  # pylint: disable=too-many-branches,too-many-return-st
                     args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
                 print(
                     "Error: Destination language not supported. "
-                    "Run with \"-ltc\" or \"--list-translation-codes\" "
+                    "Run with \"-ltc\"/\"--list-translation-codes\" "
                     "to see all supported languages."
                 )
                 return False
@@ -618,6 +628,12 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         else:
             fps = 0.0
 
+        if not args.output_files:
+            raise PrintAndStopException(
+                "\nNo works done."
+                " Check your \"-of\"/\"--output-files\" option."
+            )
+
         if args.external_speech_regions:
             # use external speech regions
             print("Using external speech regions.")
@@ -649,7 +665,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             # process output first
             try:
                 args.output_files.remove("regions")
-                subtitles_string, extension = core.times_to_sub_str(
+                times_string, extension = core.times_to_sub_str(
                     times=regions,
                     fps=fps,
                     subtitles_file_format=args.format,
@@ -660,7 +676,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                                                               nt="times",
                                                               extension=args.format)
                 subtitles_file_path = core.str_to_file(
-                    str_=subtitles_string,
+                    str_=times_string,
                     output=times_name,
                     extension=extension,
                     input_m=input_m
@@ -669,23 +685,22 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
                 print("Times file created at \"{}\"".format(subtitles_file_path))
 
+                if not args.output_files:
+                    raise PrintAndStopException("\nAll works done.")
+
             except KeyError:
                 pass
 
-            if args.output_files:
-                # speech to text
-                text_list = core.speech_to_text(
-                    source_file=args.source_path,
-                    api_url=gsv2_api_url,
-                    regions=regions,
-                    api_key=args.gspeechv2,
-                    concurrency=args.speech_concurrency,
-                    src_language=args.src_language,
-                    min_confidence=args.min_confidence
-                )
-
-            else:
-                raise WorksDoneException
+            # speech to text
+            text_list = core.speech_to_text(
+                source_file=args.source_path,
+                api_url=gsv2_api_url,
+                regions=regions,
+                api_key=args.gspeechv2,
+                concurrency=args.speech_concurrency,
+                src_language=args.src_language,
+                min_confidence=args.min_confidence
+            )
 
             if args.dst_language:
                 # process output first
@@ -696,7 +711,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         regions=regions,
                         text_list=text_list
                     )
-                    subtitles_string, extension = core.list_to_sub_str(
+                    src_string, extension = core.list_to_sub_str(
                         timed_subtitles=timed_text,
                         fps=fps,
                         subtitles_file_format=args.format,
@@ -707,7 +722,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                                                                 nt=args.src_language,
                                                                 extension=args.format)
                     subtitles_file_path = core.str_to_file(
-                        str_=subtitles_string,
+                        str_=src_string,
                         output=src_name,
                         extension=extension,
                         input_m=input_m
@@ -716,31 +731,31 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                     print("Source language subtitles "
                           "file created at \"{}\"".format(subtitles_file_path))
 
+                    if not args.output_files:
+                        raise PrintAndStopException("\nAll works done.")
+
                 except KeyError:
                     pass
 
-                if args.output_files:
-                    # text translation
-                    if args.gtransv2:
-                        # use gtransv2
-                        translated_text = core.list_to_gtv2(
-                            text_list=text_list,
-                            api_key=args.gtransv2,
-                            concurrency=args.trans_concurrency,
-                            src_language=args.src_language,
-                            dst_language=args.dst_language,
-                            lines_per_trans=args.lines_per_trans
-                        )
-                    else:
-                        # use googletrans
-                        translated_text = core.list_to_googletrans(
-                            text_list,
-                            src_language=args.src_language,
-                            dst_language=args.dst_language,
-                            sleep_seconds=args.sleep_seconds
-                        )
+                # text translation
+                if args.gtransv2:
+                    # use gtransv2
+                    translated_text = core.list_to_gtv2(
+                        text_list=text_list,
+                        api_key=args.gtransv2,
+                        concurrency=args.trans_concurrency,
+                        src_language=args.src_language,
+                        dst_language=args.dst_language,
+                        lines_per_trans=args.lines_per_trans
+                    )
                 else:
-                    raise WorksDoneException
+                    # use googletrans
+                    translated_text = core.list_to_googletrans(
+                        text_list,
+                        src_language=args.src_language,
+                        dst_language=args.dst_language,
+                        sleep_seconds=args.sleep_seconds
+                    )
 
                 try:
                     args.output_files.remove("bilingual")
@@ -771,6 +786,10 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                     # subtitles string to file
                     print("Bilingual subtitles file "
                           "created at \"{}\"".format(subtitles_file_path))
+
+                    if not args.output_files:
+                        raise PrintAndStopException("\nAll works done.")
+
                 except KeyError:
                     pass
 
@@ -805,7 +824,42 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                 except KeyError:
                     pass
 
+            else:
+                if len(args.output_files) > 1 or not ({"dst", "src"} & args.output_files):
+                    print(
+                        "Override \"-of\"/\"--output-files\" due to your args too few."
+                        "\nOutput source subtitles file only."
+                    )
+                timed_text = get_timed_text(
+                    is_empty_dropped=args.drop_empty_regions,
+                    regions=regions,
+                    text_list=text_list
+                )
+                src_string, extension = core.list_to_sub_str(
+                    timed_subtitles=timed_text,
+                    fps=fps,
+                    subtitles_file_format=args.format,
+                    ass_styles_file=args.ass_styles
+                )
+                # formatting timed_text to subtitles string
+                src_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                            nt=args.src_language,
+                                                            extension=args.format)
+                subtitles_file_path = core.str_to_file(
+                    str_=src_string,
+                    output=src_name,
+                    extension=extension,
+                    input_m=input_m
+                )
+                # subtitles string to file
+                print("Source language subtitles "
+                      "file created at \"{}\"".format(subtitles_file_path))
+
         else:
+            print(
+                "Override \"-of\"/\"--output-files\" due to your args too few."
+                "\nOutput regions subtitles file only."
+            )
             subtitles_string, extension = core.times_to_sub_str(
                 times=regions,
                 fps=fps,
@@ -832,7 +886,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
     except pysubs2.exceptions.Pysubs2Error:
         print("\nError: pysubs2.exceptions. Check your file format.")
         return 1
-    except WorksDoneException:
-        print("\nAll works done.")
+    except PrintAndStopException as err_msg:
+        print(err_msg)
+        return 0
 
+    print("\nAll works done.")
     return 0
