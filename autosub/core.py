@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Defines autosub's main functionality.
+Defines autosub's core functionality.
 """
 
 from __future__ import absolute_import, print_function, unicode_literals
@@ -25,8 +25,23 @@ from autosub import constants
 from autosub import ffmpeg_utils
 
 
+class PrintAndStopException(Exception):
+    """
+    Raised when something need to print
+    and works need to be stopped in main().
+    """
+
+    def __init__(self, msg):
+        super(PrintAndStopException, self).__init__(msg)
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
         source_file,
+        ffmpeg_cmd="ffmpeg",
         energy_threshold=constants.DEFAULT_ENERGY_THRESHOLD,
         min_region_size=constants.MIN_REGION_SIZE,
         max_region_size=constants.MAX_REGION_SIZE,
@@ -36,7 +51,9 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
     """
     Given an input audio/video file, generate proper speech regions.
     """
-    audio_wav = ffmpeg_utils.source_to_audio(source_file)
+    audio_wav = ffmpeg_utils.source_to_audio(
+        source_file,
+        ffmpeg_cmd=ffmpeg_cmd)
 
     asource = auditok.ADSFactory.ads(
         filename=audio_wav, record=True)
@@ -68,6 +85,7 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
         source_file,
         api_url,
         regions,
+        ffmpeg_cmd="ffmpeg",
         api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
@@ -81,9 +99,15 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
         return None
 
     audio_rate = 44100
-    audio_flac = ffmpeg_utils.source_to_audio(source_file, rate=audio_rate, file_ext='.flac')
+    audio_flac = ffmpeg_utils.source_to_audio(
+        source_file,
+        ffmpeg_cmd=ffmpeg_cmd,
+        rate=audio_rate,
+        file_ext='.flac')
     pool = multiprocessing.Pool(concurrency)
-    converter = ffmpeg_utils.SplitIntoFLACPiece(source_path=audio_flac)
+    converter = ffmpeg_utils.SplitIntoFLACPiece(
+        source_path=audio_flac,
+        ffmpeg_cmd=ffmpeg_cmd)
 
     if api_key:
         recognizer = speech_trans_api.GoogleSpeechToTextV2(
@@ -274,49 +298,42 @@ def list_to_googletrans(  # pylint: disable=too-many-locals
 
 
 def list_to_sub_str(  # pylint: disable=too-many-arguments
-        timed_subtitles,
+        timed_text,
         fps=30.0,
-        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
-        ass_styles_file=None
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
 ):
     """
-    Given an input timedsub list, format it to a string.
+    Given an input timed text list, format it to a string.
     """
 
     if subtitles_file_format == 'srt' \
             or subtitles_file_format == 'tmp':
         formatted_subtitles = sub_utils.pysubs2_formatter(
-            subtitles=timed_subtitles,
+            timed_text=timed_text,
             sub_format=subtitles_file_format)
 
     elif subtitles_file_format == 'ass' \
             or subtitles_file_format == 'ssa':
-        if ass_styles_file:
-            ass_file = pysubs2.SSAFile.load(ass_styles_file)
-            ass_styles = ass_file.styles
-        else:
-            ass_styles = None
         formatted_subtitles = sub_utils.pysubs2_formatter(
-            subtitles=timed_subtitles,
-            sub_format=subtitles_file_format,
-            ass_styles=ass_styles)
+            timed_text=timed_text,
+            sub_format=subtitles_file_format)
 
     elif subtitles_file_format == 'vtt':
         formatted_subtitles = sub_utils.vtt_formatter(
-            subtitles=timed_subtitles)
+            subtitles=timed_text)
 
     elif subtitles_file_format == 'json':
         formatted_subtitles = sub_utils.json_formatter(
-            subtitles=timed_subtitles)
+            subtitles=timed_text)
 
     elif subtitles_file_format == 'txt':
         formatted_subtitles = sub_utils.txt_formatter(
-            subtitles=timed_subtitles)
+            subtitles=timed_text)
 
     elif subtitles_file_format == 'sub':
         subtitles_file_format = 'microdvd'
         formatted_subtitles = sub_utils.pysubs2_formatter(
-            subtitles=timed_subtitles,
+            timed_text=timed_text,
             sub_format=subtitles_file_format,
             fps=fps)
         # sub format need fps
@@ -326,7 +343,7 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
 
     elif subtitles_file_format == 'mpl2':
         formatted_subtitles = sub_utils.pysubs2_formatter(
-            subtitles=timed_subtitles,
+            timed_text=timed_text,
             sub_format=subtitles_file_format)
         subtitles_file_format = 'mpl2.txt'
 
@@ -336,8 +353,63 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
         Using \"{default_fmt}\" instead.".format(fmt=subtitles_file_format,
                                                  default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
         formatted_subtitles = sub_utils.pysubs2_formatter(
-            subtitles=timed_subtitles,
+            timed_text=timed_text,
             sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
+        subtitles_file_format = constants.DEFAULT_SUBTITLES_FORMAT
+
+    return formatted_subtitles, subtitles_file_format
+
+
+def list_to_ass_str(  # pylint: disable=too-many-arguments
+        timed_text,
+        styles_list,
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
+        is_times=False
+):
+    """
+    Given an input timed text list, format it to an ass string.
+    """
+
+    if subtitles_file_format == 'ass' \
+            or subtitles_file_format == 'ssa':
+        pysubs2_obj = pysubs2.SSAFile()
+        pysubs2_obj.styles = \
+            {styles_list[i]: styles_list[i+1] for i in range(0, len(styles_list), 2)}
+        if isinstance(timed_text[0], tuple):
+            sub_utils.pysubs2_ssa_event_add(
+                ssafile=pysubs2_obj,
+                timed_text=timed_text,
+                style_name=styles_list[0],
+                is_times=is_times)
+        else:
+            sub_utils.pysubs2_ssa_event_add(
+                ssafile=pysubs2_obj,
+                timed_text=timed_text[0],
+                style_name=styles_list[0],
+                is_times=is_times)
+            if len(styles_list) == 1:
+                sub_utils.pysubs2_ssa_event_add(
+                    ssafile=pysubs2_obj,
+                    timed_text=timed_text[1],
+                    style_name=styles_list[0],
+                    is_times=is_times)
+            else:
+                sub_utils.pysubs2_ssa_event_add(
+                    ssafile=pysubs2_obj,
+                    timed_text=timed_text[1],
+                    style_name=styles_list[2],
+                    is_times=is_times)
+
+        formatted_subtitles = pysubs2_obj.to_string(format_=subtitles_file_format)
+    else:
+        # fallback process
+        print("Format \"{fmt}\" not supported. \
+        Using \"{default_fmt}\" instead.".format(fmt=subtitles_file_format,
+                                                 default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        formatted_subtitles = sub_utils.pysubs2_formatter(
+            timed_text=timed_text,
+            sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
+        subtitles_file_format = constants.DEFAULT_SUBTITLES_FORMAT
 
     return formatted_subtitles, subtitles_file_format
 
@@ -345,11 +417,10 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
 def times_to_sub_str(  # pylint: disable=too-many-arguments
         times,
         fps=30.0,
-        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
-        ass_styles_file=None
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
 ):
     """
-    Given an input timedsub list, format it to a string.
+    Given an input timed text list, format it to a string.
     """
 
     if subtitles_file_format == 'srt' \
@@ -357,18 +428,6 @@ def times_to_sub_str(  # pylint: disable=too-many-arguments
         formatted_subtitles = sub_utils.pysubs2_times_formatter(
             times=times,
             sub_format=subtitles_file_format)
-
-    elif subtitles_file_format == 'ass' \
-            or subtitles_file_format == 'ssa':
-        if ass_styles_file:
-            ass_file = pysubs2.SSAFile.load(ass_styles_file)
-            ass_styles = ass_file.styles
-        else:
-            ass_styles = None
-        formatted_subtitles = sub_utils.pysubs2_times_formatter(
-            times=times,
-            sub_format=subtitles_file_format,
-            ass_styles=ass_styles)
 
     elif subtitles_file_format == 'vtt':
         formatted_subtitles = sub_utils.vtt_times_formatter(

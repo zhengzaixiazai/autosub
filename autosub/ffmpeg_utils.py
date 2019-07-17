@@ -23,10 +23,15 @@ class SplitIntoFLACPiece(object):  # pylint: disable=too-few-public-methods
     Class for converting a region of an input audio or video file into a FLAC audio file
     """
 
-    def __init__(self, source_path, include_before=0.25, include_after=0.25):
+    def __init__(self,
+                 source_path,
+                 ffmpeg_cmd="ffmpeg",
+                 include_before=0.25,
+                 include_after=0.25):
         self.source_path = source_path
         self.include_before = include_before
         self.include_after = include_after
+        self.ffmpeg_cmd = ffmpeg_cmd
 
     def __call__(self, region):
         try:
@@ -36,7 +41,7 @@ class SplitIntoFLACPiece(object):  # pylint: disable=too-few-public-methods
             start = max(0.0, start - self.include_before)
             end += self.include_after
             temp = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
-            command = ["ffmpeg", "-ss", str(start), "-t", str(end - start),
+            command = [self.ffmpeg_cmd, "-ss", str(start), "-t", str(end - start),
                        "-y", "-i", self.source_path, "-c", "copy",
                        "-loglevel", "error", temp.name]
             use_shell = True if os.name == "nt" else False
@@ -88,7 +93,7 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
     return fps
 
 
-def which_exe(program):
+def which_exe(program_name):
     """
     Return the path for a given executable.
     """
@@ -98,45 +103,42 @@ def which_exe(program):
         """
         return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
 
-    fpath, _ = os.path.split(program)
+    fpath, _ = os.path.split(program_name)
     if fpath:
-        if is_exe(program):
-            return program
+        if is_exe(program_name):
+            return program_name
     else:
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
-            exe_file = os.path.join(path, program)
+            exe_file = os.path.join(path, program_name)
             if is_exe(exe_file):
                 return exe_file
     return None
 
 
-def ffmpeg_check():
+def check_cmd(program_name):
     """
-    Return the ffmpeg executable name. "None" returned when no executable exists.
+    Return the executable name. "None" returned when no executable exists.
     """
-    if which_exe("ffmpeg"):
-        return "ffmpeg"
-    if which_exe("ffmpeg.exe"):
-        return "ffmpeg.exe"
+    if which_exe(program_name):
+        return program_name
+    if which_exe(program_name + ".exe"):
+        return program_name + ".exe"
     return None
 
 
-def source_to_audio(  # pylint: disable=superfluous-parens
-        filename, channels=1,
-        rate=48000, file_ext='.wav',
+def source_to_audio(  # pylint: disable=superfluous-parens, too-many-arguments
+        filename,
+        ffmpeg_cmd="ffmpeg",
+        channels=1,
+        rate=48000,
+        file_ext='.wav',
         ffmpeg_loglevel='error'):
     """
     Convert input file to a temporary audio file.
     """
     temp = tempfile.NamedTemporaryFile(suffix=file_ext, delete=False)
-    if not os.path.isfile(filename):
-        print("The given file does not exist: {}.".format(filename))
-        raise Exception("Invalid filepath: {}.".format(filename))
-    if not ffmpeg_check():
-        print("ffmpeg: Executable not found on this machine.")
-        raise Exception("Dependency not found: ffmpeg.")
-    command = [ffmpeg_check(), "-y", "-i", filename,
+    command = [ffmpeg_cmd, "-y", "-i", filename,
                "-ac", str(channels), "-ar", str(rate),
                "-loglevel", ffmpeg_loglevel, temp.name]
     use_shell = True if os.name == "nt" else False

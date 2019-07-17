@@ -260,14 +260,24 @@ TRANSLATION_LANGUAGE_CODES = {
     'zu': 'Zulu'
 }
 
-FORMATTERS = {
+OUTPUT_FORMAT = {
     'srt': 'SubRip',
     'ass': 'Advanced SubStation Alpha',
     'ssa': 'SubStation Alpha',
     'sub': 'MicroDVD Subtitle',
-    'mpl2': 'Similar to MicroDVD(extension is \".mpl2.txt\")',
+    'mpl2': 'Similar to MicroDVD(Extension is \".mpl2.txt\")',
     'tmp': 'TMP Player Subtitle Format',
     'vtt': 'WebVTT',
-    'json': 'json',
+    'json': 'json(Only include times and text)',
     'txt': 'Plain Text(Only text without times)'
+}
+
+INPUT_FORMAT = {
+    'srt': 'SubRip',
+    'ass': 'Advanced SubStation Alpha',
+    'ssa': 'SubStation Alpha',
+    'sub': 'MicroDVD Subtitle',
+    'mpl2': 'Similar to MicroDVD(Extension is \".mpl2.txt\")',
+    'tmp': 'TMP Player Subtitle Format',
+    'json': 'json(Exported by pysubs2)'
 }

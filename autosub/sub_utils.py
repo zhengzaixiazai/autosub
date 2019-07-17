@@ -22,13 +22,16 @@ from autosub import ffmpeg_utils
 def sub_to_speech_regions(
         source_file,
         sub_file,
+        ffmpeg_cmd="ffmpeg",
         ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000
 ):
     """
     Given an input audio/video file and subtitles file, generate proper speech regions.
     """
     regions = []
-    audio_wav = ffmpeg_utils.source_to_audio(source_file)
+    audio_wav = ffmpeg_utils.source_to_audio(
+        source_file,
+        ffmpeg_cmd=ffmpeg_cmd)
     reader = wave.open(audio_wav)
     audio_file_length = int(float(reader.getnframes()) / float(reader.getframerate())) * 1000
     reader.close()
@@ -61,34 +64,47 @@ def sub_to_speech_regions(
     return regions
 
 
-def pysubs2_formatter(subtitles,
+def pysubs2_formatter(timed_text,
                       sub_format='srt',
-                      fps=0.0,
-                      ass_styles=None):
+                      fps=0.0):
     """
-    Serialize a list of subtitles according to the SRT format.
+    Serialize a list of timed_text according to the SRT format.
     """
     pysubs2_obj = pysubs2.SSAFile()
     if fps != 0.0:
         pysubs2_obj.fps = fps
-    if ass_styles:
-        pysubs2_obj.styles = ass_styles
-        style_name = ass_styles.popitem()[0]
-        for ((start, end), text) in subtitles:
+    for ((start, end), text) in timed_text:
+        event = pysubs2.SSAEvent()
+        event.start = start
+        event.end = end
+        event.text = text
+        pysubs2_obj.events.append(event)
+    return pysubs2_obj.to_string(format_=sub_format, fps=pysubs2_obj.fps)
+
+
+def pysubs2_ssa_event_add(ssafile,
+                          timed_text,
+                          style_name,
+                          is_times=False):
+    """
+    Serialize a list of subtitles according to the SRT format.
+    """
+    if not is_times:
+        for ((start, end), text) in timed_text:
             event = pysubs2.SSAEvent()
             event.start = start
             event.end = end
             event.text = text
             event.style = style_name
-            pysubs2_obj.events.append(event)
+            ssafile.events.append(event)
     else:
-        for ((start, end), text) in subtitles:
+        for ((start, end), text) in timed_text:
             event = pysubs2.SSAEvent()
             event.start = start
             event.end = end
-            event.text = text
-            pysubs2_obj.events.append(event)
-    return pysubs2_obj.to_string(format_=sub_format, fps=pysubs2_obj.fps)
+            event.style = style_name
+            ssafile.events.append(event)
+    return ssafile
 
 
 def vtt_formatter(subtitles):

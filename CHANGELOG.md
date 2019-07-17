@@ -39,6 +39,7 @@ Click up arrow to go back to TOC.
 - Add bilingual subtitle output. [issue #16](https://github.com/BingLingGroup/autosub/issues/16)
 - Add multi-types subtitles files output at the same time (regions/source language/destination language/bilingual subtitles) when using `--output-files` option.
 - Add exception to stop the workflow in main(). [issue #35](https://github.com/BingLingGroup/autosub/issues/35)
+- Add bilingual subtitle styles input. [issue #32](https://github.com/BingLingGroup/autosub/issues/32)
 
 #### Changed(Unreleased)
 
