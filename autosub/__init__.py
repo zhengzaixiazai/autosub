@@ -22,6 +22,15 @@ from autosub import metadata
 from autosub import sub_utils
 
 
+class WorksDoneException(Exception):
+    """
+    Raised when nothing else need to be done in main().
+    """
+
+    def __init__(self):
+        Exception.__init__(self)
+
+
 def get_cmd_args():
     """
     Get command-line arguments.
@@ -54,6 +63,9 @@ Bug report: https://github.com/agermanidis/autosub\n
     output_group = parser.add_argument_group(
         'Output Options',
         'Args to control output.')
+    input_group = parser.add_argument_group(
+        'Input Options',
+        'Args to control extra input.')
     auditok_group = parser.add_argument_group(
         'Auditok Options',
         'Args to control Auditok which is the '
@@ -70,78 +82,12 @@ Bug report: https://github.com/agermanidis/autosub\n
              "(arg_num = 1)"
     )
 
-    output_group.add_argument(
-        '-o', '--output',
-        metavar='path',
-        help="""The output path for subtitles file.
-                (default: the source_path combined 
-                with the destination language code) (arg_num = 1)"""
-    )
-
-    output_group.add_argument(
-        '-y', '--yes',
-        action='store_true',
-        help="Avoid any pause and overwriting files. "
-             "Stop the program when your args are wrong. (arg_num = 0)"
-    )
-
-    output_group.add_argument(
-        '-F', '--format',
-        metavar='format',
-        default=constants.DEFAULT_SUBTITLES_FORMAT,
-        help="Destination subtitles format. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    output_group.add_argument(
-        '-fps', '--sub-fps',
-        metavar='float',
-        type=float,
-        help="Valid when your output format is sub. "
-             "If input, it will override the fps check "
-             "on the input file. "
-             "Ref: https://pysubs2.readthedocs.io/en/latest/api-reference.html"
-             "#supported-input-output-formats"
-             "(arg_num = 1)"
-    )
-
-    output_group.add_argument(
-        '-sty', '--ass-styles',
-        nargs='?', metavar='path',
-        default=' ',
-        help="""Valid when your output format is ass/ssa.
-             Path to the subtitles file
-             which provides ass/ssa styles for your output.
-             If the arg_num is 0,
-             it will use the styles from the 
-             \"-esr/--external-speech-regions\".
-             Currently events style only support one kind.
-             (arg_num = 0 or 1)"""
-    )
-
-    output_group.add_argument(
-        '-der', '--drop-empty-regions',
-        action='store_true',
-        help="Drop any regions without text. "
-             "(arg_num = 0)"
-    )
-
     speech_group.add_argument(
         '-gsv2', '--gspeechv2',
         metavar='key',
         help="The Google Speech V2 API key to be used. "
              "If not provided, use free api key instead."
              "(arg_num = 1)"
-    )
-
-    speech_group.add_argument(
-        '-esr', '--external-speech-regions',
-        nargs='?', metavar='path',
-        help="""Path to the subtitles file
-             which provides external speech regions,
-             which is one of the formats that pysubs2 supports
-             and overrides the auditok method to find speech regions.
-             (arg_num = 0 or 1)"""
     )
 
     speech_group.add_argument(
@@ -193,7 +139,7 @@ Bug report: https://github.com/agermanidis/autosub\n
         metavar='integer',
         type=int,
         default=constants.DEFAULT_LINES_PER_TRANS,
-        help="Number of lines per translation request. "
+        help="Number of lines per Google Translate V2 request. "
              "(arg_num = 1) (default: %(default)s)"
     )
 
@@ -211,7 +157,8 @@ Bug report: https://github.com/agermanidis/autosub\n
         metavar='integer',
         type=int,
         default=constants.DEFAULT_CONCURRENCY,
-        help="Number of concurrent translation API requests to make. "
+        help="Number of concurrent "
+             "Google translation V2 API requests to make. "
              "(arg_num = 1) (default: %(default)s)"
     )
 
@@ -222,6 +169,93 @@ Bug report: https://github.com/agermanidis/autosub\n
              "url into the http one. "
              "(arg_num = 0)"
     )
+
+    output_group.add_argument(
+        '-o', '--output',
+        metavar='path',
+        help="""The output path for subtitles file.
+                (default: the source_path combined 
+                with the proper name tails) (arg_num = 1)"""
+    )
+
+    output_group.add_argument(
+        '-y', '--yes',
+        action='store_true',
+        help="Avoid any pause and overwriting files. "
+             "Stop the program when your args are wrong. (arg_num = 0)"
+    )
+
+    output_group.add_argument(
+        '-of', '--output-files',
+        metavar='mode',
+        nargs='*',
+        default="dst",
+        help="Output more files. "
+             "Available modes: "
+             "regions, src, dst, bilingual, all "
+             "(4 ≥ arg_num ≥ 1 ) (default: %(default)s)"
+    )
+
+    output_group.add_argument(
+        '-F', '--format',
+        metavar='format',
+        default=constants.DEFAULT_SUBTITLES_FORMAT,
+        help="Destination subtitles format. "
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    output_group.add_argument(
+        '-fps', '--sub-fps',
+        metavar='float',
+        type=float,
+        help="Valid when your output format is sub. "
+             "If input, it will override the fps check "
+             "on the input file. "
+             "Ref: https://pysubs2.readthedocs.io/en/latest/api-reference.html"
+             "#supported-input-output-formats"
+             "(arg_num = 1)"
+    )
+
+    output_group.add_argument(
+        '-der', '--drop-empty-regions',
+        action='store_true',
+        help="Drop any regions without text. "
+             "(arg_num = 0)"
+    )
+
+    input_group.add_argument(
+        '-sty', '--ass-styles',
+        nargs='?', metavar='path',
+        default=' ',
+        help="""Valid when your output format is ass/ssa.
+                     Path to the subtitles file
+                     which provides ass/ssa styles for your output.
+                     If the arg_num is 0,
+                     it will use the styles from the 
+                     \"-esr/--external-speech-regions\".
+                     Currently events style only support one kind.
+                     (arg_num = 0 or 1)"""
+    )
+
+    input_group.add_argument(
+        '-esr', '--external-speech-regions',
+        nargs='?', metavar='path',
+        help="""Path to the subtitles file
+                 which provides external speech regions,
+                 which is one of the formats that pysubs2 supports
+                 and overrides the auditok method to find speech regions.
+                 (arg_num = 0 or 1)"""
+    )
+
+    # input_group.add_argument(
+    #     '-esr', '--external-speech-regions',
+    #     nargs='?', metavar='path',
+    #     help="""Path to the subtitles file
+    #                  which provides external speech regions,
+    #                  which is one of the formats that pysubs2 supports
+    #                  and overrides the auditok method to find speech regions.
+    #                  (arg_num = 0 or 1)"""
+    # )
 
     options_group.add_argument(
         '-h', '--help',
@@ -336,31 +370,55 @@ Reference: https://cloud.google.com/speech-to-text/docs/languages
     return parser.parse_args()
 
 
-def validate(args):  # pylint: disable=too-many-branches,too-many-return-statements, too-many-statements
+def list_args(args):
     """
-    Check that the CLI arguments passed to autosub are valid.
+    Check if there's any list args.
     """
     if args.list_formats:
         print("List of formats:")
         for subtitles_format, format_description in sorted(constants.FORMATTERS.items()):
             print("{sf}\t{fd}".format(sf=subtitles_format, fd=format_description))
-        return False
+        return True
 
     if args.list_speech_to_text_codes:
         print("List of all source language codes:")
         for code, language in sorted(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.items()):
             print("{code}\t{language}".format(code=code, language=language))
-        return False
+        return True
 
     if args.list_translation_codes:
         print("List of all destination language codes:")
         for code, language in sorted(constants.TRANSLATION_LANGUAGE_CODES.items()):
             print("{code}\t{language}".format(code=code, language=language))
-        return False
+        return True
 
+    return False
+
+
+def validate_args(args):  # pylint: disable=too-many-branches,too-many-return-statements, too-many-statements
+    """
+    Check that the commandline arguments passed to autosub are valid.
+    """
     if not args.source_path or not os.path.isfile(args.source_path):
         print("Error: You need to specify a valid source path.")
         return False
+
+    if len(args.output_files) > 4:
+        print(
+            "Error: Too much \"-om\" or \"--output-modes\" arguments."
+        )
+        return False
+    else:
+        if "all" in args.output_files:
+            args.output_files = constants.DEFAULT_MODE_SET
+        else:
+            args.output_files = set(args.output_files) & \
+                                constants.DEFAULT_MODE_SET
+            if not args.output_files:
+                print(
+                    "Error: No valid \"-om\" or \"--output-modes\" arguments."
+                )
+                return False
 
     if args.format not in constants.FORMATTERS.keys():
         print(
@@ -449,6 +507,13 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
         # then set it to None
         args.ass_styles = None
 
+    return True
+
+
+def fix_args(args):
+    """
+    Check that the commandline arguments value passed to autosub are proper.
+    """
     if not args.external_speech_regions:
         if args.min_region_size < constants.MIN_REGION_SIZE:
             print(
@@ -474,7 +539,40 @@ def validate(args):  # pylint: disable=too-many-branches,too-many-return-stateme
             )
             args.max_continuous_silence = constants.DEFAULT_CONTINUOUS_SILENCE
 
-    return True
+    if not args.output:
+        args.output = os.path.splitext(args.source_path)[0]
+
+    elif os.path.isdir(args.output):
+        args.source_path = args.source_path.replace("\\", "/")
+        args.output = args.output.replace("\\", "/")
+        args.output = args.output.rstrip('/') + \
+            '/' + os.path.basename(args.source_path).rstrip(os.path.splitext(args.source_path)[-1])
+        print("Your output is a directory not a file path. "
+              "Now file path set to {new}".format(new=args.output))
+    else:
+        args.output = os.path.splitext(args.output)[0]
+
+
+def get_timed_text(
+        is_empty_dropped,
+        regions,
+        text_list
+):
+    """
+    Get timed text list.
+    """
+    if is_empty_dropped:
+        # drop empty regions
+        timed_text = [(region, text) for region, text in zip(regions, text_list) if text]
+    else:
+        # keep empty regions
+        timed_text = []
+        i = 0
+        for region in regions:
+            timed_text.append((region, text_list[i]))
+            i = i + 1
+
+    return timed_text
 
 
 def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
@@ -484,6 +582,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
     args = get_cmd_args()
 
+    if list_args(args):
+        return 0
+
+    if not validate_args(args):
+        return 1
+
+    fix_args(args)
+
     if not args.yes:
         try:
             input_m = raw_input
@@ -492,13 +598,10 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
     else:
         input_m = None
 
-    if not validate(args):
-        return 1
-
     if args.http_speech_to_text_api:
-        api_url = "http://" + constants.GOOGLE_SPEECH_V2_API_URL
+        gsv2_api_url = "http://" + constants.GOOGLE_SPEECH_V2_API_URL
     else:
-        api_url = "https://" + constants.GOOGLE_SPEECH_V2_API_URL
+        gsv2_api_url = "https://" + constants.GOOGLE_SPEECH_V2_API_URL
     try:
         if args.format == 'sub':
             if not args.sub_fps:
@@ -514,24 +617,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                 fps = args.sub_fps
         else:
             fps = 0.0
-
-        if not args.src_language and not args.dst_language:
-            # valid when generating times
-            # in this case, program only use args.dst_language as a name tail
-            args.dst_language = 'times'
-
-        if not args.output:
-            base = os.path.splitext(args.source_path)[0]
-            args.output = "{base}.{langcode}.{extension}".format(base=base,
-                                                                 langcode=args.dst_language,
-                                                                 extension=args.format)
-        elif os.path.isdir(args.output):
-            base = args.output + '.'.split(os.path.basename(args.source_path))[0]
-            args.output = "{base}.{langcode}.{extension}".format(base=base,
-                                                                 langcode=args.dst_language,
-                                                                 extension=args.format)
-            print("Your output is a directory not a file path. "
-                  "Now file path set to {new}".format(new=args.output))
 
         if args.external_speech_regions:
             # use external speech regions
@@ -561,54 +646,164 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             )
 
         if args.src_language:
-            # speech to text
-            text_list = core.speech_to_text(
-                source_file=args.source_path,
-                api_url=api_url,
-                regions=regions,
-                api_key=args.gspeechv2,
-                concurrency=args.speech_concurrency,
-                src_language=args.src_language,
-                min_confidence=args.min_confidence
-            )
+            # process output first
+            try:
+                args.output_files.remove("regions")
+                subtitles_string, extension = core.times_to_sub_str(
+                    times=regions,
+                    fps=fps,
+                    subtitles_file_format=args.format,
+                    ass_styles_file=args.ass_styles
+                )
+                # times to subtitles string
+                times_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                              nt="times",
+                                                              extension=args.format)
+                subtitles_file_path = core.str_to_file(
+                    str_=subtitles_string,
+                    output=times_name,
+                    extension=extension,
+                    input_m=input_m
+                )
+                # subtitles string to file
+
+                print("Times file created at \"{}\"".format(subtitles_file_path))
+
+            except KeyError:
+                pass
+
+            if args.output_files:
+                # speech to text
+                text_list = core.speech_to_text(
+                    source_file=args.source_path,
+                    api_url=gsv2_api_url,
+                    regions=regions,
+                    api_key=args.gspeechv2,
+                    concurrency=args.speech_concurrency,
+                    src_language=args.src_language,
+                    min_confidence=args.min_confidence
+                )
+
+            else:
+                raise WorksDoneException
 
             if args.dst_language:
-                # text translation
-                if args.gtransv2:
-                    translated_text = core.list_to_gtv2(
-                        text_list=text_list,
-                        api_key=args.gtransv2,
-                        concurrency=args.trans_concurrency,
-                        src_language=args.src_language,
-                        dst_language=args.dst_language,
-                        lines_per_trans=args.lines_per_trans
+                # process output first
+                try:
+                    args.output_files.remove("src")
+                    timed_text = get_timed_text(
+                        is_empty_dropped=args.drop_empty_regions,
+                        regions=regions,
+                        text_list=text_list
                     )
+                    subtitles_string, extension = core.list_to_sub_str(
+                        timed_subtitles=timed_text,
+                        fps=fps,
+                        subtitles_file_format=args.format,
+                        ass_styles_file=args.ass_styles
+                    )
+                    # formatting timed_text to subtitles string
+                    src_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                                nt=args.src_language,
+                                                                extension=args.format)
+                    subtitles_file_path = core.str_to_file(
+                        str_=subtitles_string,
+                        output=src_name,
+                        extension=extension,
+                        input_m=input_m
+                    )
+                    # subtitles string to file
+                    print("Source language subtitles "
+                          "file created at \"{}\"".format(subtitles_file_path))
+
+                except KeyError:
+                    pass
+
+                if args.output_files:
+                    # text translation
+                    if args.gtransv2:
+                        # use gtransv2
+                        translated_text = core.list_to_gtv2(
+                            text_list=text_list,
+                            api_key=args.gtransv2,
+                            concurrency=args.trans_concurrency,
+                            src_language=args.src_language,
+                            dst_language=args.dst_language,
+                            lines_per_trans=args.lines_per_trans
+                        )
+                    else:
+                        # use googletrans
+                        translated_text = core.list_to_googletrans(
+                            text_list,
+                            src_language=args.src_language,
+                            dst_language=args.dst_language,
+                            sleep_seconds=args.sleep_seconds
+                        )
                 else:
-                    translated_text = core.list_to_googletrans(
-                        text_list,
-                        src_language=args.src_language,
-                        dst_language=args.dst_language,
-                        sleep_seconds=args.sleep_seconds
+                    raise WorksDoneException
+
+                try:
+                    args.output_files.remove("bilingual")
+                    bilingual_text = text_list + translated_text
+                    bilingual_regions = regions + regions
+                    timed_bilingual = get_timed_text(
+                        is_empty_dropped=args.drop_empty_regions,
+                        regions=bilingual_regions,
+                        text_list=bilingual_text
                     )
-                text_list = translated_text
-                # drop text_list
+                    subtitles_string, extension = core.list_to_sub_str(
+                        timed_subtitles=timed_bilingual,
+                        fps=fps,
+                        subtitles_file_format=args.format,
+                        ass_styles_file=args.ass_styles
+                    )
+                    # formatting timed_text to subtitles string
+                    bilingual_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                                      nt=args.src_language +
+                                                                      '&' + args.dst_language,
+                                                                      extension=args.format)
+                    subtitles_file_path = core.str_to_file(
+                        str_=subtitles_string,
+                        output=bilingual_name,
+                        extension=extension,
+                        input_m=input_m
+                    )
+                    # subtitles string to file
+                    print("Bilingual subtitles file "
+                          "created at \"{}\"".format(subtitles_file_path))
+                except KeyError:
+                    pass
 
-            if args.drop_empty_regions:
-                timed_text = [(region, text) for region, text in zip(regions, text_list) if text]
-            else:
-                timed_text = []
-                i = 0
-                for region in regions:
-                    timed_text.append((region, text_list[i]))
-                    i = i + 1
+                try:
+                    args.output_files.remove("dst")
+                    timed_text = get_timed_text(
+                        is_empty_dropped=args.drop_empty_regions,
+                        regions=regions,
+                        text_list=translated_text
+                    )
 
-            subtitles_string, extension = core.list_to_sub_str(
-                timed_subtitles=timed_text,
-                fps=fps,
-                subtitles_file_format=args.format,
-                ass_styles_file=args.ass_styles
-            )
-            # formatting timed_text to subtitles string
+                    subtitles_string, extension = core.list_to_sub_str(
+                        timed_subtitles=timed_text,
+                        fps=fps,
+                        subtitles_file_format=args.format,
+                        ass_styles_file=args.ass_styles
+                    )
+                    # formatting timed_text to subtitles string
+                    dst_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                                nt=args.dst_language,
+                                                                extension=args.format)
+                    subtitles_file_path = core.str_to_file(
+                        str_=subtitles_string,
+                        output=dst_name,
+                        extension=extension,
+                        input_m=input_m
+                    )
+                    # subtitles string to file
+                    print("Destination language subtitles "
+                          "file created at \"{}\"".format(subtitles_file_path))
+
+                except KeyError:
+                    pass
 
         else:
             subtitles_string, extension = core.times_to_sub_str(
@@ -618,21 +813,26 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                 ass_styles_file=args.ass_styles
             )
             # times to subtitles string
+            times_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                          nt="times",
+                                                          extension=args.format)
+            subtitles_file_path = core.str_to_file(
+                str_=subtitles_string,
+                output=times_name,
+                extension=extension,
+                input_m=input_m
+            )
+            # subtitles string to file
 
-        subtitles_file_path = core.str_to_file(
-            str_=subtitles_string,
-            output=args.output,
-            extension=extension,
-            input_m=input_m
-        )
-        # subtitles string to file
-
-        print("\nSubtitles file created at \"{}\"".format(subtitles_file_path))
+            print("Times file created at \"{}\"".format(subtitles_file_path))
 
     except KeyboardInterrupt:
+        print("\nKeyboardInterrupt. Works stopped.")
         return 1
     except pysubs2.exceptions.Pysubs2Error:
-        print("Error: pysubs2.exceptions. Check your file format.")
+        print("\nError: pysubs2.exceptions. Check your file format.")
         return 1
+    except WorksDoneException:
+        print("\nAll works done.")
 
     return 0

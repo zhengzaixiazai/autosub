@@ -35,6 +35,9 @@
 - 添加参数用于控制识别结果[可信度](https://github.com/gillesdemey/google-speech-v2#response)。[issue #6](https://github.com/BingLingGroup/autosub/issues/6)
 - 添加参数用于删除在语音转文字后产生的空行。
 - 添加来自[googletrans](https://github.com/ssut/py-googletrans)的免费API用于翻译。[issue #25](https://github.com/BingLingGroup/autosub/issues/25)
+- 添加双语字幕输出。[issue #16](https://github.com/BingLingGroup/autosub/issues/16)
+- 添加多种类型字幕同时输出（指可选时间轴字幕/原语言字幕/目标语言字幕/双语字幕的输出）在使用`--output-files`参数时。
+- 添加停止主程序工作的异常。[issue #35](https://github.com/BingLingGroup/autosub/issues/35)
 
 #### 改动(未发布的部分)
 
