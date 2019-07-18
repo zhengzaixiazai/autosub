@@ -48,14 +48,23 @@ Bug report: https://github.com/agermanidis/autosub\n
     output_group = parser.add_argument_group(
         'Output Options',
         'Args to control output.')
+    trans_group = parser.add_argument_group(
+        'Translation Options',
+        'Args to control translation(py-googletrans). '
+        'Default method to translate. ')
+    pygt_group = parser.add_argument_group(
+        'py-googletrans Options',
+        'Args to control translation(py-googletrans). '
+        'Default method to translate. '
+        'Could be blocked at any time.')
+    gsv2_group = parser.add_argument_group(
+        'Google Speech V2 Options',
+        'Args to control translation.(Not been tested) '
+        'If api key is given, '
+        'it will replace the py-googletrans method.')
     options_group = parser.add_argument_group(
         'Other Options',
         'Other options to control.')
-    trans_group = parser.add_argument_group(
-        'Translation Options',
-        'Args to control translation. '
-        'If Translation Options not given, '
-        'it will only generate the source language subtitles.')
     auditok_group = parser.add_argument_group(
         'Auditok Options',
         'Args to control Auditok '
@@ -157,15 +166,44 @@ Bug report: https://github.com/agermanidis/autosub\n
              "(arg_num = 1) (default: %(default)s)"
     )
 
-    trans_group.add_argument(
-        '-gtv2', '--gtransv2',
-        metavar='key',
-        help="The Google Translate V2 API key to be used. "
-             "If not provided, use free API instead. "
+    pygt_group.add_argument(
+        '-slp', '--sleep-seconds',
+        metavar='second',
+        type=int,
+        default=constants.DEFAULT_SLEEP_SECONDS,
+        help="(Experimental)Seconds to sleep "
+             "between two translation requests. "
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    pygt_group.add_argument(
+        '-surl', '--service-urls',
+        metavar='url',
+        nargs='*',
+        default=None,
+        help="(Experimental)Customize request urls."
+             "Ref: https://py-googletrans.readthedocs.io/en/latest/"
              "(arg_num = 1)"
     )
 
-    trans_group.add_argument(
+    pygt_group.add_argument(
+        '-ua', '--user-agent',
+        metavar='User-Agent header',
+        default=None,
+        help="(Experimental)Customize User-Agent header."
+             "Same docs above. "
+             "(arg_num = 1)"
+    )
+
+    gsv2_group.add_argument(
+        '-gtv2', '--gtransv2',
+        metavar='key',
+        help="The Google Translate V2 API key to be used. "
+             "If not provided, use free API(py-googletrans) instead. "
+             "(arg_num = 1)"
+    )
+
+    gsv2_group.add_argument(
         '-lpt', '--lines-per-trans',
         metavar='integer',
         type=int,
@@ -174,16 +212,7 @@ Bug report: https://github.com/agermanidis/autosub\n
              "(arg_num = 1) (default: %(default)s)"
     )
 
-    trans_group.add_argument(
-        '-slp', '--sleep-seconds',
-        metavar='second',
-        type=int,
-        default=constants.DEFAULT_SLEEP_SECONDS,
-        help="Seconds to sleep between two translation requests. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    trans_group.add_argument(
+    gsv2_group.add_argument(
         '-tc', '--trans-concurrency',
         metavar='integer',
         type=int,

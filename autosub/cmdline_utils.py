@@ -398,7 +398,9 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
             text_list,
             src_language=args.src_language,
             dst_language=args.dst_language,
-            sleep_seconds=args.sleep_seconds
+            sleep_seconds=args.sleep_seconds,
+            user_agent=args.user_agent,
+            service_urls=args.service_urls
         )
 
     try:
@@ -676,7 +678,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     text_list,
                     src_language=args.src_language,
                     dst_language=args.dst_language,
-                    sleep_seconds=args.sleep_seconds
+                    sleep_seconds=args.sleep_seconds,
+                    user_agent=args.user_agent,
+                    service_urls=args.service_urls
                 )
 
             timed_trans = get_timed_text(

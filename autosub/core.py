@@ -213,12 +213,14 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
     return translated_text
 
 
-def list_to_googletrans(  # pylint: disable=too-many-locals
+def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
         text_list,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
         dst_language=constants.DEFAULT_DST_LANGUAGE,
         size_per_trans=constants.DEFAULT_SIZE_PER_TRANS,
-        sleep_seconds=constants.DEFAULT_SLEEP_SECONDS
+        sleep_seconds=constants.DEFAULT_SLEEP_SECONDS,
+        user_agent=None,
+        service_urls=None
 ):
     """
     Give a text list, generate translated text list from GoogleTranslatorV2 api.
@@ -235,7 +237,9 @@ def list_to_googletrans(  # pylint: disable=too-many-locals
         src_language,
         list(googletrans.constants.LANGUAGES.keys()))[0]
 
-    prompt = "Translating from {0} to {1}: ".format(best_match_src_lang, best_match_dst_lang)
+    prompt = "Translating from {0} to {1}: ".format(
+        best_match_src_lang,
+        best_match_dst_lang)
 
     size = 0
     i = 0
@@ -263,7 +267,9 @@ def list_to_googletrans(  # pylint: disable=too-many-locals
     try:
         translated_text = []
         i = 0
-        translator = googletrans.Translator()
+        translator = googletrans.Translator(
+            user_agent=user_agent,
+            service_urls=service_urls)
 
         for index in partial_index:
             content_to_trans = '\n'.join(text_list[i:index])

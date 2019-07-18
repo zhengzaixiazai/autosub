@@ -42,6 +42,7 @@ Click up arrow to go back to TOC.
 - Add bilingual subtitle styles input. [issue #32](https://github.com/BingLingGroup/autosub/issues/32)
 - Add subtitles translate. [issue #38](https://github.com/BingLingGroup/autosub/issues/38)
 - Add function to auto-replace `’` to `'` in the translation result.
+- Add py-googletrans control args. [issue #36](https://github.com/BingLingGroup/autosub/issues/36)
 
 #### Changed(Unreleased)
 
