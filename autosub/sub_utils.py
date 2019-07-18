@@ -64,24 +64,6 @@ def sub_to_speech_regions(
     return regions
 
 
-def pysubs2_formatter(timed_text,
-                      sub_format='srt',
-                      fps=0.0):
-    """
-    Serialize a list of timed_text according to the SRT format.
-    """
-    pysubs2_obj = pysubs2.SSAFile()
-    if fps != 0.0:
-        pysubs2_obj.fps = fps
-    for ((start, end), text) in timed_text:
-        event = pysubs2.SSAEvent()
-        event.start = start
-        event.end = end
-        event.text = text
-        pysubs2_obj.events.append(event)
-    return pysubs2_obj.to_string(format_=sub_format, fps=pysubs2_obj.fps)
-
-
 def pysubs2_ssa_event_add(
         src_ssafile,
         dst_ssafile,
@@ -91,37 +73,42 @@ def pysubs2_ssa_event_add(
     """
     Serialize a list of subtitles according to the SRT format.
     """
+    if not style_name:
+        style_name = 'Default'
     if text_list:
-        if not src_ssafile and isinstance(text_list[0], tuple):
-            # text_list is [((start, end), text), ...]
-            # text_list provides regions
-            for ((start, end), text) in text_list:
-                event = pysubs2.SSAEvent()
-                event.start = start
-                event.end = end
-                event.text = text
-                event.style = style_name
-                dst_ssafile.events.append(event)
-        elif src_ssafile:
-            # text_list is [text, ...]
+        if not src_ssafile:
+            if isinstance(text_list[0][0], tuple):
+                # text_list is [((start, end), text), ...]
+                # text_list provides regions
+                for ((start, end), text) in text_list:
+                    event = pysubs2.SSAEvent()
+                    event.start = start
+                    event.end = end
+                    event.text = text
+                    event.style = style_name
+                    dst_ssafile.events.append(event)
+            elif isinstance(text_list[0][0], int):
+                # text_list is [(start, end), ...]
+                # text_list provides regions only
+                for start, end in text_list:
+                    event = pysubs2.SSAEvent()
+                    event.start = start
+                    event.end = end
+                    event.style = style_name
+                    dst_ssafile.events.append(event)
+        else:
+            # if src_ssafile exist
             # src_ssafile provides regions
+            # text_list is [text, text, ...]
             i = 0
-            for text in text_list:
+            for src_event in src_ssafile.events:
                 event = pysubs2.SSAEvent()
-                event.start = src_ssafile.events[i].start
-                event.end = src_ssafile.events[i].end
-                event.text = text
+                event.start = src_event.start
+                event.end = src_event.end
+                event.text = text_list[i]
                 event.style = style_name
                 dst_ssafile.events.append(event)
                 i = i + 1
-        else:
-            # text_list provides regions only
-            for start, end in text_list:
-                event = pysubs2.SSAEvent()
-                event.start = start
-                event.end = end
-                event.style = style_name
-                dst_ssafile.events.append(event)
     else:
         # src_ssafile provides regions only
         for src_event in src_ssafile.events.copy():
@@ -130,31 +117,61 @@ def pysubs2_ssa_event_add(
             event.end = src_event.end
             event.style = style_name
             dst_ssafile.events.append(event)
-    return dst_ssafile
 
 
 def vtt_formatter(subtitles):
     """
     Serialize a list of subtitles according to the VTT format.
     """
-    text = pysubs2_formatter(subtitles)
-    text = 'WEBVTT\n\n' + text.replace(',', '.')
-    return text
+    pysubs2_obj = pysubs2.SSAFile()
+    pysubs2_ssa_event_add(
+        src_ssafile=None,
+        dst_ssafile=pysubs2_obj,
+        text_list=subtitles,
+        style_name=None
+    )
+    formatted_subtitles = pysubs2_obj.to_string(
+        format_='srt')
+    i = 0
+    lines = formatted_subtitles.split('\n')
+    new_lines = []
+    for line in lines:
+        if i % 4 == 1:
+            line = line.replace(',', '.')
+        new_lines.append(line)
+        i = i + 1
+    formatted_subtitles = '\n'.join(new_lines)
+    formatted_subtitles = 'WEBVTT\n\n' + formatted_subtitles
+    return formatted_subtitles
 
 
 def json_formatter(subtitles):
     """
     Serialize a list of subtitles as a JSON blob.
     """
-    subtitle_dicts = [
-        {
-            'start': start / 1000.0,
-            'end': end / 1000.0,
-            'content': text
-        }
-        for ((start, end), text)
-        in subtitles
-    ]
+    if isinstance(subtitles[0][0], tuple):
+        # text_list is [((start, end), text), ...]
+        # text_list provides regions
+        subtitle_dicts = [
+            {
+                'start': start / 1000.0,
+                'end': end / 1000.0,
+                'content': text
+            }
+            for ((start, end), text)
+            in subtitles
+        ]
+    else:
+        # text_list is [(start, end), ...]
+        # text_list provides regions only
+        subtitle_dicts = [
+            {
+                'start': start / 1000.0,
+                'end': end / 1000.0
+            }
+            for start, end
+            in subtitles
+        ]
     return json.dumps(subtitle_dicts, indent=4, ensure_ascii=False)
 
 
@@ -162,56 +179,17 @@ def txt_formatter(subtitles):
     """
     Serialize a list of subtitles as a newline-delimited string.
     """
-    return '\n'.join(text for (_rng, text) in subtitles)
+    if isinstance(subtitles[0][0], tuple):
+        # text_list is [((start, end), text), ...]
+        # text_list provides regions
+        return '\n'.join(text for (_rng, text) in subtitles)
 
-
-def pysubs2_times_formatter(times,
-                            sub_format='srt',
-                            fps=0.0,
-                            ass_styles=None):
-    """
-    Serialize a list of subtitles according to the SRT format.
-    """
-    pysubs2_obj = pysubs2.SSAFile()
-    if fps != 0.0:
-        pysubs2_obj.fps = fps
-    if ass_styles:
-        pysubs2_obj.styles = ass_styles
-        style_name = ass_styles.popitem()[0]
-        for (start, end) in times:
-            event = pysubs2.SSAEvent()
-            event.start = start
-            event.end = end
-            event.style = style_name
-            pysubs2_obj.events.append(event)
-    else:
-        for (start, end) in times:
-            event = pysubs2.SSAEvent()
-            event.start = start
-            event.end = end
-            pysubs2_obj.events.append(event)
-    return pysubs2_obj.to_string(format_=sub_format, fps=pysubs2_obj.fps)
-
-
-def vtt_times_formatter(times):
-    """
-    Serialize a list of subtitles according to the VTT format.
-    """
-    text = pysubs2_times_formatter(times)
-    text = 'WEBVTT\n\n' + text.replace(',', '.')
-    return text
-
-
-def json_times_formatter(times):
-    """
-    Serialize a list of subtitles as a JSON blob.
-    """
-    subtitle_dicts = [
-        {
-            'start': start / 1000.0,
-            'end': end / 1000.0
-        }
-        for (start, end)
-        in times
-    ]
-    return json.dumps(subtitle_dicts, indent=4, ensure_ascii=False)
+    # text_list is [(start, end), ...]
+    # text_list provides regions only
+    result = ""
+    for start, end in subtitles:
+        line = "{start} {end}".format(
+            start=start / 1000.0,
+            end=end / 1000.0)
+        result = result + '\n' + line
+    return result

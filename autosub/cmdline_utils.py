@@ -97,7 +97,6 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             "You need to give a valid path.".format(path=args.ext_regions))
 
     args.input = args.input.replace("\\", "/")
-    args.output = args.output.replace("\\", "/")
 
     if isinstance(args.output_files, str):
         args.output_files = {args.output_files}
@@ -129,6 +128,7 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
 
     elif os.path.isdir(args.output):
         # windows path issues
+        args.output = args.output.replace("\\", "/")
         args.output = args.output.rstrip('/') + \
             '/' + os.path.basename(args.input).rstrip(input_ext)
         # output = path + basename of input without extension
@@ -143,6 +143,7 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             else:
                 args.format = constants.DEFAULT_SUBTITLES_FORMAT
     else:
+        args.output = args.output.replace("\\", "/")
         if not args.format:
             # get format from output
             args.format = os.path.splitext(args.output)[-1].strip('.')
@@ -227,12 +228,6 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             args.dst_language = None
 
     else:
-        if args.format == 'txt':
-            raise core.PrintAndStopException(
-                "Plain text don't include times. "
-                "No works done."
-            )
-
         if args.ext_regions:
             raise core.PrintAndStopException(
                 "You've already input times. "
@@ -582,8 +577,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     subtitles_file_format=args.format
                 )
             else:
-                times_string, extension = core.times_to_sub_str(
-                    times=regions,
+                times_string, extension = core.list_to_sub_str(
+                    timed_text=regions,
                     fps=fps,
                     subtitles_file_format=args.format
                 )
@@ -634,7 +629,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                          args.format == 'ssa'):
                     src_string, extension = core.list_to_ass_str(
                         text_list=timed_text,
-                        styles_list=styles_list,
+                        styles_list=styles_list[:2],
                         subtitles_file_format=args.format,
                     )
                 else:
@@ -733,11 +728,18 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 if args.styles and \
                         (args.format == 'ass' or
                          args.format == 'ssa'):
-                    dst_string, extension = core.list_to_ass_str(
-                        text_list=timed_trans,
-                        styles_list=styles_list,
-                        subtitles_file_format=args.format,
-                    )
+                    if len(args.styles) == 4:
+                        dst_string, extension = core.list_to_ass_str(
+                            text_list=timed_trans,
+                            styles_list=styles_list[2:4],
+                            subtitles_file_format=args.format,
+                        )
+                    else:
+                        dst_string, extension = core.list_to_ass_str(
+                            text_list=timed_trans,
+                            styles_list=styles_list,
+                            subtitles_file_format=args.format,
+                        )
                 else:
                     dst_string, extension = core.list_to_sub_str(
                         timed_text=timed_trans,
@@ -813,8 +815,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 subtitles_file_format=args.format
             )
         else:
-            times_subtitles, extension = core.times_to_sub_str(
-                times=regions,
+            times_subtitles, extension = core.list_to_sub_str(
+                timed_text=regions,
                 fps=fps,
                 subtitles_file_format=args.format
             )

@@ -64,13 +64,17 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
                                 confidence = \
                                     float(line_dict['result'][0]['alternative'][0]['confidence'])
                                 if confidence > self.min_confidence:
-                                    return line[:1].upper() + line[1:]
+                                    result = line[:1].upper() + line[1:]
+                                    result = result.replace('’', '\'')
+                                    return result
                                 return ""
 
                             else:
                                 # can't find confidence in json
                                 # means it's 100% confident
-                                return line[:1].upper() + line[1:]
+                                result = line[:1].upper() + line[1:]
+                                result = result.replace('’', '\'')
+                                return result
                         else:
                             continue
 

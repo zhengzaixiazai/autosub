@@ -40,6 +40,7 @@
 - 添加停止主程序工作的异常。[issue #35](https://github.com/BingLingGroup/autosub/issues/35)
 - 添加双语字幕样式输入。[issue #32](https://github.com/BingLingGroup/autosub/issues/32)
 - 添加字幕翻译。[issue #38](https://github.com/BingLingGroup/autosub/issues/38)
+- 添加自动替换翻译结果中`’`为`'`的功能。
 
 #### 改动(未发布的部分)
 
@@ -58,6 +59,9 @@
   - 修复python3兼容性问题。
   - 修复Nuitka构建问题（Nuitka更新至0.6.4后解决，环境Anaconda2 python3.5）。
 - 重构内部函数api_gen_text为两部分。一个是speech_to_text。另一个是text_translation。[issue #33](https://github.com/BingLingGroup/autosub/issues/33)
+- 重构txt输出，现在可以用txt输出时间码。
+- 修复vtt输出模块替换所有逗号到句号的问题。
+- 重构方法list_to_sub_str。[issue #37](https://github.com/BingLingGroup/autosub/issues/37)
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 

@@ -270,7 +270,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals
             translation = translator.translate(text=content_to_trans,
                                                dest=best_match_dst_lang,
                                                src=best_match_src_lang)
-            result_list = translation.text.split('\n')
+            result_text = translation.text.replace('’', '\'')
+            result_list = result_text.split('\n')
 
             j = 0
 
@@ -310,9 +311,15 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             or subtitles_file_format == 'tmp'\
             or subtitles_file_format == 'ass'\
             or subtitles_file_format == 'ssa':
-        formatted_subtitles = sub_utils.pysubs2_formatter(
-            timed_text=timed_text,
-            sub_format=subtitles_file_format)
+        pysubs2_obj = pysubs2.SSAFile()
+        sub_utils.pysubs2_ssa_event_add(
+            src_ssafile=None,
+            dst_ssafile=pysubs2_obj,
+            text_list=timed_text,
+            style_name=None
+        )
+        formatted_subtitles = pysubs2_obj.to_string(
+            format_=subtitles_file_format)
 
     elif subtitles_file_format == 'vtt':
         formatted_subtitles = sub_utils.vtt_formatter(
@@ -328,9 +335,15 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
 
     elif subtitles_file_format == 'sub':
         subtitles_file_format = 'microdvd'
-        formatted_subtitles = sub_utils.pysubs2_formatter(
-            timed_text=timed_text,
-            sub_format=subtitles_file_format,
+        pysubs2_obj = pysubs2.SSAFile()
+        sub_utils.pysubs2_ssa_event_add(
+            src_ssafile=None,
+            dst_ssafile=pysubs2_obj,
+            text_list=timed_text,
+            style_name=None
+        )
+        formatted_subtitles = pysubs2_obj.to_string(
+            format_=subtitles_file_format,
             fps=fps)
         # sub format need fps
         # ref https://pysubs2.readthedocs.io/en/latest
@@ -338,20 +351,33 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
         subtitles_file_format = 'sub'
 
     elif subtitles_file_format == 'mpl2':
-        formatted_subtitles = sub_utils.pysubs2_formatter(
-            timed_text=timed_text,
-            sub_format=subtitles_file_format)
+        pysubs2_obj = pysubs2.SSAFile()
+        sub_utils.pysubs2_ssa_event_add(
+            src_ssafile=None,
+            dst_ssafile=pysubs2_obj,
+            text_list=timed_text,
+            style_name=None
+        )
+        formatted_subtitles = pysubs2_obj.to_string(
+            format_=subtitles_file_format,
+            fps=fps)
         subtitles_file_format = 'mpl2.txt'
 
     else:
         # fallback process
         print("Format \"{fmt}\" not supported. \
-        Using \"{default_fmt}\" instead.".format(fmt=subtitles_file_format,
-                                                 default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
-        formatted_subtitles = sub_utils.pysubs2_formatter(
-            timed_text=timed_text,
-            sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
-        subtitles_file_format = constants.DEFAULT_SUBTITLES_FORMAT
+        Using \"{default_fmt}\" instead.".format(
+            fmt=subtitles_file_format,
+            default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        pysubs2_obj = pysubs2.SSAFile()
+        sub_utils.pysubs2_ssa_event_add(
+            src_ssafile=None,
+            dst_ssafile=pysubs2_obj,
+            text_list=timed_text,
+            style_name=None
+        )
+        formatted_subtitles = pysubs2_obj.to_string(
+            format_=constants.DEFAULT_SUBTITLES_FORMAT)
 
     return formatted_subtitles, subtitles_file_format
 
@@ -397,70 +423,24 @@ def list_to_ass_str(  # pylint: disable=too-many-arguments
                     src_ssafile=None,
                     dst_ssafile=pysubs2_obj,
                     text_list=text_list[1],
-                    style_name=styles_list[1])
+                    style_name=styles_list[2])
 
         formatted_subtitles = pysubs2_obj.to_string(format_=subtitles_file_format)
     else:
         # fallback process
         print("Format \"{fmt}\" not supported. \
-        Using \"{default_fmt}\" instead.".format(fmt=subtitles_file_format,
-                                                 default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
-        formatted_subtitles = sub_utils.pysubs2_formatter(
-            timed_text=text_list,
-            sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
-        subtitles_file_format = constants.DEFAULT_SUBTITLES_FORMAT
-
-    return formatted_subtitles, subtitles_file_format
-
-
-def times_to_sub_str(  # pylint: disable=too-many-arguments
-        times,
-        fps=30.0,
-        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
-):
-    """
-    Give an input timed text list, format it to a string.
-    """
-
-    if subtitles_file_format == 'srt' \
-            or subtitles_file_format == 'tmp':
-        formatted_subtitles = sub_utils.pysubs2_times_formatter(
-            times=times,
-            sub_format=subtitles_file_format)
-
-    elif subtitles_file_format == 'vtt':
-        formatted_subtitles = sub_utils.vtt_times_formatter(
-            times=times)
-
-    elif subtitles_file_format == 'json':
-        formatted_subtitles = sub_utils.json_times_formatter(
-            times=times)
-
-    elif subtitles_file_format == 'sub':
-        subtitles_file_format = 'microdvd'
-        formatted_subtitles = sub_utils.pysubs2_times_formatter(
-            times=times,
-            sub_format=subtitles_file_format,
-            fps=fps)
-        # sub format need fps
-        # ref https://pysubs2.readthedocs.io/en/latest
-        # /api-reference.html#supported-input-output-formats
-        subtitles_file_format = 'sub'
-
-    elif subtitles_file_format == 'mpl2':
-        formatted_subtitles = sub_utils.pysubs2_times_formatter(
-            times=times,
-            sub_format=subtitles_file_format)
-        subtitles_file_format = 'mpl2.txt'
-
-    else:
-        # fallback process
-        print("Format \"{fmt}\" not supported. \
-        Using \"{default_fmt}\" instead.".format(fmt=subtitles_file_format,
-                                                 default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
-        formatted_subtitles = sub_utils.pysubs2_times_formatter(
-            times=times,
-            sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
+                Using \"{default_fmt}\" instead.".format(
+                    fmt=subtitles_file_format,
+                    default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        pysubs2_obj = pysubs2.SSAFile()
+        sub_utils.pysubs2_ssa_event_add(
+            src_ssafile=None,
+            dst_ssafile=pysubs2_obj,
+            text_list=text_list,
+            style_name=None
+        )
+        formatted_subtitles = pysubs2_obj.to_string(
+            format_=constants.DEFAULT_SUBTITLES_FORMAT)
 
     return formatted_subtitles, subtitles_file_format
 

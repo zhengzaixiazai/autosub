@@ -41,6 +41,7 @@ Click up arrow to go back to TOC.
 - Add exception to stop the workflow in main(). [issue #35](https://github.com/BingLingGroup/autosub/issues/35)
 - Add bilingual subtitle styles input. [issue #32](https://github.com/BingLingGroup/autosub/issues/32)
 - Add subtitles translate. [issue #38](https://github.com/BingLingGroup/autosub/issues/38)
+- Add function to auto-replace `’` to `'` in the translation result.
 
 #### Changed(Unreleased)
 
@@ -59,6 +60,9 @@ Click up arrow to go back to TOC.
   - Fix python3 compatibility issues.
   - Fix Nuitka build after updating Nuitka to 0.6.4(Environment Anaconda2 python3.5).
 - Refactor api_gen_text to 2 parts. One is speech_to_text. Another is text_translation. [issue #33](https://github.com/BingLingGroup/autosub/issues/33)
+- Refactor txt output. Now txt can output regions.
+- Fix vtt output replacing all commas to dots issues.
+- Refactor list_to_sub_str. [issue #37](https://github.com/BingLingGroup/autosub/issues/37)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 

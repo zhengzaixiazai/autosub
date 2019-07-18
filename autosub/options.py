@@ -98,10 +98,8 @@ Bug report: https://github.com/agermanidis/autosub\n
                 from the file.
                 If the arg_num is 1, events will use the 
                 specific style from the arg of \"-sty\"/\"--styles\".
-                If the arg_num is 2, events will use the first arg
-                unless output \"-of\"/\"--output-files\" args have \"bilingual\".
-                If \"bilingual\", src language events use the first.
-                Dst language events use the second.
+                If the arg_num is 2, src language events use the first.
+                Dst language events use the second.               
                 (arg_num = 1 or 2)"""
     )
 
