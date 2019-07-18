@@ -27,6 +27,7 @@ DEFAULT_SLEEP_SECONDS = 5
 DEFAULT_SUBTITLES_FORMAT = 'srt'
 
 DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual'}
+DEFAULT_SUB_MODE_SET = {'dst', 'bilingual'}
 
 SPEECH_TO_TEXT_LANGUAGE_CODES = {
     'af-ZA': 'Afrikaans (South Africa)',

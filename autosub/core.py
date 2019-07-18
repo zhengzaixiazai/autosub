@@ -49,7 +49,7 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
         mode=auditok.StreamTokenizer.STRICT_MIN_LENGTH
 ):
     """
-    Given an input audio/video file, generate proper speech regions.
+    Give an input audio/video file, generate proper speech regions.
     """
     audio_wav = ffmpeg_utils.source_to_audio(
         source_file,
@@ -92,7 +92,7 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
         min_confidence=0.0
 ):
     """
-    Given an input audio/video file, generate text_list from speech-to-text api.
+    Give an input audio/video file, generate text_list from speech-to-text api.
     """
 
     if not regions:
@@ -168,7 +168,7 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
         lines_per_trans=constants.DEFAULT_LINES_PER_TRANS
 ):
     """
-    Given a text list, generate translated text list from GoogleTranslatorV2 api.
+    Give a text list, generate translated text list from GoogleTranslatorV2 api.
     """
 
     if not text_list:
@@ -221,7 +221,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals
         sleep_seconds=constants.DEFAULT_SLEEP_SECONDS
 ):
     """
-    Given a text list, generate translated text list from GoogleTranslatorV2 api.
+    Give a text list, generate translated text list from GoogleTranslatorV2 api.
     """
 
     if not text_list:
@@ -303,16 +303,12 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
         subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
 ):
     """
-    Given an input timed text list, format it to a string.
+    Give an input timed text list, format it to a string.
     """
 
     if subtitles_file_format == 'srt' \
-            or subtitles_file_format == 'tmp':
-        formatted_subtitles = sub_utils.pysubs2_formatter(
-            timed_text=timed_text,
-            sub_format=subtitles_file_format)
-
-    elif subtitles_file_format == 'ass' \
+            or subtitles_file_format == 'tmp'\
+            or subtitles_file_format == 'ass'\
             or subtitles_file_format == 'ssa':
         formatted_subtitles = sub_utils.pysubs2_formatter(
             timed_text=timed_text,
@@ -361,44 +357,47 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
 
 
 def list_to_ass_str(  # pylint: disable=too-many-arguments
-        timed_text,
+        text_list,
         styles_list,
-        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
-        is_times=False
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
 ):
     """
-    Given an input timed text list, format it to an ass string.
+    Give an input timed text list, format it to an ass string.
     """
 
     if subtitles_file_format == 'ass' \
             or subtitles_file_format == 'ssa':
         pysubs2_obj = pysubs2.SSAFile()
         pysubs2_obj.styles = \
-            {styles_list[i]: styles_list[i+1] for i in range(0, len(styles_list), 2)}
-        if isinstance(timed_text[0], tuple):
+            {styles_list[i]: styles_list[i + 1] for i in range(0, len(styles_list), 2)}
+        if not isinstance(text_list[0], list):
+            # text_list is [((start, end), text), ...]
+            # text_list provides regions
             sub_utils.pysubs2_ssa_event_add(
-                ssafile=pysubs2_obj,
-                timed_text=timed_text,
-                style_name=styles_list[0],
-                is_times=is_times)
+                src_ssafile=None,
+                dst_ssafile=pysubs2_obj,
+                text_list=text_list,
+                style_name=styles_list[0])
         else:
+            # text_list is [[src_list], [dst_list]]
+            # src_list provides regions
             sub_utils.pysubs2_ssa_event_add(
-                ssafile=pysubs2_obj,
-                timed_text=timed_text[0],
-                style_name=styles_list[0],
-                is_times=is_times)
+                src_ssafile=None,
+                dst_ssafile=pysubs2_obj,
+                text_list=text_list[0],
+                style_name=styles_list[0])
             if len(styles_list) == 1:
                 sub_utils.pysubs2_ssa_event_add(
-                    ssafile=pysubs2_obj,
-                    timed_text=timed_text[1],
-                    style_name=styles_list[0],
-                    is_times=is_times)
+                    src_ssafile=None,
+                    dst_ssafile=pysubs2_obj,
+                    text_list=text_list[1],
+                    style_name=styles_list[0])
             else:
                 sub_utils.pysubs2_ssa_event_add(
-                    ssafile=pysubs2_obj,
-                    timed_text=timed_text[1],
-                    style_name=styles_list[2],
-                    is_times=is_times)
+                    src_ssafile=None,
+                    dst_ssafile=pysubs2_obj,
+                    text_list=text_list[1],
+                    style_name=styles_list[1])
 
         formatted_subtitles = pysubs2_obj.to_string(format_=subtitles_file_format)
     else:
@@ -407,7 +406,7 @@ def list_to_ass_str(  # pylint: disable=too-many-arguments
         Using \"{default_fmt}\" instead.".format(fmt=subtitles_file_format,
                                                  default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
         formatted_subtitles = sub_utils.pysubs2_formatter(
-            timed_text=timed_text,
+            timed_text=text_list,
             sub_format=constants.DEFAULT_SUBTITLES_FORMAT)
         subtitles_file_format = constants.DEFAULT_SUBTITLES_FORMAT
 
@@ -420,7 +419,7 @@ def times_to_sub_str(  # pylint: disable=too-many-arguments
         subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
 ):
     """
-    Given an input timed text list, format it to a string.
+    Give an input timed text list, format it to a string.
     """
 
     if subtitles_file_format == 'srt' \
@@ -473,7 +472,7 @@ def str_to_file(
         input_m=input,
 ):
     """
-    Given a string and write it to file
+    Give a string and write it to file
     """
     dest = output
 

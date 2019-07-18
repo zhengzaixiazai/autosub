@@ -8,7 +8,6 @@ Defines autosub's command line functionality.
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Import built-in modules
-import argparse
 import os
 
 # Import third-party modules
@@ -19,362 +18,7 @@ import auditok
 from autosub import constants
 from autosub import core
 from autosub import ffmpeg_utils
-from autosub import metadata
 from autosub import sub_utils
-
-
-def get_cmd_args():
-    """
-    Get command-line arguments.
-    """
-    parser = argparse.ArgumentParser(
-        prog=metadata.NAME,
-        usage='\n  %(prog)s <input> [options]',
-        description=metadata.DESCRIPTION,
-        epilog="""Make sure the argument with space is in quotes.
-The default value is used 
-when the option is not present at the command line.
-\"(arg_num)\" means if the option is input,
-the number of the arguments is required.\n
-Author: {author}
-Email: {email}
-Bug report: https://github.com/agermanidis/autosub\n
-""".format(author=metadata.AUTHOR, email=metadata.AUTHOR_EMAIL),
-        add_help=False,
-        formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-
-    input_group = parser.add_argument_group(
-        'Input Options',
-        'Args to control input.')
-    speech_group = parser.add_argument_group(
-        'Speech Options',
-        'Args to control speech-to-text. '
-        'If Speech Options not given, it will only generate the times.')
-    output_group = parser.add_argument_group(
-        'Output Options',
-        'Args to control output.')
-    options_group = parser.add_argument_group(
-        'Other Options',
-        'Other options to control.')
-    trans_group = parser.add_argument_group(
-        'Translation Options',
-        'Args to control translation. '
-        'If Translation Options not given, '
-        'it will only generate the source language subtitles.')
-    auditok_group = parser.add_argument_group(
-        'Auditok Options',
-        'Args to control Auditok '
-        'when not using external speech regions control.')
-    list_group = parser.add_argument_group(
-        'List Options',
-        'List all available arguments.')
-
-    input_group.add_argument(
-        '-i', '--input',
-        nargs='?', metavar='path',
-        help="The path to the video/audio/subtitles file "
-             "needs to generate subtitles. "
-             "When it is a subtitles file, "
-             "the program will only translate it. "
-             "(arg_num = 1)"
-    )
-
-    input_group.add_argument(
-        '-sty', '--styles',
-        nargs='?', metavar='path',
-        const=' ',
-        help="""Valid when your output format is \"ass\"/\"ssa\".
-                Path to the subtitles file
-                which provides \"ass\"/\"ssa\" styles for your output.
-                If the arg_num is 0,
-                it will use the styles from the
-                \"-esr\"/\"--external-speech-regions\".
-                More info in \"-sn\"/\"--styles-name\".
-                (arg_num = 0 or 1)"""
-    )
-
-    input_group.add_argument(
-        '-sn', '--styles-name',
-        nargs='*', metavar='style-name',
-        help="""Valid when your output format is \"ass\"/\"ssa\"
-                and \"-sty\"/\"--styles\" is given.
-                Adds \"ass\"/\"ssa\" styles to your events.
-                If not provided, events will use the first one
-                from the file.
-                If the arg_num is 1, events will use the 
-                specific style from the arg of \"-sty\"/\"--styles\".
-                If the arg_num is 2, events will use the first arg
-                unless output \"-of\"/\"--output-files\" args have \"bilingual\".
-                If \"bilingual\", src language events use the first.
-                Dst language events use the second.
-                (arg_num = 1 or 2)"""
-    )
-
-    input_group.add_argument(
-        '-er', '--ext-regions',
-        nargs='?', metavar='path',
-        help="""Path to the subtitles file
-                which provides external speech regions,
-                which is one of the formats that pysubs2 supports
-                and overrides the auditok method to find speech regions.
-                (arg_num = 0 or 1)"""
-    )
-
-    speech_group.add_argument(
-        '-gsv2', '--gspeechv2',
-        metavar='key',
-        help="The Google Speech V2 API key to be used. "
-             "If not provided, use free API key instead."
-             "(arg_num = 1)"
-    )
-
-    speech_group.add_argument(
-        '-S', '--src-language',
-        metavar='lang code',
-        help="Lang code of language spoken in input file. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    speech_group.add_argument(
-        '-mnc', '--min-confidence',
-        metavar='float',
-        type=float,
-        default=0.0,
-        help="Google Speech V2 API response for text confidence. "
-             "A float value between 0 and 1. "
-             "Confidence bigger means the result is better. "
-             "Input this argument will drop any result below it. "
-             "Ref: https://github.com/BingLingGroup/google-speech-v2#response "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    speech_group.add_argument(
-        '-sc', '--speech-concurrency',
-        metavar='integer',
-        type=int,
-        default=constants.DEFAULT_CONCURRENCY,
-        help="Number of concurrent Google Speech V2 requests to make. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    trans_group.add_argument(
-        '-D', '--dst-language',
-        metavar='lang code',
-        help="Lang code of desired language for the subtitles. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    trans_group.add_argument(
-        '-gtv2', '--gtransv2',
-        metavar='key',
-        help="The Google Translate V2 API key to be used. "
-             "If not provided, use free API instead. "
-             "(arg_num = 1)"
-    )
-
-    trans_group.add_argument(
-        '-lpt', '--lines-per-trans',
-        metavar='integer',
-        type=int,
-        default=constants.DEFAULT_LINES_PER_TRANS,
-        help="Number of lines per Google Translate V2 request. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    trans_group.add_argument(
-        '-slp', '--sleep-seconds',
-        metavar='second',
-        type=int,
-        default=constants.DEFAULT_SLEEP_SECONDS,
-        help="Seconds to sleep between two translation requests. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    trans_group.add_argument(
-        '-tc', '--trans-concurrency',
-        metavar='integer',
-        type=int,
-        default=constants.DEFAULT_CONCURRENCY,
-        help="Number of concurrent "
-             "Google translate V2 API requests to make. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    output_group.add_argument(
-        '-o', '--output',
-        metavar='path',
-        help="""The output path for subtitles file.
-                (default: the \"input\" path combined 
-                with the proper name tails) (arg_num = 1)"""
-    )
-
-    output_group.add_argument(
-        '-y', '--yes',
-        action='store_true',
-        help="Avoid any pause and overwriting files. "
-             "Stop the program when your args are wrong. (arg_num = 0)"
-    )
-
-    output_group.add_argument(
-        '-of', '--output-files',
-        metavar='type',
-        nargs='*',
-        default="dst",
-        help="Output more files. "
-             "Available types: "
-             "regions, src, dst, bilingual, all. "
-             "(4 ≥ arg_num ≥ 1 ) (default: %(default)s)"
-    )
-
-    output_group.add_argument(
-        '-F', '--format',
-        metavar='format',
-        help="Destination subtitles format. "
-             "If not provided, use the extension name "
-             "in the \"-o\"/\"--output\" arg. "
-             "If \"-o\"/\"--output\" arg doesn't provide "
-             "the extension name, use \"{dft}\" instead. "
-             "(arg_num = 1) (default: {dft})".format(
-                 dft=constants.DEFAULT_SUBTITLES_FORMAT)
-    )
-
-    output_group.add_argument(
-        '-fps', '--sub-fps',
-        metavar='float',
-        type=float,
-        help="Valid when your output format is \"sub\". "
-             "If input, it will override the fps check "
-             "on the input file. "
-             "Ref: https://pysubs2.readthedocs.io/en/latest/api-reference.html"
-             "#supported-input-output-formats "
-             "(arg_num = 1)"
-    )
-
-    output_group.add_argument(
-        '-der', '--drop-empty-regions',
-        action='store_true',
-        help="Drop any regions without text. "
-             "(arg_num = 0)"
-    )
-
-    options_group.add_argument(
-        '-htp', '--http-speech-to-text-api',
-        action='store_true',
-        help="Change the Google Speech V2 API "
-             "url into the http one. "
-             "(arg_num = 0)"
-    )
-
-    options_group.add_argument(
-        '-h', '--help',
-        action='help',
-        help="Show %(prog)s help message and exit. (arg_num = 0)"
-    )
-
-    options_group.add_argument(
-        '-V', '--version',
-        action='version',
-        version='%(prog)s ' + metadata.VERSION
-        + ' by ' + metadata.AUTHOR + ' <'
-        + metadata.AUTHOR_EMAIL + '>',
-        help="Show %(prog)s version and exit. (arg_num = 0)"
-    )
-
-    auditok_group.add_argument(
-        '-et', '--energy-threshold',
-        metavar='energy',
-        type=int,
-        default=constants.DEFAULT_ENERGY_THRESHOLD,
-        help="The energy level which determines the region to be detected. "
-             "Ref: https://auditok.readthedocs.io/en/latest/apitutorial.html"
-             "#examples-using-real-audio-data "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    auditok_group.add_argument(
-        '-mnrs', '--min-region-size',
-        metavar='second',
-        type=float,
-        default=constants.MIN_REGION_SIZE,
-        help="Minimum region size. "
-             "Same docs above. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    auditok_group.add_argument(
-        '-mxrs', '--max-region-size',
-        metavar='second',
-        type=float,
-        default=constants.MAX_REGION_SIZE,
-        help="Maximum region size. "
-             "Same docs above. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    auditok_group.add_argument(
-        '-mxcs', '--max-continuous-silence',
-        metavar='second',
-        type=float,
-        default=constants.DEFAULT_CONTINUOUS_SILENCE,
-        help="Maximum length of a tolerated silence within a valid audio activity. "
-             "Same docs above. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
-    auditok_group.add_argument(
-        '-sml', '--strict-min-length',
-        action='store_true',
-        help="Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
-             "(arg_num = 0)"
-    )
-
-    auditok_group.add_argument(
-        '-dts', '--drop-trailing-silence',
-        action='store_true',
-        help="Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
-             "(arg_num = 0)"
-    )
-
-    list_group.add_argument(
-        '-lf', '--list-formats',
-        action='store_true',
-        help="""List all available output subtitles formats.
-                If your format is not supported,
-                you can use ffmpeg or SubtitleEdit to convert the formats. 
-                [ATTENTION]: You need to offer fps option 
-                when input is an audio file
-                and output is \"sub\" format.
-                (arg_num = 0)"""
-    )
-
-    list_group.add_argument(
-        '-lsc', '--list-speech-to-text-codes',
-        action='store_true',
-        help="""List all available source language codes,
-                which mean the available speech-to-text
-                language codes.
-                [ATTENTION]: Its name is different from 
-                the destination language codes.
-                Reference: https://cloud.google.com/speech-to-text/docs/languages
-                https://tools.ietf.org/html/bcp47
-                (arg_num = 0)"""
-    )
-
-    list_group.add_argument(
-        '-ltc', '--list-translation-codes',
-        action='store_true',
-        help="""List all available destination language codes,
-                which mean the available translation
-                language codes.
-                [ATTENTION]: Its name is different from 
-                the destination language codes.
-                Reference: https://cloud.google.com/speech-to-text/docs/languages
-                https://tools.ietf.org/html/bcp47
-                (arg_num = 0)"""
-    )
-
-    return parser.parse_args()
 
 
 def list_args(args):
@@ -464,16 +108,6 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
         raise core.PrintAndStopException(
             "Error: Too many \"-of\"/\"--output-files\" arguments."
         )
-    else:
-        if "all" in args.output_files:
-            args.output_files = constants.DEFAULT_MODE_SET
-        else:
-            args.output_files = args.output_files & \
-                                constants.DEFAULT_MODE_SET
-            if not args.output_files:
-                raise core.PrintAndStopException(
-                    "Error: No valid \"-of\"/\"--output-files\" arguments."
-                )
 
     input_ext = os.path.splitext(args.input)[-1]
     input_fmt = input_ext.strip('.')
@@ -488,6 +122,8 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             # get format from default
             if is_ass_input:
                 args.format = input_fmt
+                print("No output format specified. "
+                      "Use input format for output.")
             else:
                 args.format = constants.DEFAULT_SUBTITLES_FORMAT
 
@@ -502,6 +138,8 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             # get format from default
             if is_ass_input:
                 args.format = input_fmt
+                print("No output format specified. "
+                      "Use input format for output.")
             else:
                 args.format = constants.DEFAULT_SUBTITLES_FORMAT
     else:
@@ -519,7 +157,24 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             "Or use ffmpeg or SubtitleEdit to convert the formats.".format(fmt=args.format)
         )
 
-    if is_ass_input:
+    if "all" in args.output_files:
+        args.output_files = constants.DEFAULT_MODE_SET
+    else:
+        if not is_ass_input:
+            args.output_files = args.output_files & \
+                                constants.DEFAULT_MODE_SET
+            if not args.output_files:
+                raise core.PrintAndStopException(
+                    "Error: No valid \"-of\"/\"--output-files\" arguments."
+                )
+        else:
+            args.output_files = args.output_files & \
+                                constants.DEFAULT_SUB_MODE_SET
+            if not args.output_files:
+                raise core.PrintAndStopException(
+                    "Error: No valid \"-of\"/\"--output-files\" arguments."
+                )
+
         print("Input is a subtitles file.")
         return 1
 
@@ -701,20 +356,151 @@ def get_timed_text(
     return timed_text
 
 
-def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         args,
         input_m=input,
-        ffmpeg_cmd="ffmpeg",
+        fps=30.0,
         styles_list=None):
     """
-    Give args and process an input audio or video file.
+    Give args and translate a subtitles file.
     """
+    if not args.output_files:
+        raise core.PrintAndStopException(
+            "\nNo works done."
+            " Check your \"-of\"/\"--output-files\" option."
+        )
 
-    if args.http_speech_to_text_api:
-        gsv2_api_url = "http://" + constants.GOOGLE_SPEECH_V2_API_URL
+    src_sub = pysubs2.SSAFile.load(args.input)
+    text_list = []
+
+    if args.styles and \
+            (args.format == 'ass' or
+             args.format == 'ssa'):
+        src_sub.styles = \
+            {styles_list[i]: styles_list[i + 1] for i in range(0, len(styles_list), 2)}
+        for event in src_sub.events:
+            event.style = styles_list[0]
+            text_list.append(event.text)
     else:
-        gsv2_api_url = "https://" + constants.GOOGLE_SPEECH_V2_API_URL
+        styles_list = [src_sub.events[0].style, ]
+        for event in src_sub.events:
+            text_list.append(event.text)
 
+    # text translation
+    if args.gtransv2:
+        # use gtransv2
+        translated_text = core.list_to_gtv2(
+            text_list=text_list,
+            api_key=args.gtransv2,
+            concurrency=args.trans_concurrency,
+            src_language=args.src_language,
+            dst_language=args.dst_language,
+            lines_per_trans=args.lines_per_trans
+        )
+    else:
+        # use googletrans
+        translated_text = core.list_to_googletrans(
+            text_list,
+            src_language=args.src_language,
+            dst_language=args.dst_language,
+            sleep_seconds=args.sleep_seconds
+        )
+
+    try:
+        args.output_files.remove("bilingual")
+        if args.styles and \
+                len(styles_list) == 2 and \
+                (args.format == 'ass' or
+                 args.format == 'ssa'):
+            sub_utils.pysubs2_ssa_event_add(
+                src_ssafile=src_sub,
+                dst_ssafile=src_sub,
+                text_list=translated_text,
+                style_name=styles_list[2])
+        else:
+            sub_utils.pysubs2_ssa_event_add(
+                src_ssafile=src_sub,
+                dst_ssafile=src_sub,
+                text_list=translated_text,
+                style_name=styles_list[0])
+        # formatting timed_text to subtitles string
+        bilingual_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                          nt=args.src_language +
+                                                          '&' + args.dst_language,
+                                                          extension=args.format)
+        bilingual_string = src_sub.to_string(format_=args.format, fps=fps)
+
+        if args.format == 'mpl2':
+            extension = 'mpl2.txt'
+        else:
+            extension = args.format
+
+        subtitles_file_path = core.str_to_file(
+            str_=bilingual_string,
+            output=bilingual_name,
+            extension=extension,
+            input_m=input_m
+        )
+        # subtitles string to file
+        print("Bilingual subtitles file "
+              "created at \"{}\"".format(subtitles_file_path))
+
+        if not args.output_files:
+            raise core.PrintAndStopException("\nAll works done.")
+
+    except KeyError:
+        pass
+
+    try:
+        args.output_files.remove("dst")
+        dst_sub = pysubs2.SSAFile()
+        dst_sub.styles = src_sub.styles
+        # formatting timed_text to subtitles string
+        if len(styles_list) == 2:
+            sub_utils.pysubs2_ssa_event_add(
+                src_ssafile=src_sub,
+                dst_ssafile=dst_sub,
+                text_list=translated_text,
+                style_name=styles_list[2])
+        else:
+            sub_utils.pysubs2_ssa_event_add(
+                src_ssafile=src_sub,
+                dst_ssafile=dst_sub,
+                text_list=translated_text,
+                style_name=styles_list[0])
+        # formatting timed_text to subtitles string
+        bilingual_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                          nt=args.src_language +
+                                                          '&' + args.dst_language,
+                                                          extension=args.format)
+        bilingual_string = src_sub.to_string(format_=args.format, fps=fps)
+
+        if args.format == 'mpl2':
+            extension = 'mpl2.txt'
+        else:
+            extension = args.format
+
+        subtitles_file_path = core.str_to_file(
+            str_=bilingual_string,
+            output=bilingual_name,
+            extension=extension,
+            input_m=input_m
+        )
+        # subtitles string to file
+        print("Destination language subtitles "
+              "file created at \"{}\"".format(subtitles_file_path))
+
+    except KeyError:
+        pass
+
+
+def get_fps(
+        args,
+        input_m=input
+):
+    """
+    Give args and get fps.
+    """
     if args.format == 'sub':
         if not args.sub_fps:
             fps = ffmpeg_utils.ffprobe_get_fps(
@@ -729,6 +515,24 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             fps = args.sub_fps
     else:
         fps = 0.0
+
+    return fps
+
+
+def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+        args,
+        input_m=input,
+        fps=30.0,
+        ffmpeg_cmd="ffmpeg",
+        styles_list=None):
+    """
+    Give args and process an input audio or video file.
+    """
+
+    if args.http_speech_to_text_api:
+        gsv2_api_url = "http://" + constants.GOOGLE_SPEECH_V2_API_URL
+    else:
+        gsv2_api_url = "https://" + constants.GOOGLE_SPEECH_V2_API_URL
 
     if not args.output_files:
         raise core.PrintAndStopException(
@@ -773,10 +577,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     (args.format == 'ass' or
                      args.format == 'ssa'):
                 times_string, extension = core.list_to_ass_str(
-                    timed_text=regions,
+                    text_list=regions,
                     styles_list=styles_list,
-                    subtitles_file_format=args.format,
-                    is_times=True
+                    subtitles_file_format=args.format
                 )
             else:
                 times_string, extension = core.times_to_sub_str(
@@ -830,7 +633,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                         (args.format == 'ass' or
                          args.format == 'ssa'):
                     src_string, extension = core.list_to_ass_str(
-                        timed_text=timed_text,
+                        text_list=timed_text,
                         styles_list=styles_list,
                         subtitles_file_format=args.format,
                     )
@@ -893,7 +696,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                         (args.format == 'ass' or
                          args.format == 'ssa'):
                     bilingual_string, extension = core.list_to_ass_str(
-                        timed_text=[timed_text, timed_trans],
+                        text_list=[timed_text, timed_trans],
                         styles_list=styles_list,
                         subtitles_file_format=args.format,
                     )
@@ -931,7 +734,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                         (args.format == 'ass' or
                          args.format == 'ssa'):
                     dst_string, extension = core.list_to_ass_str(
-                        timed_text=timed_trans,
+                        text_list=timed_trans,
                         styles_list=styles_list,
                         subtitles_file_format=args.format,
                     )
@@ -972,10 +775,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     (args.format == 'ass' or
                      args.format == 'ssa'):
                 src_string, extension = core.list_to_ass_str(
-                    timed_text=timed_text,
+                    text_list=timed_text,
                     styles_list=styles_list,
                     subtitles_file_format=args.format,
-                    is_times=True
                 )
             else:
                 src_string, extension = core.list_to_sub_str(
@@ -1006,10 +808,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 (args.format == 'ass' or
                  args.format == 'ssa'):
             times_subtitles, extension = core.list_to_ass_str(
-                timed_text=regions,
+                text_list=regions,
                 styles_list=styles_list,
-                subtitles_file_format=args.format,
-                is_times=True
+                subtitles_file_format=args.format
             )
         else:
             times_subtitles, extension = core.times_to_sub_str(

@@ -39,6 +39,7 @@
 - 添加多种类型字幕同时输出（指可选时间轴字幕/原语言字幕/目标语言字幕/双语字幕的输出）在使用`--output-files`参数时。
 - 添加停止主程序工作的异常。[issue #35](https://github.com/BingLingGroup/autosub/issues/35)
 - 添加双语字幕样式输入。[issue #32](https://github.com/BingLingGroup/autosub/issues/32)
+- 添加字幕翻译。[issue #38](https://github.com/BingLingGroup/autosub/issues/38)
 
 #### 改动(未发布的部分)
 

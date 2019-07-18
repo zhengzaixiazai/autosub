@@ -15,6 +15,7 @@ import pysubs2
 from autosub import core
 from autosub import ffmpeg_utils
 from autosub import cmdline_utils
+from autosub import options
 
 
 def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
@@ -22,7 +23,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
     Run autosub as a command-line program.
     """
 
-    args = cmdline_utils.get_cmd_args()
+    args = options.get_cmd_args()
 
     try:
         ffmpeg_cmd = ffmpeg_utils.check_cmd("ffmpeg")
@@ -43,15 +44,23 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             input_m = None
 
         styles_list = []
-        if cmdline_utils.validate_io(args, styles_list) == 0:
+        validate_result = cmdline_utils.validate_io(args, styles_list)
+        if validate_result == 0:
             cmdline_utils.validate_aovp_args(args)
             cmdline_utils.fix_args(args)
+            fps = cmdline_utils.get_fps(args=args, input_m=input_m)
             cmdline_utils.audio_or_video_prcs(args,
+                                              fps=fps,
                                               input_m=input_m,
                                               styles_list=styles_list)
 
-        elif cmdline_utils.validate_io(args, styles_list) == 1:
+        elif validate_result == 1:
             cmdline_utils.validate_sp_args(args)
+            fps = cmdline_utils.get_fps(args=args, input_m=input_m)
+            cmdline_utils.subs_trans(args,
+                                     input_m=input_m,
+                                     fps=fps,
+                                     styles_list=None)
 
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt. Works stopped.")
