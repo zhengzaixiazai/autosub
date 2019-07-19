@@ -16,7 +16,6 @@ import progressbar
 import pysubs2
 import auditok
 import googletrans
-import langcodes
 
 # Any changes to the path and your own modules
 from autosub import speech_trans_api
@@ -229,17 +228,9 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
     if not text_list:
         return None
 
-    best_match_dst_lang = langcodes.best_match(
-        dst_language,
-        list(googletrans.constants.LANGUAGES.keys()))[0]
-
-    best_match_src_lang = langcodes.best_match(
-        src_language,
-        list(googletrans.constants.LANGUAGES.keys()))[0]
-
     prompt = "Translating from {0} to {1}: ".format(
-        best_match_src_lang,
-        best_match_dst_lang)
+        src_language,
+        dst_language)
 
     size = 0
     i = 0
@@ -251,22 +242,27 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
             if size > size_per_trans:
                 # use size_per_trans to split the list
                 partial_index.append(i)
+                size = 0
             valid_index.append(i)
+            # valid_index for valid text position
         i = i + 1
-    length = i
-
-    if not partial_index:
-        partial_index.append(length)
+    if size:
+        partial_index.append(i)
         # python sequence
+        # every group's end index
 
     widgets = [prompt, progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
-    pbar = progressbar.ProgressBar(widgets=widgets, maxval=length).start()
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=i).start()
 
     try:
         translated_text = []
         i = 0
+        # total position
+        j = 0
+        # valid_index position
+        last_index = 0
         translator = googletrans.Translator(
             user_agent=user_agent,
             service_urls=service_urls)
@@ -274,23 +270,26 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
         for index in partial_index:
             content_to_trans = '\n'.join(text_list[i:index])
             translation = translator.translate(text=content_to_trans,
-                                               dest=best_match_dst_lang,
-                                               src=best_match_src_lang)
+                                               dest=dst_language,
+                                               src=src_language)
             result_text = translation.text.replace('’', '\'')
             result_list = result_text.split('\n')
-
-            j = 0
 
             while i < index:
                 if i == valid_index[j]:
                     # if text is the valid one, append it
-                    translated_text.append(result_list[valid_index[j]])
+                    translated_text.append(
+                        result_list[valid_index[j] - last_index])
+                    # minus last group's length
                     j = j + 1
                 else:
                     # else append an empty one
                     translated_text.append("")
+
                 i = i + 1
                 pbar.update(i)
+
+            last_index = index
 
             if len(partial_index) > 1:
                 time.sleep(sleep_seconds)

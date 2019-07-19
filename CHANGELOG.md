@@ -43,6 +43,7 @@ Click up arrow to go back to TOC.
 - Add subtitles translate. [issue #38](https://github.com/BingLingGroup/autosub/issues/38)
 - Add function to auto-replace `’` to `'` in the translation result.
 - Add py-googletrans control args. [issue #36](https://github.com/BingLingGroup/autosub/issues/36)
+- Add lang codes support.(Depend on langcodes package) [issue #34](https://github.com/BingLingGroup/autosub/issues/34)
 
 #### Changed(Unreleased)
 

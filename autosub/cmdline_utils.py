@@ -13,12 +13,15 @@ import os
 # Import third-party modules
 import pysubs2
 import auditok
+import googletrans
+import langcodes
 
 # Any changes to the path and your own modules
 from autosub import constants
 from autosub import core
 from autosub import ffmpeg_utils
 from autosub import sub_utils
+from autosub import lang_code_utils
 
 
 def list_args(args):
@@ -26,21 +29,50 @@ def list_args(args):
     Check if there's any list args.
     """
     if args.list_formats:
-        print("List of formats:")
+        print("List of output formats:\n")
+        print("{column_1}{column_2}".format(
+            column_1="Format".ljust(16),
+            column_2="Description"))
         for subtitles_format, format_description in sorted(constants.OUTPUT_FORMAT.items()):
-            print("{sf} \t{fd}".format(sf=subtitles_format, fd=format_description))
+            print("{column_1}{column_2}".format(
+                column_1=subtitles_format.ljust(16),
+                column_2=format_description))
         return True
 
-    if args.list_speech_to_text_codes:
-        print("List of all source language codes:")
-        for code, language in sorted(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.items()):
-            print("{code}\t{language}".format(code=code, language=language))
+    if args.list_speech_codes:
+        if args.list_speech_codes == ' ':
+            print("List of all lang codes for speech-to-text:\n")
+            print("{column_1}{column_2}".format(
+                column_1="Lang code".ljust(16),
+                column_2="Description"))
+            for code, language in sorted(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.items()):
+                print("{column_1}{column_2}".format(
+                    column_1=code.ljust(16),
+                    column_2=language))
+        else:
+            print("Match speech lang codes.")
+            lang_code_utils.match_print(
+                dsr_lang=args.list_speech_codes,
+                match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
+                min_score=args.min_score)
         return True
 
     if args.list_translation_codes:
-        print("List of all destination language codes:")
-        for code, language in sorted(constants.TRANSLATION_LANGUAGE_CODES.items()):
-            print("{code}\t{language}".format(code=code, language=language))
+        if args.list_translation_codes == ' ':
+            print("List of all lang codes for translation:\n")
+            print("{column_1}{column_2}".format(
+                column_1="Lang code".ljust(16),
+                column_2="Description"))
+            for code, language in sorted(constants.TRANSLATION_LANGUAGE_CODES.items()):
+                print("{column_1}{column_2}".format(
+                    column_1=code.ljust(16),
+                    column_2=language))
+        else:
+            print("Match translation lang codes.")
+            lang_code_utils.match_print(
+                dsr_lang=args.list_translation_codes,
+                match_list=list(constants.TRANSLATION_LANGUAGE_CODES.keys()),
+                min_score=args.min_score)
         return True
 
     return False
@@ -98,11 +130,6 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
 
     args.input = args.input.replace("\\", "/")
 
-    if isinstance(args.output_files, str):
-        args.output_files = {args.output_files}
-    else:
-        args.output_files = set(args.output_files)
-
     if len(args.output_files) > 4:
         raise core.PrintAndStopException(
             "Error: Too many \"-of\"/\"--output-files\" arguments."
@@ -112,7 +139,7 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
     input_fmt = input_ext.strip('.')
     input_path = os.path.splitext(args.input)[0]
 
-    is_ass_input = input_fmt in constants.INPUT_FORMAT.keys()
+    is_ass_input = input_fmt in constants.INPUT_FORMAT
 
     if not args.output:
         args.output = input_path
@@ -122,7 +149,8 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             if is_ass_input:
                 args.format = input_fmt
                 print("No output format specified. "
-                      "Use input format for output.")
+                      "Use input format \"{fmt}\" "
+                      "for output.".format(fmt=input_fmt))
             else:
                 args.format = constants.DEFAULT_SUBTITLES_FORMAT
 
@@ -151,13 +179,14 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
         args.output = os.path.splitext(args.output)[0]
         # output = output name without extension
 
-    if args.format not in constants.OUTPUT_FORMAT.keys():
+    if args.format not in constants.OUTPUT_FORMAT:
         raise core.PrintAndStopException(
             "Error: Output subtitles format \"{fmt}\" not supported. "
             "Run with \"-lf\"/\"--list-formats\" to see all supported formats.\n"
             "Or use ffmpeg or SubtitleEdit to convert the formats.".format(fmt=args.format)
         )
 
+    args.output_files = {k.lower() for k in args.output_files}
     if "all" in args.output_files:
         args.output_files = constants.DEFAULT_MODE_SET
     else:
@@ -176,6 +205,7 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
                     "Error: No valid \"-of\"/\"--output-files\" arguments."
                 )
 
+    if is_ass_input:
         print("Input is a subtitles file.")
         return 1
 
@@ -192,13 +222,42 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             "Error: \"-slp\"/\"--sleep-seconds\" arg is illegal. "
         )
 
-    if args.src_language:
-        if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
-            raise core.PrintAndStopException(
-                "Error: Source language \"{src}\" not supported. "
-                "Run with \"-lsc\"/\"--list-speech-to-text-codes\" "
-                "to see all supported languages.".format(src=args.src_language)
-            )
+    if args.best_match:
+        args.best_match = {k.lower() for k in args.best_match}
+        if 'all' in args.best_match:
+            args.best_match = constants.DEFAULT_LANG_MODE_SET
+        else:
+            args.best_match = \
+                args.best_match & constants.DEFAULT_LANG_MODE_SET
+
+    if args.speech_language:  # pylint: disable=too-many-nested-blocks
+        if not args.gspeechv2:
+            args.src_language = args.src_language.lower()
+            if args.speech_language \
+                    not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES:
+                print(
+                    "Warning: Speech language \"{src}\" not recommended. "
+                    "Run with \"-lsc\"/\"--list-speech-codes\" "
+                    "to see all supported languages.".format(src=args.speech_language)
+                )
+                if args.best_match and 's' in args.best_match:
+                    best_result = lang_code_utils.match_print(
+                        dsr_lang=args.speech_language,
+                        match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
+                        min_score=args.min_score)
+                    if best_result:
+                        print("Use langcodes to standardize the result.")
+                        args.speech_language = langcodes.standardize_tag(best_result[0])
+                        print("Use {lang_code} instead.".format(lang_code=args.speech_language))
+                    else:
+                        print(
+                            "Match failed. Still using {lang_code}".format(
+                                lang_code=args.speech_language))
+
+            if args.min_confidence < 0.0 or args.min_confidence > 1.0:
+                raise core.PrintAndStopException(
+                    "Error: min_confidence's value isn't legal."
+                )
 
         if args.dst_language is None:
             print(
@@ -207,25 +266,88 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             )
 
         else:
-            if args.min_confidence < 0.0 or args.min_confidence > 1.0:
-                raise core.PrintAndStopException(
-                    "Error: min_confidence's value isn't legal."
+            if args.src_language is None:
+                print(
+                    "Source language not provided. "
+                    "Use Speech language instead."
                 )
+                args.src_language = args.speech_language
 
-            if args.dst_language and \
-                    args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
-                raise core.PrintAndStopException(
-                    "Error: Destination language \"{dst}\" not supported. "
-                    "Run with \"-ltc\"/\"--list-translation-codes\" "
-                    "to see all supported languages.".format(dst=args.dst_language)
-                )
+            is_src_matched = False
+            is_dst_matched = False
 
-        if args.dst_language == args.src_language:
+            for key in googletrans.constants.LANGUAGES:
+                if args.src_language.lower() == key.lower():
+                    args.src_language = key
+                    is_src_matched = True
+                if args.dst_language.lower() == key.lower():
+                    args.dst_language = key
+                    is_dst_matched = True
+
+            if not is_src_matched:
+                if not args.gtransv2:
+                    if args.best_match and 'src' in args.best_match:
+                        print(
+                            "Warning: Source language \"{src}\" not supported. "
+                            "Run with \"-lsc\"/\"--list-translation-codes\" "
+                            "to see all supported languages.".format(src=args.src_language)
+                        )
+                        best_result = lang_code_utils.match_print(
+                            dsr_lang=args.src_language,
+                            match_list=list(googletrans.constants.LANGUAGES.keys()),
+                            min_score=args.min_score)
+                        if best_result:
+                            print("Use {lang_code} instead.".format(lang_code=best_result[0]))
+                            args.src_language = best_result[0]
+                        else:
+                            raise core.PrintAndStopException(
+                                "Match failed. Still using {lang_code}. "
+                                "Program stopped".format(
+                                    lang_code=args.src_language))
+
+                    else:
+                        raise core.PrintAndStopException(
+                            "Error: Source language \"{src}\" not supported. "
+                            "Run with \"-lsc\"/\"--list-translation-codes\" "
+                            "to see all supported languages.".format(src=args.speech_language)
+                        )
+
+            if not is_dst_matched:
+                if not args.gtransv2:
+                    if args.best_match and 'd' in args.best_match:
+                        print(
+                            "Warning: Destination language \"{dst}\" not supported. "
+                            "Run with \"-lsc\"/\"--list-translation-codes\" "
+                            "to see all supported languages.".format(dst=args.dst_language)
+                        )
+                        best_result = lang_code_utils.match_print(
+                            dsr_lang=args.dst_language,
+                            match_list=list(googletrans.constants.LANGUAGES.keys()),
+                            min_score=args.min_score)
+                        if best_result:
+                            print("Use {lang_code} instead.".format(lang_code=best_result[0]))
+                            args.dst_language = best_result[0]
+                        else:
+                            raise core.PrintAndStopException(
+                                "Match failed. Still using {lang_code}. "
+                                "Program stopped".format(
+                                    lang_code=args.dst_language))
+
+                    else:
+                        raise core.PrintAndStopException(
+                            "Error: Destination language \"{dst}\" not supported. "
+                            "Run with \"-lsc\"/\"--list-translation-codes\" "
+                            "to see all supported languages.".format(dst=args.speech_language)
+                        )
+
+        if args.dst_language == args.speech_language\
+                or args.src_language == args.dst_language:
             print(
-                "Source language is the same as the Destination language. "
+                "Speech language is the same as the Destination language. "
                 "Only performing speech recognition."
             )
             args.dst_language = None
+            args.src_language = None
 
     else:
         if args.ext_regions:
@@ -236,7 +358,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
         else:
             print(
-                "Source language not provided. "
+                "Speech language not provided. "
                 "Only performing speech regions detection."
             )
 
@@ -257,26 +379,77 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
     for subtitles processing.
     """
     if args.src_language:
-        if args.src_language not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys():
-            raise core.PrintAndStopException(
-                "Error: Source language \"{src}\" not supported. "
-                "Run with \"-lsc\"/\"--list-speech-to-text-codes\" "
-                "to see all supported languages.".format(src=args.src_language)
-            )
-
         if args.dst_language is None:
             raise core.PrintAndStopException(
                 "Error: Destination language not provided. "
             )
 
-        else:
-            if args.dst_language and \
-                    args.dst_language not in constants.TRANSLATION_LANGUAGE_CODES.keys():
-                raise core.PrintAndStopException(
-                    "Error: Destination language \"{dst}\" not supported. "
-                    "Run with \"-ltc\"/\"--list-translation-codes\" "
-                    "to see all supported languages.".format(dst=args.dst_language)
-                )
+        is_src_matched = False
+        is_dst_matched = False
+
+        for key, in googletrans.constants.LANGUAGES:
+            if args.src_language.lower() == key.lower():
+                args.src_language = key
+                is_src_matched = True
+            if args.dst_language.lower() == key.lower():
+                args.dst_language = key
+                is_dst_matched = True
+
+        if not is_src_matched:
+            if not args.gtransv2:
+                if args.best_match and 'src' in args.best_match:
+                    print(
+                        "Warning: Source language \"{src}\" not supported. "
+                        "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        "to see all supported languages.".format(src=args.src_language)
+                    )
+                    best_result = lang_code_utils.match_print(
+                        dsr_lang=args.src_language,
+                        match_list=list(googletrans.constants.LANGUAGES.keys()),
+                        min_score=args.min_score)
+                    if best_result:
+                        print("Use {lang_code} instead.".format(lang_code=best_result[0]))
+                        args.src_language = best_result[0]
+                    else:
+                        raise core.PrintAndStopException(
+                            "Match failed. Still using {lang_code}. "
+                            "Program stopped".format(
+                                lang_code=args.src_language))
+
+                else:
+                    raise core.PrintAndStopException(
+                        "Error: Source language \"{src}\" not supported. "
+                        "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        "to see all supported languages.".format(src=args.speech_language)
+                    )
+
+        if not is_dst_matched:
+            if not args.gtransv2:
+                if args.best_match and 'd' in args.best_match:
+                    print(
+                        "Warning: Destination language \"{dst}\" not supported. "
+                        "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        "to see all supported languages.".format(dst=args.dst_language)
+                    )
+                    best_result = lang_code_utils.match_print(
+                        dsr_lang=args.dst_language,
+                        match_list=list(googletrans.constants.LANGUAGES.keys()),
+                        min_score=args.min_score)
+                    if best_result:
+                        print("Use {lang_code} instead.".format(lang_code=best_result[0]))
+                        args.dst_language = best_result[0]
+                    else:
+                        raise core.PrintAndStopException(
+                            "Match failed. Still using {lang_code}. "
+                            "Program stopped".format(
+                                lang_code=args.dst_language))
+
+                else:
+                    raise core.PrintAndStopException(
+                        "Error: Destination language \"{dst}\" not supported. "
+                        "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        "to see all supported languages.".format(dst=args.speech_language)
+                    )
 
         if args.dst_language == args.src_language:
             raise core.PrintAndStopException(
@@ -467,8 +640,7 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
                 style_name=styles_list[0])
         # formatting timed_text to subtitles string
         bilingual_name = "{base}.{nt}.{extension}".format(base=args.output,
-                                                          nt=args.src_language +
-                                                          '&' + args.dst_language,
+                                                          nt=args.dst_language,
                                                           extension=args.format)
         bilingual_string = src_sub.to_string(format_=args.format, fps=fps)
 
@@ -539,7 +711,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
     if args.ext_regions:
         # use external speech regions
-        print("Using external speech regions.")
+        print("Use external speech regions.")
         regions = sub_utils.sub_to_speech_regions(
             source_file=args.input,
             ffmpeg_cmd=ffmpeg_cmd,
@@ -566,7 +738,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             mode=mode
         )
 
-    if args.src_language:
+    if args.speech_language:
         # process output first
         try:
             args.output_files.remove("regions")
@@ -612,7 +784,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             regions=regions,
             api_key=args.gspeechv2,
             concurrency=args.speech_concurrency,
-            src_language=args.src_language,
+            src_language=args.speech_language,
             min_confidence=args.min_confidence
         )
 
@@ -643,7 +815,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
                 # formatting timed_text to subtitles string
                 src_name = "{base}.{nt}.{extension}".format(base=args.output,
-                                                            nt=args.src_language,
+                                                            nt=args.speech_language,
                                                             extension=args.format)
                 subtitles_file_path = core.str_to_file(
                     str_=src_string,
@@ -652,7 +824,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     input_m=input_m
                 )
                 # subtitles string to file
-                print("Source language subtitles "
+                print("Speech language subtitles "
                       "file created at \"{}\"".format(subtitles_file_path))
 
                 if not args.output_files:
@@ -701,7 +873,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     )
                 else:
                     bilingual_string, extension = core.list_to_sub_str(
-                        timed_text=timed_trans,
+                        timed_text=timed_text + timed_trans,
                         fps=fps,
                         subtitles_file_format=args.format
                     )
@@ -793,7 +965,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 )
             # formatting timed_text to subtitles string
             src_name = "{base}.{nt}.{extension}".format(base=args.output,
-                                                        nt=args.src_language,
+                                                        nt=args.speech_language,
                                                         extension=args.format)
             subtitles_file_path = core.str_to_file(
                 str_=src_string,
@@ -802,7 +974,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 input_m=input_m
             )
             # subtitles string to file
-            print("Source language subtitles "
+            print("Speech language subtitles "
                   "file created at \"{}\"".format(subtitles_file_path))
 
     else:

@@ -101,22 +101,26 @@ def pysubs2_ssa_event_add(
             # src_ssafile provides regions
             # text_list is [text, text, ...]
             i = 0
-            for src_event in src_ssafile.events:
+            length = len(text_list)
+            while i < length:
                 event = pysubs2.SSAEvent()
-                event.start = src_event.start
-                event.end = src_event.end
+                event.start = src_ssafile.events[i].start
+                event.end = src_ssafile.events[i].end
                 event.text = text_list[i]
                 event.style = style_name
                 dst_ssafile.events.append(event)
                 i = i + 1
     else:
         # src_ssafile provides regions only
-        for src_event in src_ssafile.events.copy():
+        i = 0
+        length = len(src_ssafile.events)
+        while i < length:
             event = pysubs2.SSAEvent()
-            event.start = src_event.start
-            event.end = src_event.end
+            event.start = src_ssafile.events[i].start
+            event.end = src_ssafile.events[i].end
             event.style = style_name
             dst_ssafile.events.append(event)
+            i = i + 1
 
 
 def vtt_formatter(subtitles):

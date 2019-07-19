@@ -42,6 +42,7 @@
 - 添加字幕翻译。[issue #38](https://github.com/BingLingGroup/autosub/issues/38)
 - 添加自动替换翻译结果中`’`为`'`的功能。
 - 添加py-googletrans控制参数。[issue #36](https://github.com/BingLingGroup/autosub/issues/36)
+- 添加语言代码支持。（依赖于langcodes包）[issue #34](https://github.com/BingLingGroup/autosub/issues/34)
 
 #### 改动(未发布的部分)
 

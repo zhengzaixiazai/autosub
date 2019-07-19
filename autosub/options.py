@@ -41,26 +41,25 @@ Bug report: https://github.com/agermanidis/autosub\n
     input_group = parser.add_argument_group(
         'Input Options',
         'Args to control input.')
+    lang_group = parser.add_argument_group(
+        'Language Options',
+        'Args to control language.')
+    output_group = parser.add_argument_group(
+        'Output Options',
+        'Args to control output.')
     speech_group = parser.add_argument_group(
         'Speech Options',
         'Args to control speech-to-text. '
         'If Speech Options not given, it will only generate the times.')
-    output_group = parser.add_argument_group(
-        'Output Options',
-        'Args to control output.')
-    trans_group = parser.add_argument_group(
-        'Translation Options',
-        'Args to control translation(py-googletrans). '
-        'Default method to translate. ')
     pygt_group = parser.add_argument_group(
         'py-googletrans Options',
-        'Args to control translation(py-googletrans). '
+        'Args to control translation. '
         'Default method to translate. '
         'Could be blocked at any time.')
     gsv2_group = parser.add_argument_group(
         'Google Speech V2 Options',
         'Args to control translation.(Not been tested) '
-        'If api key is given, '
+        'If the api key is given, '
         'it will replace the py-googletrans method.')
     options_group = parser.add_argument_group(
         'Other Options',
@@ -84,6 +83,16 @@ Bug report: https://github.com/agermanidis/autosub\n
     )
 
     input_group.add_argument(
+        '-er', '--ext-regions',
+        metavar='path',
+        help="""Path to the subtitles file
+                which provides external speech regions,
+                which is one of the formats that pysubs2 supports
+                and overrides the auditok method to find speech regions.
+                (arg_num = 1)"""
+    )
+
+    input_group.add_argument(
         '-sty', '--styles',
         nargs='?', metavar='path',
         const=' ',
@@ -93,7 +102,7 @@ Bug report: https://github.com/agermanidis/autosub\n
                 If the arg_num is 0,
                 it will use the styles from the
                 \"-esr\"/\"--external-speech-regions\".
-                More info in \"-sn\"/\"--styles-name\".
+                More info on \"-sn\"/\"--styles-name\".
                 (arg_num = 0 or 1)"""
     )
 
@@ -112,14 +121,123 @@ Bug report: https://github.com/agermanidis/autosub\n
                 (arg_num = 1 or 2)"""
     )
 
-    input_group.add_argument(
-        '-er', '--ext-regions',
-        nargs='?', metavar='path',
-        help="""Path to the subtitles file
-                which provides external speech regions,
-                which is one of the formats that pysubs2 supports
-                and overrides the auditok method to find speech regions.
-                (arg_num = 0 or 1)"""
+    lang_group.add_argument(
+        '-S', '--speech-language',
+        metavar='lang_code',
+        help="Lang code/Lang tag for speech-to-text. "
+             "Recommend using the Google Cloud Speech reference "
+             "lang codes. "
+             "WRONG INPUT WON'T STOP RUNNING. "
+             "But use it at your own risk. "
+             "Ref: https://cloud.google.com/speech-to-text/docs/languages"
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    lang_group.add_argument(
+        '-SRC', '--src-language',
+        metavar='lang_code',
+        help="Lang code/Lang tag for translation source language. "
+             "If not given, use langcodes-py2 to get a best matching "
+             "of the \"-S\"/\"--speech-language\". "
+             "If using py-googletrans as the method to translate, "
+             "WRONG INPUT STOP RUNNING. "
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    lang_group.add_argument(
+        '-D', '--dst-language',
+        metavar='lang_code',
+        help="Lang code/Lang tag for translation destination language. "
+             "Same attention in the \"-Src\"/\"--src-language\". "
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    lang_group.add_argument(
+        '-bm', '--best-match',
+        metavar='mode',
+        nargs="*",
+        help="Allow langcodes-py2 to get a best matching lang code "
+             "when your input is wrong. "
+             "Only functional for py-googletrans and Google Speech V2. "
+             "Available modes: "
+             "s, src, d, all. "
+             "\"s\" for \"-S\"/\"--speech-language\". "
+             "\"src\" for \"-Src\"/\"--src-language\". "
+             "\"d\" for \"-D\"/\"--dst-language\". "
+             "(3 ≥ arg_num ≥ 1)"
+    )
+
+    lang_group.add_argument(
+        '-mns', '--min-score',
+        metavar='integer',
+        type=int,
+        help="""An integer between 0 and 100
+                to control the good match group of 
+                \"-lsc\"/\"--list-speech-codes\"
+                or \"-ltc\"/\"--list-translation-codes\"
+                or the match result in \"-bm\"/\"--best-match\".
+                Result will be a group of \"good match\"
+                whose score is above this arg.
+                (arg_num = 0)"""
+    )
+
+    output_group.add_argument(
+        '-o', '--output',
+        metavar='path',
+        help="""The output path for subtitles file.
+                (default: the \"input\" path combined 
+                with the proper name tails) (arg_num = 1)"""
+    )
+
+    output_group.add_argument(
+        '-F', '--format',
+        metavar='format',
+        help="Destination subtitles format. "
+             "If not provided, use the extension "
+             "in the \"-o\"/\"--output\" arg. "
+             "If \"-o\"/\"--output\" arg doesn't provide "
+             "the extension name, use \"{dft}\" instead. "
+             "In this case, if \"-i\"/\"--input\" arg is a subtitles file, "
+             "use the same extension from the subtitles file. "
+             "(arg_num = 1) (default: {dft})".format(
+                 dft=constants.DEFAULT_SUBTITLES_FORMAT)
+    )
+
+    output_group.add_argument(
+        '-y', '--yes',
+        action='store_true',
+        help="Avoid any pause and overwriting files. "
+             "Stop the program when your args are wrong. (arg_num = 0)"
+    )
+
+    output_group.add_argument(
+        '-of', '--output-files',
+        metavar='type',
+        nargs='*',
+        default="dst",
+        help="Output more files. "
+             "Available types: "
+             "regions, src, dst, bilingual, all. "
+             "(4 ≥ arg_num ≥ 1) (default: %(default)s)"
+    )
+
+    output_group.add_argument(
+        '-fps', '--sub-fps',
+        metavar='float',
+        type=float,
+        help="Valid when your output format is \"sub\". "
+             "If input, it will override the fps check "
+             "on the input file. "
+             "Ref: https://pysubs2.readthedocs.io/en/latest/api-reference.html"
+             "#supported-input-output-formats "
+             "(arg_num = 1)"
+    )
+
+    output_group.add_argument(
+        '-der', '--drop-empty-regions',
+        action='store_true',
+        help="Drop any regions without text. "
+             "(arg_num = 0)"
     )
 
     speech_group.add_argument(
@@ -128,13 +246,6 @@ Bug report: https://github.com/agermanidis/autosub\n
         help="The Google Speech V2 API key to be used. "
              "If not provided, use free API key instead."
              "(arg_num = 1)"
-    )
-
-    speech_group.add_argument(
-        '-S', '--src-language',
-        metavar='lang code',
-        help="Lang code of language spoken in input file. "
-             "(arg_num = 1) (default: %(default)s)"
     )
 
     speech_group.add_argument(
@@ -159,13 +270,6 @@ Bug report: https://github.com/agermanidis/autosub\n
              "(arg_num = 1) (default: %(default)s)"
     )
 
-    trans_group.add_argument(
-        '-D', '--dst-language',
-        metavar='lang code',
-        help="Lang code of desired language for the subtitles. "
-             "(arg_num = 1) (default: %(default)s)"
-    )
-
     pygt_group.add_argument(
         '-slp', '--sleep-seconds',
         metavar='second',
@@ -181,7 +285,7 @@ Bug report: https://github.com/agermanidis/autosub\n
         metavar='url',
         nargs='*',
         default=None,
-        help="(Experimental)Customize request urls."
+        help="(Experimental)Customize request urls. "
              "Ref: https://py-googletrans.readthedocs.io/en/latest/"
              "(arg_num = 1)"
     )
@@ -190,7 +294,7 @@ Bug report: https://github.com/agermanidis/autosub\n
         '-ua', '--user-agent',
         metavar='User-Agent header',
         default=None,
-        help="(Experimental)Customize User-Agent header."
+        help="(Experimental)Customize User-Agent header. "
              "Same docs above. "
              "(arg_num = 1)"
     )
@@ -220,63 +324,6 @@ Bug report: https://github.com/agermanidis/autosub\n
         help="Number of concurrent "
              "Google translate V2 API requests to make. "
              "(arg_num = 1) (default: %(default)s)"
-    )
-
-    output_group.add_argument(
-        '-o', '--output',
-        metavar='path',
-        help="""The output path for subtitles file.
-                (default: the \"input\" path combined 
-                with the proper name tails) (arg_num = 1)"""
-    )
-
-    output_group.add_argument(
-        '-y', '--yes',
-        action='store_true',
-        help="Avoid any pause and overwriting files. "
-             "Stop the program when your args are wrong. (arg_num = 0)"
-    )
-
-    output_group.add_argument(
-        '-of', '--output-files',
-        metavar='type',
-        nargs='*',
-        default="dst",
-        help="Output more files. "
-             "Available types: "
-             "regions, src, dst, bilingual, all. "
-             "(4 ≥ arg_num ≥ 1 ) (default: %(default)s)"
-    )
-
-    output_group.add_argument(
-        '-F', '--format',
-        metavar='format',
-        help="Destination subtitles format. "
-             "If not provided, use the extension name "
-             "in the \"-o\"/\"--output\" arg. "
-             "If \"-o\"/\"--output\" arg doesn't provide "
-             "the extension name, use \"{dft}\" instead. "
-             "(arg_num = 1) (default: {dft})".format(
-                 dft=constants.DEFAULT_SUBTITLES_FORMAT)
-    )
-
-    output_group.add_argument(
-        '-fps', '--sub-fps',
-        metavar='float',
-        type=float,
-        help="Valid when your output format is \"sub\". "
-             "If input, it will override the fps check "
-             "on the input file. "
-             "Ref: https://pysubs2.readthedocs.io/en/latest/api-reference.html"
-             "#supported-input-output-formats "
-             "(arg_num = 1)"
-    )
-
-    output_group.add_argument(
-        '-der', '--drop-empty-regions',
-        action='store_true',
-        help="Drop any regions without text. "
-             "(arg_num = 0)"
     )
 
     options_group.add_argument(
@@ -363,36 +410,41 @@ Bug report: https://github.com/agermanidis/autosub\n
         help="""List all available output subtitles formats.
                 If your format is not supported,
                 you can use ffmpeg or SubtitleEdit to convert the formats. 
-                [ATTENTION]: You need to offer fps option 
+                You need to offer fps option 
                 when input is an audio file
                 and output is \"sub\" format.
                 (arg_num = 0)"""
     )
 
     list_group.add_argument(
-        '-lsc', '--list-speech-to-text-codes',
-        action='store_true',
-        help="""List all available source language codes,
-                which mean the available speech-to-text
-                language codes.
-                [ATTENTION]: Its name is different from 
-                the destination language codes.
-                Reference: https://cloud.google.com/speech-to-text/docs/languages
-                https://tools.ietf.org/html/bcp47
-                (arg_num = 0)"""
+        '-lsc', '--list-speech-codes',
+        metavar='lang_code',
+        const=' ',
+        nargs='?',
+        help="""List recommended \"-S\"/\"--speech-language\"
+                Google Speech V2 language codes.
+                If no arg is given, list all.
+                Or else will list get a group of \"good match\"
+                of the arg. Default \"good match\" standard is whose
+                match score above 90(score between 0 and 100).
+                Ref: https://tools.ietf.org/html/bcp47
+                https://github.com/LuminosoInsight/langcodes/blob/master/langcodes/__init__.py
+                lang code example: language-script-region-variant-extension-privateuse
+                (arg_num = 0 or 1)"""
     )
 
     list_group.add_argument(
         '-ltc', '--list-translation-codes',
-        action='store_true',
-        help="""List all available destination language codes,
-                which mean the available translation
-                language codes.
-                [ATTENTION]: Its name is different from 
-                the destination language codes.
-                Reference: https://cloud.google.com/speech-to-text/docs/languages
-                https://tools.ietf.org/html/bcp47
-                (arg_num = 0)"""
+        metavar='lang_code',
+        const=' ',
+        nargs='?',
+        help="""List all available \"-SRC\"/\"--src-language\"
+                py-googletrans translation language codes.
+                Or else will list get a group of \"good match\"
+                of the arg. Default \"good match\" standard is whose
+                match score above 90(score between 0 and 100).
+                Same docs above. 
+                (arg_num = 0 or 1)"""
     )
 
     return parser.parse_args()
