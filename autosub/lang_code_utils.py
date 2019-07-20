@@ -77,13 +77,20 @@ def match_print(
     if not min_score:
         min_score = 90
 
+    print("Now match lang codes.")
+
     if min_score < 0 or min_score > 100:
         print("The value of arg of \"-mns\"/\"--min-score\" isn't legal.")
         return None
 
-    print("Input lang code: {input}\nScore above: {score}".format(
-        input=dsr_lang,
-        score=min_score))
+    print("{column_1}{column_2}".format(
+        column_1="Input:".ljust(16),
+        column_2=dsr_lang))
+
+    print("{column_1}{column_2}".format(
+        column_1="Score above:".ljust(16),
+        column_2=min_score))
+
     match_scores = better_match(
         desired_language=dsr_lang,
         supported_languages=match_list,

@@ -205,6 +205,14 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
                     "Error: No valid \"-of\"/\"--output-files\" arguments."
                 )
 
+    if args.best_match:
+        args.best_match = {k.lower() for k in args.best_match}
+        if 'all' in args.best_match:
+            args.best_match = constants.DEFAULT_LANG_MODE_SET
+        else:
+            args.best_match = \
+                args.best_match & constants.DEFAULT_LANG_MODE_SET
+
     if is_ass_input:
         print("Input is a subtitles file.")
         return 1
@@ -222,17 +230,9 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             "Error: \"-slp\"/\"--sleep-seconds\" arg is illegal. "
         )
 
-    if args.best_match:
-        args.best_match = {k.lower() for k in args.best_match}
-        if 'all' in args.best_match:
-            args.best_match = constants.DEFAULT_LANG_MODE_SET
-        else:
-            args.best_match = \
-                args.best_match & constants.DEFAULT_LANG_MODE_SET
-
     if args.speech_language:  # pylint: disable=too-many-nested-blocks
         if not args.gspeechv2:
-            args.src_language = args.src_language.lower()
+            args.speech_language = args.speech_language.lower()
             if args.speech_language \
                     not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES:
                 print(
@@ -309,7 +309,9 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         raise core.PrintAndStopException(
                             "Error: Source language \"{src}\" not supported. "
                             "Run with \"-lsc\"/\"--list-translation-codes\" "
-                            "to see all supported languages.".format(src=args.speech_language)
+                            "to see all supported languages. "
+                            "Or use \"-bm\"/\"--best-match\" to get a best match".format(
+                                src=args.speech_language)
                         )
 
             if not is_dst_matched:
@@ -337,7 +339,9 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         raise core.PrintAndStopException(
                             "Error: Destination language \"{dst}\" not supported. "
                             "Run with \"-lsc\"/\"--list-translation-codes\" "
-                            "to see all supported languages.".format(dst=args.speech_language)
+                            "to see all supported languages. "
+                            "Or use \"-bm\"/\"--best-match\" to get a best match".format(
+                                dst=args.speech_language)
                         )
 
         if args.dst_language == args.speech_language\
@@ -387,7 +391,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
         is_src_matched = False
         is_dst_matched = False
 
-        for key, in googletrans.constants.LANGUAGES:
+        for key in googletrans.constants.LANGUAGES:
             if args.src_language.lower() == key.lower():
                 args.src_language = key
                 is_src_matched = True
@@ -420,7 +424,9 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                     raise core.PrintAndStopException(
                         "Error: Source language \"{src}\" not supported. "
                         "Run with \"-lsc\"/\"--list-translation-codes\" "
-                        "to see all supported languages.".format(src=args.speech_language)
+                        "to see all supported languages. "
+                        "Or use \"-bm\"/\"--best-match\" to get a best match".format(
+                            src=args.src_language)
                     )
 
         if not is_dst_matched:
@@ -448,7 +454,9 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                     raise core.PrintAndStopException(
                         "Error: Destination language \"{dst}\" not supported. "
                         "Run with \"-lsc\"/\"--list-translation-codes\" "
-                        "to see all supported languages.".format(dst=args.speech_language)
+                        "to see all supported languages. "
+                        "Or use \"-bm\"/\"--best-match\" to get a best match".format(
+                            dst=args.dst_language)
                     )
 
         if args.dst_language == args.src_language:
@@ -543,7 +551,8 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
 
     if args.styles and \
             (args.format == 'ass' or
-             args.format == 'ssa'):
+             args.format == 'ssa' or
+             args.format == 'ass.json'):
         src_sub.styles = \
             {styles_list[i]: styles_list[i + 1] for i in range(0, len(styles_list), 2)}
         for event in src_sub.events:
@@ -578,19 +587,23 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
 
     try:
         args.output_files.remove("bilingual")
+        bilingual_sub = pysubs2.SSAFile()
+        bilingual_sub.styles = src_sub.styles
+        bilingual_sub.events = src_sub.events.copy()
         if args.styles and \
                 len(styles_list) == 2 and \
                 (args.format == 'ass' or
-                 args.format == 'ssa'):
+                 args.format == 'ssa' or
+                 args.format == 'ass.json'):
             sub_utils.pysubs2_ssa_event_add(
-                src_ssafile=src_sub,
-                dst_ssafile=src_sub,
+                src_ssafile=bilingual_sub,
+                dst_ssafile=bilingual_sub,
                 text_list=translated_text,
                 style_name=styles_list[2])
         else:
             sub_utils.pysubs2_ssa_event_add(
-                src_ssafile=src_sub,
-                dst_ssafile=src_sub,
+                src_ssafile=bilingual_sub,
+                dst_ssafile=bilingual_sub,
                 text_list=translated_text,
                 style_name=styles_list[0])
         # formatting timed_text to subtitles string
@@ -598,7 +611,10 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
                                                           nt=args.src_language +
                                                           '&' + args.dst_language,
                                                           extension=args.format)
-        bilingual_string = src_sub.to_string(format_=args.format, fps=fps)
+        if args.format != 'ass.json':
+            bilingual_string = bilingual_sub.to_string(format_=args.format, fps=fps)
+        else:
+            bilingual_string = bilingual_sub.to_string(format_='json')
 
         if args.format == 'mpl2':
             extension = 'mpl2.txt'
@@ -639,10 +655,13 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
                 text_list=translated_text,
                 style_name=styles_list[0])
         # formatting timed_text to subtitles string
-        bilingual_name = "{base}.{nt}.{extension}".format(base=args.output,
-                                                          nt=args.dst_language,
-                                                          extension=args.format)
-        bilingual_string = src_sub.to_string(format_=args.format, fps=fps)
+        dst_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                    nt=args.dst_language,
+                                                    extension=args.format)
+        if args.format != 'ass.json':
+            dst_string = dst_sub.to_string(format_=args.format, fps=fps)
+        else:
+            dst_string = dst_sub.to_string(format_='json')
 
         if args.format == 'mpl2':
             extension = 'mpl2.txt'
@@ -650,8 +669,8 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
             extension = args.format
 
         subtitles_file_path = core.str_to_file(
-            str_=bilingual_string,
-            output=bilingual_name,
+            str_=dst_string,
+            output=dst_name,
             extension=extension,
             input_m=input_m
         )
@@ -744,7 +763,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             args.output_files.remove("regions")
             if args.styles and \
                     (args.format == 'ass' or
-                     args.format == 'ssa'):
+                     args.format == 'ssa' or
+                     args.format == 'ass.json'):
                 times_string, extension = core.list_to_ass_str(
                     text_list=regions,
                     styles_list=styles_list,
@@ -800,7 +820,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 args.output_files.remove("src")
                 if args.styles and \
                         (args.format == 'ass' or
-                         args.format == 'ssa'):
+                         args.format == 'ssa' or
+                         args.format == 'ass.json'):
                     src_string, extension = core.list_to_ass_str(
                         text_list=timed_text,
                         styles_list=styles_list[:2],
@@ -865,7 +886,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 args.output_files.remove("bilingual")
                 if args.styles and \
                         (args.format == 'ass' or
-                         args.format == 'ssa'):
+                         args.format == 'ssa' or
+                         args.format == 'ass.json'):
                     bilingual_string, extension = core.list_to_ass_str(
                         text_list=[timed_text, timed_trans],
                         styles_list=styles_list,
@@ -903,7 +925,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 # formatting timed_text to subtitles string
                 if args.styles and \
                         (args.format == 'ass' or
-                         args.format == 'ssa'):
+                         args.format == 'ssa' or
+                         args.format == 'ass.json'):
                     if len(args.styles) == 4:
                         dst_string, extension = core.list_to_ass_str(
                             text_list=timed_trans,
@@ -951,7 +974,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             )
             if args.styles and \
                     (args.format == 'ass' or
-                     args.format == 'ssa'):
+                     args.format == 'ssa' or
+                     args.format == 'ass.json'):
                 src_string, extension = core.list_to_ass_str(
                     text_list=timed_text,
                     styles_list=styles_list,
@@ -984,7 +1008,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         )
         if args.styles and \
                 (args.format == 'ass' or
-                 args.format == 'ssa'):
+                 args.format == 'ssa' or
+                 args.format == 'ass.json'):
             times_subtitles, extension = core.list_to_ass_str(
                 text_list=regions,
                 styles_list=styles_list,

@@ -43,6 +43,7 @@
 - 添加自动替换翻译结果中`’`为`'`的功能。
 - 添加py-googletrans控制参数。[issue #36](https://github.com/BingLingGroup/autosub/issues/36)
 - 添加语言代码支持。（依赖于langcodes包）[issue #34](https://github.com/BingLingGroup/autosub/issues/34)
+- 添加ass格式的复杂json文件输出。[issue #39](https://github.com/BingLingGroup/autosub/issues/39)
 
 #### 改动(未发布的部分)
 

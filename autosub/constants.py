@@ -270,8 +270,9 @@ OUTPUT_FORMAT = {
     'mpl2': 'Similar to MicroDVD(Extension is \".mpl2.txt\")',
     'tmp': 'TMP Player Subtitle Format',
     'vtt': 'WebVTT',
-    'json': 'json(Only include times and text)',
-    'txt': 'Plain Text(Only text without times)'
+    'json': 'json(Only times and text)',
+    'ass.json': 'json(Complex ass content json)',
+    'txt': 'Plain Text(Text or times)'
 }
 
 INPUT_FORMAT = {
@@ -281,5 +282,5 @@ INPUT_FORMAT = {
     'sub': 'MicroDVD Subtitle',
     'mpl2': 'Similar to MicroDVD(Extension is \".mpl2.txt\")',
     'tmp': 'TMP Player Subtitle Format',
-    'json': 'json(Exported by pysubs2)'
+    'json': 'json(Complex ass content json)'
 }

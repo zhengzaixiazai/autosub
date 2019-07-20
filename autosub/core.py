@@ -334,6 +334,17 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
         formatted_subtitles = sub_utils.json_formatter(
             subtitles=timed_text)
 
+    elif subtitles_file_format == 'ass.json':
+        pysubs2_obj = pysubs2.SSAFile()
+        sub_utils.pysubs2_ssa_event_add(
+            src_ssafile=None,
+            dst_ssafile=pysubs2_obj,
+            text_list=timed_text,
+            style_name=None
+        )
+        formatted_subtitles = pysubs2_obj.to_string(
+            format_='json')
+
     elif subtitles_file_format == 'txt':
         formatted_subtitles = sub_utils.txt_formatter(
             subtitles=timed_text)
@@ -397,7 +408,8 @@ def list_to_ass_str(  # pylint: disable=too-many-arguments
     """
 
     if subtitles_file_format == 'ass' \
-            or subtitles_file_format == 'ssa':
+            or subtitles_file_format == 'ssa'\
+            or subtitles_file_format == 'ass.json':
         pysubs2_obj = pysubs2.SSAFile()
         pysubs2_obj.styles = \
             {styles_list[i]: styles_list[i + 1] for i in range(0, len(styles_list), 2)}
@@ -430,7 +442,10 @@ def list_to_ass_str(  # pylint: disable=too-many-arguments
                     text_list=text_list[1],
                     style_name=styles_list[2])
 
-        formatted_subtitles = pysubs2_obj.to_string(format_=subtitles_file_format)
+        if subtitles_file_format != 'ass.json':
+            formatted_subtitles = pysubs2_obj.to_string(format_=subtitles_file_format)
+        else:
+            formatted_subtitles = pysubs2_obj.to_string(format_='json')
     else:
         # fallback process
         print("Format \"{fmt}\" not supported. \
