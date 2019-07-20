@@ -44,6 +44,7 @@
 - 添加py-googletrans控制参数。[issue #36](https://github.com/BingLingGroup/autosub/issues/36)
 - 添加语言代码支持。（依赖于langcodes包）[issue #34](https://github.com/BingLingGroup/autosub/issues/34)
 - 添加ass格式的复杂json文件输出。[issue #39](https://github.com/BingLingGroup/autosub/issues/39)
+- 添加音频预处理。[issue #7](https://github.com/BingLingGroup/autosub/issues/7)
 
 #### 改动(未发布的部分)
 

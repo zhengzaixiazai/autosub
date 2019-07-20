@@ -30,6 +30,16 @@ DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual'}
 DEFAULT_SUB_MODE_SET = {'dst', 'bilingual'}
 DEFAULT_LANG_MODE_SET = {'s', 'src', 'd'}
 
+DEFAULT_AUDIO_PRCS = [
+    "ffmpeg -i {in_} -af \"asplit[a],aphasemeter=video=0,\
+ametadata=select:key=\
+lavfi.aphasemeter.phase:value=-0.005:function=less,\
+pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]amix\" \
+-ac 1 -f flac {out_}",
+    "ffmpeg -i {in_} -af lowpass=3000,highpass=200 {out_}",
+    "ffmpeg-normalize -v {in_} -ar 44100 -ofmt flac -c:a flac -pr -p -o {out_}"
+]
+
 SPEECH_TO_TEXT_LANGUAGE_CODES = {
     'af-za': 'Afrikaans (South Africa)',
     'am-et': 'Amharic (Ethiopia)',

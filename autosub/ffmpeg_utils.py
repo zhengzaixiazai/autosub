@@ -16,6 +16,7 @@ import os
 
 
 # Any changes to the path and your own modules
+from autosub import constants
 
 
 class SplitIntoFLACPiece(object):  # pylint: disable=too-few-public-methods
@@ -144,3 +145,70 @@ def source_to_audio(  # pylint: disable=superfluous-parens, too-many-arguments
     use_shell = True if os.name == "nt" else False
     subprocess.check_output(command, stdin=open(os.devnull), shell=use_shell)
     return temp.name
+
+
+def audio_pre_prcs(
+        filename,
+        is_keep,
+        cmds,
+        input_m=input,
+        ffmpeg_cmd="ffmpeg"
+):
+    """
+    Pre-process audio file.
+    """
+    name_list = os.path.splitext(filename)
+    output_list = [filename, ]
+    if not cmds:
+        cmds = constants.DEFAULT_AUDIO_PRCS
+
+    if is_keep:
+        for i in range(1, len(cmds) + 1):
+            output_list.append(name_list[0]
+                               + '_temp_{num}.flac'.format(num=i))
+
+            if input_m:
+                while os.path.isfile(output_list[i]):
+                    print("There is already a file with the same name"
+                          " in this location: \"{dest_name}\".".format(dest_name=output_list[i]))
+                    output_list[i] = input_m(
+                        "Input a new path (including directory and file name) for output file.\n")
+                    output_list[i] = os.path.splitext(output_list[i])[0]
+                    output_list[i] = "{base}.{extension}".format(base=output_list[i],
+                                                                 extension='temp.flac')
+            else:
+                if os.path.isfile(output_list[i]):
+                    os.remove(output_list[i])
+
+            command = cmds[i - 1].format(
+                in_=output_list[i - 1],
+                out_=output_list[i])
+            command = command[:7].replace('ffmpeg ', ffmpeg_cmd + ' ') + command[7:]
+            subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+
+    else:
+        temp_file = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
+        temp = temp_file.name
+        temp_file.close()
+        if os.path.isfile(temp):
+            os.remove(temp)
+        output_list.append(temp)
+        command = cmds[0].format(
+            in_=output_list[0],
+            out_=output_list[1])
+        subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+        for i in range(2, len(cmds) + 1):
+            temp_file = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
+            temp = temp_file.name
+            temp_file.close()
+            if os.path.isfile(temp):
+                os.remove(temp)
+            output_list.append(temp)
+            command = cmds[i - 1].format(
+                in_=output_list[i - 1],
+                out_=output_list[i])
+            command = command[:7].replace('ffmpeg ', ffmpeg_cmd + ' ') + command[7:]
+            subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+            os.remove(output_list[i - 1])
+
+    return output_list[-1]

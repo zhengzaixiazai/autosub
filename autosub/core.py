@@ -81,14 +81,15 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
 
 
 def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
-        source_file,
+        audio_flac,
         api_url,
         regions,
         ffmpeg_cmd="ffmpeg",
         api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
-        min_confidence=0.0
+        min_confidence=0.0,
+        audio_rate=44100
 ):
     """
     Give an input audio/video file, generate text_list from speech-to-text api.
@@ -97,12 +98,6 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
     if not regions:
         return None
 
-    audio_rate = 44100
-    audio_flac = ffmpeg_utils.source_to_audio(
-        source_file,
-        ffmpeg_cmd=ffmpeg_cmd,
-        rate=audio_rate,
-        file_ext='.flac')
     pool = multiprocessing.Pool(concurrency)
     converter = ffmpeg_utils.SplitIntoFLACPiece(
         source_path=audio_flac,
@@ -154,7 +149,6 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
         print("Cancelling transcription.")
         return 1
 
-    os.remove(audio_flac)
     return text_list
 
 
@@ -476,13 +470,15 @@ def str_to_file(
     """
     dest = output
 
-    while input_m and os.path.isfile(dest):
-        print("There is already a file with the same name"
-              " in this location: \"{dest_name}\".".format(dest_name=dest))
-        dest = input_m("Input a new path (including directory and file name) for output file.\n")
-        dest = os.path.splitext(dest)[0]
-        dest = "{base}.{extension}".format(base=dest,
-                                           extension=extension)
+    if input_m:
+        while os.path.isfile(dest):
+            print("There is already a file with the same name"
+                  " in this location: \"{dest_name}\".".format(dest_name=dest))
+            dest = input_m(
+                "Input a new path (including directory and file name) for output file.\n")
+            dest = os.path.splitext(dest)[0]
+            dest = "{base}.{extension}".format(base=dest,
+                                               extension=extension)
 
     with open(dest, 'wb') as output_file:
         output_file.write(str_.encode("utf-8"))

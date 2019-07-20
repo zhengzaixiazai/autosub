@@ -37,6 +37,14 @@ def list_args(args):
             print("{column_1}{column_2}".format(
                 column_1=subtitles_format.ljust(16),
                 column_2=format_description))
+        print("\nList of input formats:\n")
+        print("{column_1}{column_2}".format(
+            column_1="Format".ljust(16),
+            column_2="Description"))
+        for subtitles_format, format_description in sorted(constants.INPUT_FORMAT.items()):
+            print("{column_1}{column_2}".format(
+                column_1=subtitles_format.ljust(16),
+                column_2=format_description))
         return True
 
     if args.list_speech_codes:
@@ -130,14 +138,10 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
 
     args.input = args.input.replace("\\", "/")
 
-    if len(args.output_files) > 4:
-        raise core.PrintAndStopException(
-            "Error: Too many \"-of\"/\"--output-files\" arguments."
-        )
-
-    input_ext = os.path.splitext(args.input)[-1]
+    input_name = os.path.splitext(args.input)
+    input_ext = input_name[-1]
     input_fmt = input_ext.strip('.')
-    input_path = os.path.splitext(args.input)[0]
+    input_path = input_name[0]
 
     is_ass_input = input_fmt in constants.INPUT_FORMAT
 
@@ -174,9 +178,9 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
         args.output = args.output.replace("\\", "/")
         if not args.format:
             # get format from output
-            args.format = os.path.splitext(args.output)[-1].strip('.')
+            args.format = input_ext.strip('.')
             # format = output name extension without dot
-        args.output = os.path.splitext(args.output)[0]
+        args.output = input_path
         # output = output name without extension
 
     if args.format not in constants.OUTPUT_FORMAT:
@@ -186,7 +190,7 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             "Or use ffmpeg or SubtitleEdit to convert the formats.".format(fmt=args.format)
         )
 
-    args.output_files = {k.lower() for k in args.output_files}
+    args.output_files = set(args.output_files)
     if "all" in args.output_files:
         args.output_files = constants.DEFAULT_MODE_SET
     else:
@@ -525,8 +529,13 @@ def get_timed_text(
         # keep empty regions
         timed_text = []
         i = 0
-        for region in regions:
-            timed_text.append((region, text_list[i]))
+        length = len(regions)
+        if length != len(text_list):
+            raise core.PrintAndStopException(
+                "Error: Regions and text_list don't have the same length."
+            )
+        while i < length:
+            timed_text.append((regions[i], text_list[i]))
             i = i + 1
 
     return timed_text
@@ -707,12 +716,13 @@ def get_fps(
     return fps
 
 
-def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals, too-many-arguments
         args,
         input_m=input,
         fps=30.0,
         ffmpeg_cmd="ffmpeg",
-        styles_list=None):
+        styles_list=None,
+        is_flac=False):
     """
     Give args and process an input audio or video file.
     """
@@ -797,16 +807,28 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             pass
 
         # speech to text
+        if not is_flac:
+            audio_flac = ffmpeg_utils.source_to_audio(
+                args.input,
+                ffmpeg_cmd=ffmpeg_cmd,
+                rate=44100,
+                file_ext='.flac')
+        else:
+            audio_flac = args.input
+
         text_list = core.speech_to_text(
-            source_file=args.input,
+            audio_flac=audio_flac,
             ffmpeg_cmd=ffmpeg_cmd,
             api_url=gsv2_api_url,
             regions=regions,
             api_key=args.gspeechv2,
             concurrency=args.speech_concurrency,
             src_language=args.speech_language,
-            min_confidence=args.min_confidence
+            min_confidence=args.min_confidence,
         )
+
+        if not args.keep:
+            os.remove(audio_flac)
 
         timed_text = get_timed_text(
             is_empty_dropped=args.drop_empty_regions,

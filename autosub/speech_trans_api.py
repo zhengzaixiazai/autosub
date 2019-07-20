@@ -33,20 +33,19 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
                  retries=3):
         # pylint: disable=too-many-arguments
         self.min_confidence = min_confidence
-        self.lang_code = lang_code
         self.rate = rate
-        self.api_url = api_url
-        self.api_key = api_key
         self.retries = retries
+        self.api_key = api_key
+        self.lang_code = lang_code
+        self.api_url = api_url.format(lang=lang_code, key=api_key)
 
     def __call__(self, data):
         try:  # pylint: disable=too-many-nested-blocks
             for _ in range(self.retries):
-                url = self.api_url.format(lang=self.lang_code, key=self.api_key)
                 headers = {"Content-Type": "audio/x-flac; rate=%d" % self.rate}
 
                 try:
-                    result = requests.post(url, data=data, headers=headers)
+                    result = requests.post(self.api_url, data=data, headers=headers)
                 except requests.exceptions.ConnectionError:
                     continue
 

@@ -17,7 +17,7 @@ from autosub import metadata
 from autosub import constants
 
 
-def get_cmd_args():
+def get_cmd_args():  # pylint: disable=too-many-statements
     """
     Get command-line arguments.
     """
@@ -64,6 +64,9 @@ Bug report: https://github.com/agermanidis/autosub\n
     options_group = parser.add_argument_group(
         'Other Options',
         'Other options to control.')
+    audio_prcs_group = parser.add_argument_group(
+        'Audio Processing Options',
+        'Args to control audio processing.')
     auditok_group = parser.add_argument_group(
         'Auditok Options',
         'Args to control Auditok '
@@ -80,6 +83,13 @@ Bug report: https://github.com/agermanidis/autosub\n
              "When it is a subtitles file, "
              "the program will only translate it. "
              "(arg_num = 1)"
+    )
+
+    input_group.add_argument(
+        '-k', '--keep',
+        action='store_true',
+        help="Keep audio processing files to the input folder. "
+             "(arg_num = 0)"
     )
 
     input_group.add_argument(
@@ -178,7 +188,7 @@ Bug report: https://github.com/agermanidis/autosub\n
                 or the match result in \"-bm\"/\"--best-match\".
                 Result will be a group of \"good match\"
                 whose score is above this arg.
-                (arg_num = 0)"""
+                (arg_num = 1)"""
     )
 
     output_group.add_argument(
@@ -214,7 +224,7 @@ Bug report: https://github.com/agermanidis/autosub\n
         '-of', '--output-files',
         metavar='type',
         nargs='*',
-        default="dst",
+        default=["dst", ],
         help="Output more files. "
              "Available types: "
              "regions, src, dst, bilingual, all. "
@@ -273,7 +283,7 @@ Bug report: https://github.com/agermanidis/autosub\n
     pygt_group.add_argument(
         '-slp', '--sleep-seconds',
         metavar='second',
-        type=int,
+        type=float,
         default=constants.DEFAULT_SLEEP_SECONDS,
         help="(Experimental)Seconds to sleep "
              "between two translation requests. "
@@ -284,7 +294,6 @@ Bug report: https://github.com/agermanidis/autosub\n
         '-surl', '--service-urls',
         metavar='url',
         nargs='*',
-        default=None,
         help="(Experimental)Customize request urls. "
              "Ref: https://py-googletrans.readthedocs.io/en/latest/"
              "(arg_num = 1)"
@@ -293,7 +302,6 @@ Bug report: https://github.com/agermanidis/autosub\n
     pygt_group.add_argument(
         '-ua', '--user-agent',
         metavar='User-Agent header',
-        default=None,
         help="(Experimental)Customize User-Agent header. "
              "Same docs above. "
              "(arg_num = 1)"
@@ -347,6 +355,43 @@ Bug report: https://github.com/agermanidis/autosub\n
         + ' by ' + metadata.AUTHOR + ' <'
         + metadata.AUTHOR_EMAIL + '>',
         help="Show %(prog)s version and exit. (arg_num = 0)"
+    )
+
+    audio_prcs_group.add_argument(
+        '-ap', '--audio-process',
+        nargs='?', metavar='mode',
+        const='y', default='d',
+        help="""Option to control audio process.
+                If not given the option, no audio pre-process.
+                (default: %(default)s)
+                arg_num == 0 or arg = \"y\": 
+                it will process the input first
+                then start normal workflow.
+                In this case, no extra audio encoding before
+                the speech-to-text procedure. (const: %(const)s)
+                \"o\": means only process the input audio.
+                \"n\": means NO EXTRA CHECK and encoding
+                before the speech-to-text procedure.
+                Default command to process the audio:
+                {dft_1} | {dft_2} | {dft_3}
+                (Ref: 
+                https://github.com/stevenj/autosub/blob/master/scripts/subgen.sh
+                https://ffmpeg.org/ffmpeg-filters.html)
+                (arg_num = 0 or 1)""".format(
+                    dft_1=constants.DEFAULT_AUDIO_PRCS[0],
+                    dft_2=constants.DEFAULT_AUDIO_PRCS[1],
+                    dft_3=constants.DEFAULT_AUDIO_PRCS[2])
+    )
+
+    audio_prcs_group.add_argument(
+        '-apc', '--audio-process-cmd',
+        nargs='*', metavar='command',
+        help="This arg will override the default "
+             "audio process command. "
+             "Every line of the commands need to be in quotes. "
+             "Input file name is {in_}. "
+             "Output file name is {out_}. "
+             "(arg_num = 0 or 1)"
     )
 
     auditok_group.add_argument(
@@ -407,7 +452,7 @@ Bug report: https://github.com/agermanidis/autosub\n
     list_group.add_argument(
         '-lf', '--list-formats',
         action='store_true',
-        help="""List all available output subtitles formats.
+        help="""List all available subtitles formats.
                 If your format is not supported,
                 you can use ffmpeg or SubtitleEdit to convert the formats. 
                 You need to offer fps option 

@@ -35,6 +35,7 @@ def sub_to_speech_regions(
     reader = wave.open(audio_wav)
     audio_file_length = int(float(reader.getnframes()) / float(reader.getframerate())) * 1000
     reader.close()
+    os.remove(audio_wav)
 
     ext_regions = pysubs2.SSAFile.load(sub_file)
 
@@ -60,7 +61,6 @@ def sub_to_speech_regions(
                 regions.append((start_time,
                                 start_time + elapsed_time))
 
-    os.remove(audio_wav)
     return regions
 
 

@@ -45,14 +45,46 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
         styles_list = []
         validate_result = cmdline_utils.validate_io(args, styles_list)
+
         if validate_result == 0:
+            if args.audio_process:
+                if args.audio_process == 'y':
+                    args.input = ffmpeg_utils.audio_pre_prcs(
+                        filename=args.input,
+                        is_keep=args.keep,
+                        cmds=args.audio_process_cmd,
+                        input_m=input_m,
+                        ffmpeg_cmd=ffmpeg_cmd
+                    )
+                    print("Audio pre-processing complete.")
+                    is_flac = True
+                elif args.audio_process == 'o':
+                    args.keep = True
+                    args.input = ffmpeg_utils.audio_pre_prcs(
+                        filename=args.input,
+                        is_keep=args.keep,
+                        cmds=args.audio_process_cmd,
+                        input_m=input_m,
+                        ffmpeg_cmd=ffmpeg_cmd
+                    )
+                    raise core.PrintAndStopException(
+                        "Audio pre-processing complete.\nAll works done."
+                    )
+                elif args.audio_process == 'n':
+                    is_flac = True
+                else:
+                    is_flac = False
+            else:
+                is_flac = False
+
             cmdline_utils.validate_aovp_args(args)
             cmdline_utils.fix_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
             cmdline_utils.audio_or_video_prcs(args,
                                               fps=fps,
                                               input_m=input_m,
-                                              styles_list=styles_list)
+                                              styles_list=styles_list,
+                                              is_flac=is_flac)
 
         elif validate_result == 1:
             cmdline_utils.validate_sp_args(args)
