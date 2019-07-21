@@ -362,15 +362,16 @@ Bug report: https://github.com/agermanidis/autosub\n
         nargs='?', metavar='mode',
         const='y', default='d',
         help="""Option to control audio process.
-                If not given the option, no audio pre-process.
+                If not given the option, 
+                do normal conversion work.
                 (default: %(default)s)
-                arg_num == 0 or arg = \"y\": 
+                arg_num == 0 or arg == \"y\": 
                 it will process the input first
                 then start normal workflow.
-                In this case, no extra audio encoding before
-                the speech-to-text procedure. (const: %(const)s)
+                In this case, audio won't be converted
+                after this. (const: %(const)s)
                 \"o\": means only process the input audio.
-                \"n\": means NO EXTRA CHECK and encoding
+                \"n\": means NO EXTRA CHECK/ENCODING
                 before the speech-to-text procedure.
                 Default command to process the audio:
                 {dft_1} | {dft_2} | {dft_3}
@@ -392,6 +393,63 @@ Bug report: https://github.com/agermanidis/autosub\n
              "Input file name is {in_}. "
              "Output file name is {out_}. "
              "(arg_num = 0 or 1)"
+    )
+
+    audio_prcs_group.add_argument(
+        '-acc', '--audio-conversion-cmd',
+        metavar='command',
+        help="(Experimental)This arg will override the default "
+             "audio conversion command. "
+             "Need to follow the references keyword argument. "
+             "Default command to process the audio: "
+             "{dft} "
+             "(arg_num = 1)".format(
+                 dft=constants.DEFAULT_AUDIO_CVT)
+    )
+
+    audio_prcs_group.add_argument(
+        '-asc', '--audio-split-cmd',
+        metavar='command',
+        help="(Experimental)This arg will override the default "
+             "audio split command. "
+             "Need to follow the references keyword argument. "
+             "Default command to process the audio: "
+             "{dft} "
+             "(arg_num = 1)".format(
+                 dft=constants.DEFAULT_AUDIO_SPLT)
+    )
+
+    audio_prcs_group.add_argument(
+        '-asf', '--api-suffix',
+        metavar='file_suffix',
+        default='.flac',
+        help="(Experimental)This arg will override the default "
+             "api audio suffix. "
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    audio_prcs_group.add_argument(
+        '-asr', '--api-sample-rate',
+        metavar='sample_rate',
+        type=int,
+        default=44100,
+        help="(Experimental)This arg will override the default "
+             "api audio sample rate, "
+             "which control the audio sample rate "
+             "before sending it to the api."
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
+    audio_prcs_group.add_argument(
+        '-aac', '--api-audio-channel',
+        metavar='channel_num',
+        type=int,
+        default=1,
+        help="(Experimental)This arg will override the default "
+             "api audio audio channel, "
+             "which control the audio channel "
+             "before sending it to the api."
+             "(arg_num = 1) (default: %(default)s)"
     )
 
     auditok_group.add_argument(

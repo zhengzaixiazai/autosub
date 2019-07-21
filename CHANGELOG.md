@@ -46,6 +46,7 @@ Click up arrow to go back to TOC.
 - Add lang codes support.(Depend on langcodes package) [issue #34](https://github.com/BingLingGroup/autosub/issues/34)
 - Add complex ass json output. [issue #39](https://github.com/BingLingGroup/autosub/issues/39)
 - Add audio preprocessing. [issue #7](https://github.com/BingLingGroup/autosub/issues/7)
+- Add options to control every ffmpeg command. [issue #43](https://github.com/BingLingGroup/autosub/issues/43)
 
 #### Changed(Unreleased)
 

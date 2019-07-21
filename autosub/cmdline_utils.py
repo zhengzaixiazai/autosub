@@ -9,6 +9,8 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 # Import built-in modules
 import os
+import tempfile
+import subprocess
 
 # Import third-party modules
 import pysubs2
@@ -22,6 +24,7 @@ from autosub import core
 from autosub import ffmpeg_utils
 from autosub import sub_utils
 from autosub import lang_code_utils
+from autosub import exceptions
 
 
 def list_args(args):
@@ -93,19 +96,19 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
     Give args and choose workflow depends on the io options.
     """
     if not args.input or not os.path.isfile(args.input):
-        raise core.PrintAndStopException(
+        raise exceptions.AutosubException(
             "Error: arg of \"-i\"/\"--input\": \"{path}\" isn't valid. "
             "You need to give a valid path.".format(path=args.input))
 
     if args.styles:  # pylint: disable=too-many-nested-blocks
         if not os.path.isfile(args.styles):
-            raise core.PrintAndStopException(
+            raise exceptions.AutosubException(
                 "Error: arg of \"-sty\"/\"--styles\": \"{path}\" isn't valid. "
                 "You need to give a valid path.".format(path=args.styles))
 
         if args.styles_name:
             if len(args.styles_name) > 2:
-                raise core.PrintAndStopException(
+                raise exceptions.AutosubException(
                     "Error: Too many \"-sn\"/\"--styles-name\" arguments."
                 )
             else:
@@ -118,7 +121,7 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
                         if ass_styles:
                             styles_dict[args.styles_name[1]] = ass_styles
                         else:
-                            raise core.PrintAndStopException(
+                            raise exceptions.AutosubException(
                                 "Error: \"-sn\"/\"--styles-name\" "
                                 "arguments aren't in \"{path}\".".format(path=args.styles)
                             )
@@ -126,13 +129,13 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
                         styles_list.append(item[0])
                         styles_list.append(item[1])
                 else:
-                    raise core.PrintAndStopException(
+                    raise exceptions.AutosubException(
                         "Error: \"-sn\"/\"--styles-name\" "
                         "arguments aren't in \"{path}\".".format(path=args.styles)
                     )
 
     if args.ext_regions and not os.path.isfile(args.ext_regions):
-        raise core.PrintAndStopException(
+        raise exceptions.AutosubException(
             "Error: arg of \"-er\"/\"--ext-regions\": \"{path}\" isn't valid. "
             "You need to give a valid path.".format(path=args.ext_regions))
 
@@ -184,7 +187,7 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
         # output = output name without extension
 
     if args.format not in constants.OUTPUT_FORMAT:
-        raise core.PrintAndStopException(
+        raise exceptions.AutosubException(
             "Error: Output subtitles format \"{fmt}\" not supported. "
             "Run with \"-lf\"/\"--list-formats\" to see all supported formats.\n"
             "Or use ffmpeg or SubtitleEdit to convert the formats.".format(fmt=args.format)
@@ -198,14 +201,14 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             args.output_files = args.output_files & \
                                 constants.DEFAULT_MODE_SET
             if not args.output_files:
-                raise core.PrintAndStopException(
+                raise exceptions.AutosubException(
                     "Error: No valid \"-of\"/\"--output-files\" arguments."
                 )
         else:
             args.output_files = args.output_files & \
                                 constants.DEFAULT_SUB_MODE_SET
             if not args.output_files:
-                raise core.PrintAndStopException(
+                raise exceptions.AutosubException(
                     "Error: No valid \"-of\"/\"--output-files\" arguments."
                 )
 
@@ -230,7 +233,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
     for audio or video processing.
     """
     if args.sleep_seconds < 0 or args.lines_per_trans < 0:
-        raise core.PrintAndStopException(
+        raise exceptions.AutosubException(
             "Error: \"-slp\"/\"--sleep-seconds\" arg is illegal. "
         )
 
@@ -259,7 +262,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                                 lang_code=args.speech_language))
 
             if args.min_confidence < 0.0 or args.min_confidence > 1.0:
-                raise core.PrintAndStopException(
+                raise exceptions.AutosubException(
                     "Error: min_confidence's value isn't legal."
                 )
 
@@ -304,13 +307,13 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                             print("Use {lang_code} instead.".format(lang_code=best_result[0]))
                             args.src_language = best_result[0]
                         else:
-                            raise core.PrintAndStopException(
+                            raise exceptions.AutosubException(
                                 "Match failed. Still using {lang_code}. "
                                 "Program stopped".format(
                                     lang_code=args.src_language))
 
                     else:
-                        raise core.PrintAndStopException(
+                        raise exceptions.AutosubException(
                             "Error: Source language \"{src}\" not supported. "
                             "Run with \"-lsc\"/\"--list-translation-codes\" "
                             "to see all supported languages. "
@@ -334,13 +337,13 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                             print("Use {lang_code} instead.".format(lang_code=best_result[0]))
                             args.dst_language = best_result[0]
                         else:
-                            raise core.PrintAndStopException(
+                            raise exceptions.AutosubException(
                                 "Match failed. Still using {lang_code}. "
                                 "Program stopped".format(
                                     lang_code=args.dst_language))
 
                     else:
-                        raise core.PrintAndStopException(
+                        raise exceptions.AutosubException(
                             "Error: Destination language \"{dst}\" not supported. "
                             "Run with \"-lsc\"/\"--list-translation-codes\" "
                             "to see all supported languages. "
@@ -359,7 +362,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
     else:
         if args.ext_regions:
-            raise core.PrintAndStopException(
+            raise exceptions.AutosubException(
                 "You've already input times. "
                 "No works done."
             )
@@ -374,7 +377,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
         # when args.styles is used but without option
         # its value is ' '
         if not args.ext_regions:
-            raise core.PrintAndStopException(
+            raise exceptions.AutosubException(
                 "Error: External speech regions file not provided."
             )
         else:
@@ -388,7 +391,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
     """
     if args.src_language:
         if args.dst_language is None:
-            raise core.PrintAndStopException(
+            raise exceptions.AutosubException(
                 "Error: Destination language not provided. "
             )
 
@@ -419,13 +422,13 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                         print("Use {lang_code} instead.".format(lang_code=best_result[0]))
                         args.src_language = best_result[0]
                     else:
-                        raise core.PrintAndStopException(
+                        raise exceptions.AutosubException(
                             "Match failed. Still using {lang_code}. "
                             "Program stopped".format(
                                 lang_code=args.src_language))
 
                 else:
-                    raise core.PrintAndStopException(
+                    raise exceptions.AutosubException(
                         "Error: Source language \"{src}\" not supported. "
                         "Run with \"-lsc\"/\"--list-translation-codes\" "
                         "to see all supported languages. "
@@ -449,13 +452,13 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                         print("Use {lang_code} instead.".format(lang_code=best_result[0]))
                         args.dst_language = best_result[0]
                     else:
-                        raise core.PrintAndStopException(
+                        raise exceptions.AutosubException(
                             "Match failed. Still using {lang_code}. "
                             "Program stopped".format(
                                 lang_code=args.dst_language))
 
                 else:
-                    raise core.PrintAndStopException(
+                    raise exceptions.AutosubException(
                         "Error: Destination language \"{dst}\" not supported. "
                         "Run with \"-lsc\"/\"--list-translation-codes\" "
                         "to see all supported languages. "
@@ -464,12 +467,12 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                     )
 
         if args.dst_language == args.src_language:
-            raise core.PrintAndStopException(
+            raise exceptions.AutosubException(
                 "Error: Source language is the same as the Destination language. "
             )
 
     else:
-        raise core.PrintAndStopException(
+        raise exceptions.AutosubException(
             "Error: Source language not provided. "
         )
 
@@ -477,14 +480,15 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
         # when args.styles is used but without option
         # its value is ' '
         if not args.ext_regions:
-            raise core.PrintAndStopException(
+            raise exceptions.AutosubException(
                 "Error: External speech regions file not provided."
             )
         else:
             args.styles = args.ext_regions
 
 
-def fix_args(args):
+def fix_args(args,
+             ffmpeg_cmd):
     """
     Check that the commandline arguments value passed to autosub are proper.
     """
@@ -513,6 +517,16 @@ def fix_args(args):
             )
             args.max_continuous_silence = constants.DEFAULT_CONTINUOUS_SILENCE
 
+    if not args.audio_conversion_cmd:
+        args.audio_conversion_cmd = \
+            constants.DEFAULT_AUDIO_CVT[:7].replace(
+                'ffmpeg ', ffmpeg_cmd) + constants.DEFAULT_AUDIO_CVT[7:]
+
+    if not args.audio_split_cmd:
+        args.audio_split_cmd = \
+            constants.DEFAULT_AUDIO_SPLT[:7].replace(
+                'ffmpeg ', ffmpeg_cmd) + constants.DEFAULT_AUDIO_SPLT[7:]
+
 
 def get_timed_text(
         is_empty_dropped,
@@ -531,7 +545,7 @@ def get_timed_text(
         i = 0
         length = len(regions)
         if length != len(text_list):
-            raise core.PrintAndStopException(
+            raise exceptions.AutosubException(
                 "Error: Regions and text_list don't have the same length."
             )
         while i < length:
@@ -550,7 +564,7 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
     Give args and translate a subtitles file.
     """
     if not args.output_files:
-        raise core.PrintAndStopException(
+        raise exceptions.AutosubException(
             "\nNo works done."
             " Check your \"-of\"/\"--output-files\" option."
         )
@@ -641,7 +655,7 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
               "created at \"{}\"".format(subtitles_file_path))
 
         if not args.output_files:
-            raise core.PrintAndStopException("\nAll works done.")
+            raise exceptions.AutosubException("\nAll works done.")
 
     except KeyError:
         pass
@@ -720,9 +734,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         args,
         input_m=input,
         fps=30.0,
-        ffmpeg_cmd="ffmpeg",
         styles_list=None,
-        is_flac=False):
+        no_audio_prcs=False):
     """
     Give args and process an input audio or video file.
     """
@@ -733,7 +746,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         gsv2_api_url = "https://" + constants.GOOGLE_SPEECH_V2_API_URL
 
     if not args.output_files:
-        raise core.PrintAndStopException(
+        raise exceptions.AutosubException(
             "\nNo works done."
             " Check your \"-of\"/\"--output-files\" option."
         )
@@ -741,11 +754,19 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     if args.ext_regions:
         # use external speech regions
         print("Use external speech regions.")
+        audio_wav = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+        command = args.audio_conversion_cmd.format(
+            in_=args.input,
+            channel=1,
+            sample_rate=16000,
+            out_=audio_wav
+        )
+        subprocess.check_output(command, stdin=open(os.devnull), shell=False)
         regions = sub_utils.sub_to_speech_regions(
-            source_file=args.input,
-            ffmpeg_cmd=ffmpeg_cmd,
+            audio_wav=audio_wav,
             sub_file=args.ext_regions
         )
+        os.remove(audio_wav)
 
     else:
         # use auditok_gen_speech_regions
@@ -757,16 +778,40 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         elif args.drop_trailing_silence:
             mode = auditok.StreamTokenizer.DROP_TRAILING_SILENCE
 
+        audio_wav_temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+        audio_wav = audio_wav_temp.name
+        audio_wav_temp.close()
+        command = args.audio_conversion_cmd.format(
+            in_=args.input,
+            channel=1,
+            sample_rate=48000,
+            out_=audio_wav
+        )
+        print("\nConvert source audio to \"{name}\" "
+              "and get audio length for regions detection.\n".format(
+                  name=audio_wav))
+        subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+
+        if not ffmpeg_utils.ffprobe_check_file(audio_wav):
+            raise exceptions.AutosubException(
+                "Error: Convert source audio to \"{name}\" failed.".format(
+                    name=audio_wav))
+
         regions = core.auditok_gen_speech_regions(
-            source_file=args.input,
-            ffmpeg_cmd=ffmpeg_cmd,
+            audio_wav=audio_wav,
             energy_threshold=args.energy_threshold,
             min_region_size=constants.MIN_REGION_SIZE,
             max_region_size=constants.MAX_REGION_SIZE,
             max_continuous_silence=constants.DEFAULT_CONTINUOUS_SILENCE,
             mode=mode
         )
+        os.remove(audio_wav)
+        print("\n\"{name}\" has been deleted.\n".format(name=audio_wav))
 
+    if not regions:
+        raise exceptions.AutosubException(
+            "Error: Can't get speech regions."
+        )
     if args.speech_language:
         # process output first
         try:
@@ -801,34 +846,52 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             print("Times file created at \"{}\"".format(subtitles_file_path))
 
             if not args.output_files:
-                raise core.PrintAndStopException("\nAll works done.")
+                raise exceptions.AutosubException("\nAll works done.")
 
         except KeyError:
             pass
 
         # speech to text
-        if not is_flac:
-            audio_flac = ffmpeg_utils.source_to_audio(
-                args.input,
-                ffmpeg_cmd=ffmpeg_cmd,
-                rate=44100,
-                file_ext='.flac')
+        if not no_audio_prcs:
+            audio_for_api_temp = tempfile.NamedTemporaryFile(
+                suffix=args.api_suffix,
+                delete=False)
+            audio_for_api = audio_for_api_temp.name
+            audio_for_api_temp.close()
+            command = args.audio_conversion_cmd.format(
+                in_=args.input,
+                channel=args.api_audio_channel,
+                sample_rate=args.api_sample_rate,
+                out_=audio_for_api
+            )
+            print("\nConvert to {name} "
+                  "and get audio length for regions detection.\n".format(
+                      name=audio_for_api))
+            subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+            if not ffmpeg_utils.ffprobe_check_file(audio_for_api):
+                raise exceptions.AutosubException(
+                    "Error: Convert source audio to \"{name}\" failed.".format(
+                        name=audio_for_api))
+
         else:
-            audio_flac = args.input
+            audio_for_api = args.input
 
         text_list = core.speech_to_text(
-            audio_flac=audio_flac,
-            ffmpeg_cmd=ffmpeg_cmd,
+            source_file=audio_for_api,
             api_url=gsv2_api_url,
             regions=regions,
+            split_cmd=args.audio_split_cmd,
+            suffix=args.api_suffix,
             api_key=args.gspeechv2,
             concurrency=args.speech_concurrency,
             src_language=args.speech_language,
             min_confidence=args.min_confidence,
+            audio_rate=args.api_sample_rate
         )
 
         if not args.keep:
-            os.remove(audio_flac)
+            os.remove(audio_for_api)
+            print("\n\"{name}\" has been deleted.\n".format(name=audio_for_api))
 
         timed_text = get_timed_text(
             is_empty_dropped=args.drop_empty_regions,
@@ -871,7 +934,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                       "file created at \"{}\"".format(subtitles_file_path))
 
                 if not args.output_files:
-                    raise core.PrintAndStopException("\nAll works done.")
+                    raise exceptions.AutosubException("\nAll works done.")
 
             except KeyError:
                 pass
@@ -937,7 +1000,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                       "created at \"{}\"".format(subtitles_file_path))
 
                 if not args.output_files:
-                    raise core.PrintAndStopException("\nAll works done.")
+                    raise exceptions.AutosubException("\nAll works done.")
 
             except KeyError:
                 pass

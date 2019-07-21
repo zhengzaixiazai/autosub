@@ -24,23 +24,8 @@ from autosub import constants
 from autosub import ffmpeg_utils
 
 
-class PrintAndStopException(Exception):
-    """
-    Raised when something need to print
-    and works need to be stopped in main().
-    """
-
-    def __init__(self, msg):
-        super(PrintAndStopException, self).__init__(msg)
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
-
-
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
-        source_file,
-        ffmpeg_cmd="ffmpeg",
+        audio_wav,
         energy_threshold=constants.DEFAULT_ENERGY_THRESHOLD,
         min_region_size=constants.MIN_REGION_SIZE,
         max_region_size=constants.MAX_REGION_SIZE,
@@ -50,10 +35,6 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
     """
     Give an input audio/video file, generate proper speech regions.
     """
-    audio_wav = ffmpeg_utils.source_to_audio(
-        source_file,
-        ffmpeg_cmd=ffmpeg_cmd)
-
     asource = auditok.ADSFactory.ads(
         filename=audio_wav, record=True)
     validator = auditok.AudioEnergyValidator(
@@ -74,17 +55,17 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
         # get start and end times
         regions.append((token[1] * 10, token[2] * 10))
     asource.close()
-    os.remove(audio_wav)
     # reference
     # auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data
     return regions
 
 
 def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
-        audio_flac,
+        source_file,
         api_url,
         regions,
-        ffmpeg_cmd="ffmpeg",
+        split_cmd,
+        suffix,
         api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
@@ -99,9 +80,10 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
         return None
 
     pool = multiprocessing.Pool(concurrency)
-    converter = ffmpeg_utils.SplitIntoFLACPiece(
-        source_path=audio_flac,
-        ffmpeg_cmd=ffmpeg_cmd)
+    converter = ffmpeg_utils.SplitIntoAudioPiece(
+        source_path=source_file,
+        cmd=split_cmd,
+        suffix=suffix)
 
     if api_key:
         recognizer = speech_trans_api.GoogleSpeechToTextV2(
@@ -119,7 +101,8 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
             rate=audio_rate)
 
     text_list = []
-    widgets = ["Converting speech regions to FLAC files: ",
+    print("Converting speech regions to short-term fragments.")
+    widgets = ["Converting Progress Bar: ",
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
@@ -131,7 +114,8 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
             pbar.update(i)
         pbar.finish()
 
-        widgets = ["Performing speech recognition: ",
+        print("\nSending short-term fragments to API and getting result.")
+        widgets = ["Result Progress Bar: ",
                    progressbar.Percentage(), ' ',
                    progressbar.Bar(), ' ',
                    progressbar.ETA()]
@@ -174,7 +158,9 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
                                             src=src_language,
                                             dst=dst_language)
 
-    prompt = "Translating from {0} to {1}: ".format(src_language, dst_language)
+    print("\nTranslating text from {0} to {1}.".format(
+        src_language,
+        dst_language))
 
     if len(text_list) > lines_per_trans:
         trans_list =\
@@ -182,7 +168,8 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
     else:
         trans_list = [text_list]
 
-    widgets = [prompt, progressbar.Percentage(), ' ',
+    widgets = ["Translation Progress Bar: ",
+               progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(trans_list)).start()

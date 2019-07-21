@@ -7,7 +7,6 @@ Defines subtitle formatters used by autosub.
 from __future__ import absolute_import, unicode_literals
 
 # Import built-in modules
-import os
 import wave
 import json
 
@@ -16,26 +15,20 @@ import pysubs2
 
 # Any changes to the path and your own modules
 from autosub import constants
-from autosub import ffmpeg_utils
 
 
 def sub_to_speech_regions(
-        source_file,
+        audio_wav,
         sub_file,
-        ffmpeg_cmd="ffmpeg",
         ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000
 ):
     """
-    Give an input audio/video file and subtitles file, generate proper speech regions.
+    Give an input audio_wav file and subtitles file, generate proper speech regions.
     """
     regions = []
-    audio_wav = ffmpeg_utils.source_to_audio(
-        source_file,
-        ffmpeg_cmd=ffmpeg_cmd)
     reader = wave.open(audio_wav)
     audio_file_length = int(float(reader.getnframes()) / float(reader.getframerate())) * 1000
     reader.close()
-    os.remove(audio_wav)
 
     ext_regions = pysubs2.SSAFile.load(sub_file)
 
