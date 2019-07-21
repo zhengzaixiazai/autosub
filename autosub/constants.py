@@ -285,7 +285,7 @@ OUTPUT_FORMAT = {
     'ass': 'Advanced SubStation Alpha',
     'ssa': 'SubStation Alpha',
     'sub': 'MicroDVD Subtitle',
-    'mpl2': 'Similar to MicroDVD(Extension is \".mpl2.txt\")',
+    'mpl2.txt': 'Similar to MicroDVD',
     'tmp': 'TMP Player Subtitle Format',
     'vtt': 'WebVTT',
     'json': 'json(Only times and text)',
@@ -298,7 +298,7 @@ INPUT_FORMAT = {
     'ass': 'Advanced SubStation Alpha',
     'ssa': 'SubStation Alpha',
     'sub': 'MicroDVD Subtitle',
-    'mpl2': 'Similar to MicroDVD(Extension is \".mpl2.txt\")',
+    'txt': 'Similar to MicroDVD(mpl2)',
     'tmp': 'TMP Player Subtitle Format',
     'json': 'json(Complex ass content json)'
 }

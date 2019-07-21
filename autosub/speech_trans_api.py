@@ -7,6 +7,7 @@ Defines speech and translation api used by autosub.
 from __future__ import absolute_import, unicode_literals
 
 # Import built-in modules
+import os
 import json
 try:
     from json.decoder import JSONDecodeError
@@ -30,7 +31,8 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
                  min_confidence=0.0,
                  lang_code="en",
                  rate=44100,
-                 retries=3):
+                 retries=3,
+                 is_keep=False):
         # pylint: disable=too-many-arguments
         self.min_confidence = min_confidence
         self.rate = rate
@@ -38,14 +40,19 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
         self.api_key = api_key
         self.lang_code = lang_code
         self.api_url = api_url.format(lang=lang_code, key=api_key)
+        self.is_keep = is_keep
 
-    def __call__(self, data):
+    def __call__(self, filename):
         try:  # pylint: disable=too-many-nested-blocks
+            audio_file = open(filename, mode='rb')
+            audio_data = audio_file.read()
+            audio_file.close()
+            if not self.is_keep:
+                os.remove(filename)
             for _ in range(self.retries):
                 headers = {"Content-Type": "audio/x-flac; rate=%d" % self.rate}
-
                 try:
-                    result = requests.post(self.api_url, data=data, headers=headers)
+                    result = requests.post(self.api_url, data=audio_data, headers=headers)
                 except requests.exceptions.ConnectionError:
                     continue
 
@@ -74,8 +81,6 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
                                 result = line[:1].upper() + line[1:]
                                 result = result.replace('’', '\'')
                                 return result
-                        else:
-                            continue
 
                     except (JSONDecodeError, ValueError, IndexError):
                         # no result
@@ -84,7 +89,7 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
         except KeyboardInterrupt:
             return None
 
-        return ""
+        return None
 
 
 class GoogleTranslatorV2(object):  # pylint: disable=too-few-public-methods

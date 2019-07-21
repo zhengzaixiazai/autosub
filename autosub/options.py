@@ -88,7 +88,7 @@ Bug report: https://github.com/agermanidis/autosub\n
     input_group.add_argument(
         '-k', '--keep',
         action='store_true',
-        help="Keep audio processing files to the input folder. "
+        help="Keep audio processing files to the output path. "
              "(arg_num = 0)"
     )
 

@@ -47,6 +47,7 @@ Click up arrow to go back to TOC.
 - Add complex ass json output. [issue #39](https://github.com/BingLingGroup/autosub/issues/39)
 - Add audio preprocessing. [issue #7](https://github.com/BingLingGroup/autosub/issues/7)
 - Add options to control every ffmpeg command. [issue #43](https://github.com/BingLingGroup/autosub/issues/43)
+- Add temp file save function. [issue #22](https://github.com/BingLingGroup/autosub/issues/22)
 
 #### Changed(Unreleased)
 

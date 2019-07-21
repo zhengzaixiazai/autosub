@@ -23,7 +23,7 @@ def sub_to_speech_regions(
         ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000
 ):
     """
-    Give an input audio_wav file and subtitles file, generate proper speech regions.
+    Give an input audio_wav file and subtitles file and generate proper speech regions.
     """
     regions = []
     reader = wave.open(audio_wav)

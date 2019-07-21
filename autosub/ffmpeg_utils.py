@@ -28,6 +28,8 @@ class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
     def __init__(  # pylint: disable=too-many-arguments
             self,
             source_path,
+            output,
+            is_keep,
             cmd,
             suffix,
             include_before=0.25,
@@ -37,24 +39,37 @@ class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
         self.include_after = include_after
         self.cmd = cmd
         self.suffix = suffix
+        self.is_keep = is_keep
+        self.output = output
 
     def __call__(self, region):
         try:
             start_ms, end_ms = region
             start = float(start_ms) / 1000.0
             end = float(end_ms) / 1000.0
-            start = max(0.0, start - self.include_before)
+            if start > self.include_before:
+                start = start - self.include_before
             end += self.include_after
-            temp = tempfile.NamedTemporaryFile(suffix=self.suffix, delete=False)
+            if not self.is_keep or not self.output:
+                temp = tempfile.NamedTemporaryFile(suffix=self.suffix, delete=False)
+                command = self.cmd.format(start=start,
+                                          dura=end - start,
+                                          in_=self.source_path,
+                                          out_=temp.name)
+                subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+                return temp.name
+
+            filename = self.output \
+                + "-{start:0>8.3f}-{end:0>8.3f}{suffix}".format(
+                    start=start,
+                    end=end,
+                    suffix=self.suffix)
             command = self.cmd.format(start=start,
                                       dura=end - start,
                                       in_=self.source_path,
-                                      out_=temp.name)
+                                      out_=filename)
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
-            read_data = temp.read()
-            temp.close()
-            os.remove(temp.name)
-            return read_data
+            return filename
 
         except KeyboardInterrupt:
             return None
@@ -103,8 +118,8 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
 
 def ffprobe_check_file(filename):
     """
-    Given an audio or video file,
-    check whether it is not empty by get its bitrate.
+    Give an audio or video file
+    and check whether it is not empty by get its bitrate.
     """
     ffprobe_prcs = subprocess.Popen(
         "ffprobe {in_} -show_format -pretty -loglevel quiet".format(
@@ -152,24 +167,24 @@ def get_cmd(program_name):
     return None
 
 
-def audio_pre_prcs(
+def audio_pre_prcs(  # pylint: disable=too-many-arguments
         filename,
         is_keep,
         cmds,
+        output_name=None,
         input_m=input,
         ffmpeg_cmd="ffmpeg"
 ):
     """
     Pre-process audio file.
     """
-    name_list = os.path.splitext(filename)
     output_list = [filename, ]
     if not cmds:
         cmds = constants.DEFAULT_AUDIO_PRCS
 
-    if is_keep:
+    if is_keep and output_name:
         for i in range(1, len(cmds) + 1):
-            output_list.append(name_list[0]
+            output_list.append(output_name
                                + '_temp_{num:0>3d}.flac'.format(num=i))
 
             if input_m:

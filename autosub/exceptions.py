@@ -16,7 +16,7 @@ Defines exceptions used by autosub.
 class AutosubException(Exception):
     """
     Raised when something need to print
-    and works need to be stopped in main().
+    and works need to be stopped.
     """
 
     def __init__(self, msg):
@@ -25,3 +25,9 @@ class AutosubException(Exception):
 
     def __str__(self):
         return self.msg
+
+
+class SpeechToTextException(AutosubException):
+    """
+    Raised when speech-to-text failed.
+    """

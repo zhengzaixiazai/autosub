@@ -46,6 +46,7 @@
 - 添加ass格式的复杂json文件输出。[issue #39](https://github.com/BingLingGroup/autosub/issues/39)
 - 添加音频预处理。[issue #7](https://github.com/BingLingGroup/autosub/issues/7)
 - 添加用于控制所有ffmpeg参数的选项。[issue #43](https://github.com/BingLingGroup/autosub/issues/43)
+- 添加临时文件保存功能。[issue #22](https://github.com/BingLingGroup/autosub/issues/22)
 
 #### 改动(未发布的部分)
 

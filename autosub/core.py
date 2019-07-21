@@ -22,6 +22,7 @@ from autosub import speech_trans_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
+from autosub import exceptions
 
 
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
@@ -60,31 +61,74 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
     return regions
 
 
-def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+def bulk_audio_conversion(  # pylint: disable=too-many-arguments
         source_file,
-        api_url,
         regions,
         split_cmd,
         suffix,
-        api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
-        src_language=constants.DEFAULT_SRC_LANGUAGE,
-        min_confidence=0.0,
-        audio_rate=44100
+        output=None,
+        is_keep=False
 ):
     """
-    Give an input audio/video file, generate text_list from speech-to-text api.
+    Give an input audio/video file and
+    generate short-term audio fragments.
     """
 
     if not regions:
         return None
 
     pool = multiprocessing.Pool(concurrency)
+
     converter = ffmpeg_utils.SplitIntoAudioPiece(
         source_path=source_file,
         cmd=split_cmd,
-        suffix=suffix)
+        suffix=suffix,
+        output=output,
+        is_keep=is_keep)
 
+    print("Converting speech regions to short-term fragments.")
+    widgets = ["Converting: ",
+               progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
+    try:
+        audio_fragments = []
+        for i, flac_region in enumerate(pool.imap(converter, regions)):
+            audio_fragments.append(flac_region)
+            pbar.update(i)
+        pbar.finish()
+
+    except KeyboardInterrupt:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+        return None
+
+    return audio_fragments
+
+
+def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+        audio_fragments,
+        api_url,
+        regions,
+        api_key=None,
+        concurrency=constants.DEFAULT_CONCURRENCY,
+        src_language=constants.DEFAULT_SRC_LANGUAGE,
+        min_confidence=0.0,
+        audio_rate=44100,
+        is_keep=False
+):
+    """
+    Give a list of short-term audio fragment files
+    and generate text_list from speech-to-text api.
+    """
+    if not regions:
+        return None
+
+    text_list = []
+    pool = multiprocessing.Pool(concurrency)
     if api_key:
         recognizer = speech_trans_api.GoogleSpeechToTextV2(
             api_url=api_url,
@@ -98,40 +142,35 @@ def speech_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-ma
             api_key=constants.GOOGLE_SPEECH_V2_API_KEY,
             min_confidence=min_confidence,
             lang_code=src_language,
-            rate=audio_rate)
+            rate=audio_rate,
+            is_keep=is_keep)
 
-    text_list = []
-    print("Converting speech regions to short-term fragments.")
-    widgets = ["Converting Progress Bar: ",
+    print("\nSending short-term fragments to API and getting result.")
+    widgets = ["Speech-to-Text: ",
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
     try:
-        flac_regions = []
-        for i, flac_region in enumerate(pool.imap(converter, regions)):
-            flac_regions.append(flac_region)
-            pbar.update(i)
-        pbar.finish()
-
-        print("\nSending short-term fragments to API and getting result.")
-        widgets = ["Result Progress Bar: ",
-                   progressbar.Percentage(), ' ',
-                   progressbar.Bar(), ' ',
-                   progressbar.ETA()]
-        pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
-
-        for i, transcript in enumerate(pool.imap(recognizer, flac_regions)):
-            text_list.append(transcript)
-            pbar.update(i)
+        for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+            if transcript:
+                text_list.append(transcript)
+                pbar.update(i)
+            else:
+                raise exceptions.SpeechToTextException
         pbar.finish()
 
     except KeyboardInterrupt:
         pbar.finish()
         pool.terminate()
         pool.join()
-        print("Cancelling transcription.")
-        return 1
+        return None
+
+    except exceptions.SpeechToTextException:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+        return text_list
 
     return text_list
 
@@ -168,7 +207,7 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
     else:
         trans_list = [text_list]
 
-    widgets = ["Translation Progress Bar: ",
+    widgets = ["Translation: ",
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
@@ -209,9 +248,9 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
     if not text_list:
         return None
 
-    prompt = "Translating from {0} to {1}: ".format(
+    print("\nTranslating text from {0} to {1}.".format(
         src_language,
-        dst_language)
+        dst_language))
 
     size = 0
     i = 0
@@ -232,7 +271,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
         # python sequence
         # every group's end index
 
-    widgets = [prompt, progressbar.Percentage(), ' ',
+    widgets = ["Translation: ",
+               progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=i).start()
@@ -331,7 +371,6 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             subtitles=timed_text)
 
     elif subtitles_file_format == 'sub':
-        subtitles_file_format = 'microdvd'
         pysubs2_obj = pysubs2.SSAFile()
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
@@ -340,14 +379,13 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             style_name=None
         )
         formatted_subtitles = pysubs2_obj.to_string(
-            format_=subtitles_file_format,
+            format_='microdvd',
             fps=fps)
         # sub format need fps
         # ref https://pysubs2.readthedocs.io/en/latest
         # /api-reference.html#supported-input-output-formats
-        subtitles_file_format = 'sub'
 
-    elif subtitles_file_format == 'mpl2':
+    elif subtitles_file_format == 'mpl2.txt':
         pysubs2_obj = pysubs2.SSAFile()
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
@@ -356,9 +394,8 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             style_name=None
         )
         formatted_subtitles = pysubs2_obj.to_string(
-            format_=subtitles_file_format,
+            format_='mpl2',
             fps=fps)
-        subtitles_file_format = 'mpl2.txt'
 
     else:
         # fallback process
@@ -376,7 +413,7 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
         formatted_subtitles = pysubs2_obj.to_string(
             format_=constants.DEFAULT_SUBTITLES_FORMAT)
 
-    return formatted_subtitles, subtitles_file_format
+    return formatted_subtitles
 
 
 def list_to_ass_str(  # pylint: disable=too-many-arguments
@@ -449,8 +486,7 @@ def list_to_ass_str(  # pylint: disable=too-many-arguments
 def str_to_file(
         str_,
         output,
-        extension,
-        input_m=input,
+        input_m=input
 ):
     """
     Give a string and write it to file
@@ -464,8 +500,7 @@ def str_to_file(
             dest = input_m(
                 "Input a new path (including directory and file name) for output file.\n")
             dest = os.path.splitext(dest)[0]
-            dest = "{base}.{extension}".format(base=dest,
-                                               extension=extension)
+            dest = "{base}".format(base=dest)
 
     with open(dest, 'wb') as output_file:
         output_file.write(str_.encode("utf-8"))

@@ -541,16 +541,7 @@ def get_timed_text(
         timed_text = [(region, text) for region, text in zip(regions, text_list) if text]
     else:
         # keep empty regions
-        timed_text = []
-        i = 0
-        length = len(regions)
-        if length != len(text_list):
-            raise exceptions.AutosubException(
-                "Error: Regions and text_list don't have the same length."
-            )
-        while i < length:
-            timed_text.append((regions[i], text_list[i]))
-            i = i + 1
+        timed_text = [(region, text) for region, text in zip(regions, text_list)]
 
     return timed_text
 
@@ -629,11 +620,7 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
                 style_name=styles_list[0])
-        # formatting timed_text to subtitles string
-        bilingual_name = "{base}.{nt}.{extension}".format(base=args.output,
-                                                          nt=args.src_language +
-                                                          '&' + args.dst_language,
-                                                          extension=args.format)
+
         if args.format != 'ass.json':
             bilingual_string = bilingual_sub.to_string(format_=args.format, fps=fps)
         else:
@@ -644,10 +631,14 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
         else:
             extension = args.format
 
+        bilingual_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                          nt=args.src_language +
+                                                          '&' + args.dst_language,
+                                                          extension=extension)
+
         subtitles_file_path = core.str_to_file(
             str_=bilingual_string,
             output=bilingual_name,
-            extension=extension,
             input_m=input_m
         )
         # subtitles string to file
@@ -664,7 +655,6 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
         args.output_files.remove("dst")
         dst_sub = pysubs2.SSAFile()
         dst_sub.styles = src_sub.styles
-        # formatting timed_text to subtitles string
         if len(styles_list) == 2:
             sub_utils.pysubs2_ssa_event_add(
                 src_ssafile=src_sub,
@@ -677,24 +667,21 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
                 dst_ssafile=dst_sub,
                 text_list=translated_text,
                 style_name=styles_list[0])
-        # formatting timed_text to subtitles string
-        dst_name = "{base}.{nt}.{extension}".format(base=args.output,
-                                                    nt=args.dst_language,
-                                                    extension=args.format)
+
         if args.format != 'ass.json':
             dst_string = dst_sub.to_string(format_=args.format, fps=fps)
         else:
             dst_string = dst_sub.to_string(format_='json')
-
         if args.format == 'mpl2':
             extension = 'mpl2.txt'
         else:
             extension = args.format
-
+        dst_name = "{base}.{nt}.{extension}".format(base=args.output,
+                                                    nt=args.dst_language,
+                                                    extension=extension)
         subtitles_file_path = core.str_to_file(
             str_=dst_string,
             output=dst_name,
-            extension=extension,
             input_m=input_m
         )
         # subtitles string to file
@@ -820,13 +807,13 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     (args.format == 'ass' or
                      args.format == 'ssa' or
                      args.format == 'ass.json'):
-                times_string, extension = core.list_to_ass_str(
+                times_string = core.list_to_ass_str(
                     text_list=regions,
                     styles_list=styles_list,
                     subtitles_file_format=args.format
                 )
             else:
-                times_string, extension = core.list_to_sub_str(
+                times_string = core.list_to_sub_str(
                     timed_text=regions,
                     fps=fps,
                     subtitles_file_format=args.format
@@ -838,7 +825,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             subtitles_file_path = core.str_to_file(
                 str_=times_string,
                 output=times_name,
-                extension=extension,
                 input_m=input_m
             )
             # subtitles string to file
@@ -876,18 +862,36 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         else:
             audio_for_api = args.input
 
-        text_list = core.speech_to_text(
+        audio_fragments = core.bulk_audio_conversion(
             source_file=audio_for_api,
-            api_url=gsv2_api_url,
+            output=args.output,
             regions=regions,
             split_cmd=args.audio_split_cmd,
             suffix=args.api_suffix,
+            concurrency=args.speech_concurrency,
+            is_keep=args.keep
+        )
+
+        if not audio_fragments or \
+                len(audio_fragments) != len(regions):
+            raise exceptions.AutosubException(
+                "Error: Conversion failed.")
+
+        text_list = core.audio_to_text(
+            audio_fragments=audio_fragments,
+            api_url=gsv2_api_url,
+            regions=regions,
             api_key=args.gspeechv2,
             concurrency=args.speech_concurrency,
             src_language=args.speech_language,
             min_confidence=args.min_confidence,
-            audio_rate=args.api_sample_rate
+            audio_rate=args.api_sample_rate,
+            is_keep=args.keep
         )
+
+        if not text_list or len(text_list) != len(regions):
+            raise exceptions.AutosubException(
+                "Error: Speech-to-text failed.")
 
         if not args.keep:
             os.remove(audio_for_api)
@@ -907,13 +911,13 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                         (args.format == 'ass' or
                          args.format == 'ssa' or
                          args.format == 'ass.json'):
-                    src_string, extension = core.list_to_ass_str(
+                    src_string = core.list_to_ass_str(
                         text_list=timed_text,
                         styles_list=styles_list[:2],
                         subtitles_file_format=args.format,
                     )
                 else:
-                    src_string, extension = core.list_to_sub_str(
+                    src_string = core.list_to_sub_str(
                         timed_text=timed_text,
                         fps=fps,
                         subtitles_file_format=args.format
@@ -926,7 +930,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 subtitles_file_path = core.str_to_file(
                     str_=src_string,
                     output=src_name,
-                    extension=extension,
                     input_m=input_m
                 )
                 # subtitles string to file
@@ -961,6 +964,10 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     service_urls=args.service_urls
                 )
 
+            if len(translated_text) != len(regions):
+                raise exceptions.AutosubException(
+                    "Error: Translation failed.")
+
             timed_trans = get_timed_text(
                 is_empty_dropped=args.drop_empty_regions,
                 regions=regions,
@@ -973,13 +980,13 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                         (args.format == 'ass' or
                          args.format == 'ssa' or
                          args.format == 'ass.json'):
-                    bilingual_string, extension = core.list_to_ass_str(
+                    bilingual_string = core.list_to_ass_str(
                         text_list=[timed_text, timed_trans],
                         styles_list=styles_list,
                         subtitles_file_format=args.format,
                     )
                 else:
-                    bilingual_string, extension = core.list_to_sub_str(
+                    bilingual_string = core.list_to_sub_str(
                         timed_text=timed_text + timed_trans,
                         fps=fps,
                         subtitles_file_format=args.format
@@ -992,7 +999,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 subtitles_file_path = core.str_to_file(
                     str_=bilingual_string,
                     output=bilingual_name,
-                    extension=extension,
                     input_m=input_m
                 )
                 # subtitles string to file
@@ -1013,19 +1019,19 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                          args.format == 'ssa' or
                          args.format == 'ass.json'):
                     if len(args.styles) == 4:
-                        dst_string, extension = core.list_to_ass_str(
+                        dst_string = core.list_to_ass_str(
                             text_list=timed_trans,
                             styles_list=styles_list[2:4],
                             subtitles_file_format=args.format,
                         )
                     else:
-                        dst_string, extension = core.list_to_ass_str(
+                        dst_string = core.list_to_ass_str(
                             text_list=timed_trans,
                             styles_list=styles_list,
                             subtitles_file_format=args.format,
                         )
                 else:
-                    dst_string, extension = core.list_to_sub_str(
+                    dst_string = core.list_to_sub_str(
                         timed_text=timed_trans,
                         fps=fps,
                         subtitles_file_format=args.format
@@ -1036,7 +1042,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 subtitles_file_path = core.str_to_file(
                     str_=dst_string,
                     output=dst_name,
-                    extension=extension,
                     input_m=input_m
                 )
                 # subtitles string to file
@@ -1061,13 +1066,13 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     (args.format == 'ass' or
                      args.format == 'ssa' or
                      args.format == 'ass.json'):
-                src_string, extension = core.list_to_ass_str(
+                src_string = core.list_to_ass_str(
                     text_list=timed_text,
                     styles_list=styles_list,
                     subtitles_file_format=args.format,
                 )
             else:
-                src_string, extension = core.list_to_sub_str(
+                src_string = core.list_to_sub_str(
                     timed_text=timed_text,
                     fps=fps,
                     subtitles_file_format=args.format
@@ -1079,7 +1084,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             subtitles_file_path = core.str_to_file(
                 str_=src_string,
                 output=src_name,
-                extension=extension,
                 input_m=input_m
             )
             # subtitles string to file
@@ -1095,13 +1099,13 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 (args.format == 'ass' or
                  args.format == 'ssa' or
                  args.format == 'ass.json'):
-            times_subtitles, extension = core.list_to_ass_str(
+            times_subtitles = core.list_to_ass_str(
                 text_list=regions,
                 styles_list=styles_list,
                 subtitles_file_format=args.format
             )
         else:
-            times_subtitles, extension = core.list_to_sub_str(
+            times_subtitles = core.list_to_sub_str(
                 timed_text=regions,
                 fps=fps,
                 subtitles_file_format=args.format
@@ -1113,7 +1117,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         subtitles_file_path = core.str_to_file(
             str_=times_subtitles,
             output=times_name,
-            extension=extension,
             input_m=input_m
         )
         # subtitles string to file
