@@ -48,6 +48,7 @@
 - 添加用于控制所有ffmpeg参数的选项。[issue #43](https://github.com/BingLingGroup/autosub/issues/43)
 - 添加临时文件保存功能。[issue #22](https://github.com/BingLingGroup/autosub/issues/22)
 - 添加仅音频片段输出功能。[issue #44](https://github.com/BingLingGroup/autosub/issues/44)
+- 添加检测首行字幕语言的功能(googletrans)。[issue #40](https://github.com/BingLingGroup/autosub/issues/40)
 
 #### 改动(未发布的部分)
 

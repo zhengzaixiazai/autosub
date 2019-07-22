@@ -50,6 +50,21 @@ def list_args(args):
                 column_2=format_description))
         return True
 
+    if args.detect_sub_language:
+        print("Use googletrans to detect a sub file's first line language.")
+        pysubs2_obj = pysubs2.SSAFile.load(args.detect_sub_language)
+        translator = googletrans.Translator(
+            user_agent=args.user_agent,
+            service_urls=args.service_urls)
+        result_obj = translator.detect(pysubs2_obj.events[0].text)
+        print("{column_1}{column_2}".format(
+            column_1="Lang code".ljust(16),
+            column_2="Confidence"))
+        print("{column_1}{column_2}\n".format(
+            column_1=result_obj.lang.ljust(16),
+            column_2=result_obj.confidence))
+        args.list_speech_codes = result_obj.lang
+
     if args.list_speech_codes:
         if args.list_speech_codes == ' ':
             print("List of all lang codes for speech-to-text:\n")
@@ -61,7 +76,7 @@ def list_args(args):
                     column_1=code.ljust(16),
                     column_2=language))
         else:
-            print("Match speech lang codes.")
+            print("Match Google Speech V2 lang codes.")
             lang_code_utils.match_print(
                 dsr_lang=args.list_speech_codes,
                 match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
@@ -79,7 +94,7 @@ def list_args(args):
                     column_1=code.ljust(16),
                     column_2=language))
         else:
-            print("Match translation lang codes.")
+            print("Match py-googletrans lang codes.")
             lang_code_utils.match_print(
                 dsr_lang=args.list_translation_codes,
                 match_list=list(constants.TRANSLATION_LANGUAGE_CODES.keys()),

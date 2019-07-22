@@ -561,4 +561,14 @@ Bug report: https://github.com/agermanidis/autosub\n
                 (arg_num = 0 or 1)"""
     )
 
+    list_group.add_argument(
+        '-dsl', '--detect-sub-language',
+        metavar='path',
+        help="Use googletrans to detect a sub file's first line language. "
+             "And list a group of matched language in recommended "
+             "\"-S\"/\"--speech-language\" Google Speech V2 language codes. "
+             "Ref: https://cloud.google.com/speech-to-text/docs/languages"
+             "(arg_num = 1) (default: %(default)s)"
+    )
+
     return parser.parse_args()
