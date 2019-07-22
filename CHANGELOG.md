@@ -48,6 +48,7 @@ Click up arrow to go back to TOC.
 - Add audio preprocessing. [issue #7](https://github.com/BingLingGroup/autosub/issues/7)
 - Add options to control every ffmpeg command. [issue #43](https://github.com/BingLingGroup/autosub/issues/43)
 - Add temp file save function. [issue #22](https://github.com/BingLingGroup/autosub/issues/22)
+- Add only audio fragments output. [issue #44](https://github.com/BingLingGroup/autosub/issues/44)
 
 #### Changed(Unreleased)
 

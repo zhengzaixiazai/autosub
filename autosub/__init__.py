@@ -49,21 +49,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
         if validate_result == 0:
             if args.audio_process:
-                if args.audio_process == 'y':
-                    prcs_file = ffmpeg_utils.audio_pre_prcs(
-                        filename=args.input,
-                        is_keep=args.keep,
-                        cmds=args.audio_process_cmd,
-                        input_m=input_m,
-                        ffmpeg_cmd=ffmpeg_cmd
-                    )
-                    if not prcs_file:
-                        no_audio_prcs = False
-                    else:
-                        args.input = prcs_file
-                        print("Audio pre-processing complete.")
-                        no_audio_prcs = True
-                elif args.audio_process == 'o':
+                if 'o' in args.audio_process:
                     args.keep = True
                     prcs_file = ffmpeg_utils.audio_pre_prcs(
                         filename=args.input,
@@ -81,10 +67,31 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         raise exceptions.AutosubException(
                             "Audio pre-processing complete.\nAll works done."
                         )
-                elif args.audio_process == 'n':
+
+                if 'y' in args.audio_process:
+                    prcs_file = ffmpeg_utils.audio_pre_prcs(
+                        filename=args.input,
+                        is_keep=args.keep,
+                        cmds=args.audio_process_cmd,
+                        input_m=input_m,
+                        ffmpeg_cmd=ffmpeg_cmd
+                    )
+                    if not prcs_file:
+                        no_audio_prcs = False
+                    else:
+                        args.input = prcs_file
+                        print("Audio pre-processing complete.")
+                        no_audio_prcs = True
+                elif 'n' in args.audio_process:
+                    print("No extra check/conversion "
+                          "before the speech-to-text procedure.")
                     no_audio_prcs = True
                 else:
                     no_audio_prcs = False
+
+                if 's' in args.audio_process:
+                    args.keep = True
+
             else:
                 no_audio_prcs = False
 

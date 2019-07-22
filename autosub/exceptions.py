@@ -27,6 +27,12 @@ class AutosubException(Exception):
         return self.msg
 
 
+class ConversionException(AutosubException):
+    """
+    Raised when short-term audio fragments conversion failed.
+    """
+
+
 class SpeechToTextException(AutosubException):
     """
     Raised when speech-to-text failed.

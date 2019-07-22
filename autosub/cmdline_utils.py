@@ -775,7 +775,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             out_=audio_wav
         )
         print("\nConvert source audio to \"{name}\" "
-              "and get audio length for regions detection.\n".format(
+              "and get audio length for regions detection.".format(
                   name=audio_wav))
         subprocess.check_output(command, stdin=open(os.devnull), shell=False)
 
@@ -793,7 +793,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             mode=mode
         )
         os.remove(audio_wav)
-        print("\n\"{name}\" has been deleted.\n".format(name=audio_wav))
+        print("\n\"{name}\" has been deleted.".format(name=audio_wav))
 
     if not regions:
         raise exceptions.AutosubException(
@@ -851,7 +851,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 out_=audio_for_api
             )
             print("\nConvert to {name} "
-                  "and get audio length for regions detection.\n".format(
+                  "and get audio length for regions detection.".format(
                       name=audio_for_api))
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
             if not ffmpeg_utils.ffprobe_check_file(audio_for_api):
@@ -868,14 +868,18 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             regions=regions,
             split_cmd=args.audio_split_cmd,
             suffix=args.api_suffix,
-            concurrency=args.speech_concurrency,
+            concurrency=args.audio_concurrency,
             is_keep=args.keep
         )
 
         if not audio_fragments or \
                 len(audio_fragments) != len(regions):
-            raise exceptions.AutosubException(
+            raise exceptions.ConversionException(
                 "Error: Conversion failed.")
+
+        if 's' in args.audio_process:
+            raise exceptions.AutosubException(
+                "Audio processing complete.\nAll works done.")
 
         text_list = core.audio_to_text(
             audio_fragments=audio_fragments,
@@ -890,8 +894,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         )
 
         if not text_list or len(text_list) != len(regions):
-            raise exceptions.AutosubException(
-                "Error: Speech-to-text failed.")
+            raise exceptions.AutosubException("\nAll works done.")
 
         if not args.keep:
             os.remove(audio_for_api)

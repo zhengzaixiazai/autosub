@@ -86,13 +86,6 @@ Bug report: https://github.com/agermanidis/autosub\n
     )
 
     input_group.add_argument(
-        '-k', '--keep',
-        action='store_true',
-        help="Keep audio processing files to the output path. "
-             "(arg_num = 0)"
-    )
-
-    input_group.add_argument(
         '-er', '--ext-regions',
         metavar='path',
         help="""Path to the subtitles file
@@ -359,29 +352,38 @@ Bug report: https://github.com/agermanidis/autosub\n
 
     audio_prcs_group.add_argument(
         '-ap', '--audio-process',
-        nargs='?', metavar='mode',
-        const='y', default='d',
+        nargs='*', metavar='mode',
+        default=['d', ],
         help="""Option to control audio process.
                 If not given the option, 
                 do normal conversion work.
                 (default: %(default)s)
-                arg_num == 0 or arg == \"y\": 
-                it will process the input first
+                \"y\": it will process the input first
                 then start normal workflow.
-                In this case, audio won't be converted
-                after this. (const: %(const)s)
-                \"o\": means only process the input audio.
-                \"n\": means NO EXTRA CHECK/ENCODING
+                If succeed, no more conversion before
+                the speech-to-text procedure.
+                \"o\": means only process the input audio
+                (\"-k\"/\"--keep\" is true).
+                \"s\": means only split the input audio
+                (\"-k\"/\"--keep\" is true).
+                \"n\": means FORCED NO EXTRA CHECK/CONVERSION
                 before the speech-to-text procedure.
                 Default command to process the audio:
                 {dft_1} | {dft_2} | {dft_3}
                 (Ref: 
                 https://github.com/stevenj/autosub/blob/master/scripts/subgen.sh
                 https://ffmpeg.org/ffmpeg-filters.html)
-                (arg_num = 0 or 1)""".format(
+                (2 ≥ arg_num = ≥ 1)""".format(
                     dft_1=constants.DEFAULT_AUDIO_PRCS[0],
                     dft_2=constants.DEFAULT_AUDIO_PRCS[1],
                     dft_3=constants.DEFAULT_AUDIO_PRCS[2])
+    )
+
+    audio_prcs_group.add_argument(
+        '-k', '--keep',
+        action='store_true',
+        help="Keep audio processing files to the output path. "
+             "(arg_num = 0)"
     )
 
     audio_prcs_group.add_argument(
@@ -393,6 +395,15 @@ Bug report: https://github.com/agermanidis/autosub\n
              "Input file name is {in_}. "
              "Output file name is {out_}. "
              "(arg_num = 0 or 1)"
+    )
+
+    audio_prcs_group.add_argument(
+        '-ac', '--audio-concurrency',
+        metavar='integer',
+        type=int,
+        default=constants.DEFAULT_CONCURRENCY,
+        help="Number of concurrent ffmpeg audio split process to make. "
+             "(arg_num = 1) (default: %(default)s)"
     )
 
     audio_prcs_group.add_argument(

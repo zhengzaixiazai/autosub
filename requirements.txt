@@ -1,8 +1,8 @@
+setuptools==40.8.0
 requests==2.21.0
+googletrans==2.4.0
 pysubs2==0.2.4
 auditok==0.1.5
-googletrans==2.4.0
-setuptools==40.6.2
 langcodes_py2==1.2.0
 google_api_python_client==1.7.9
 langcodes==1.4.1

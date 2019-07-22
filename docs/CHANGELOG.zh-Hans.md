@@ -47,6 +47,7 @@
 - 添加音频预处理。[issue #7](https://github.com/BingLingGroup/autosub/issues/7)
 - 添加用于控制所有ffmpeg参数的选项。[issue #43](https://github.com/BingLingGroup/autosub/issues/43)
 - 添加临时文件保存功能。[issue #22](https://github.com/BingLingGroup/autosub/issues/22)
+- 添加仅音频片段输出功能。[issue #44](https://github.com/BingLingGroup/autosub/issues/44)
 
 #### 改动(未发布的部分)
 
