@@ -865,8 +865,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 sample_rate=args.api_sample_rate,
                 out_=audio_for_api
             )
-            print("\nConvert to {name} "
-                  "and get audio length for regions detection.".format(
+            print("\nConvert to \"{name}\" "
+                  "for api.".format(
                       name=audio_for_api))
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
             if not ffmpeg_utils.ffprobe_check_file(audio_for_api):
@@ -889,8 +889,15 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
         if not audio_fragments or \
                 len(audio_fragments) != len(regions):
+            if not args.keep:
+                for audio_fragment in audio_fragments:
+                    os.remove(audio_fragment)
             raise exceptions.ConversionException(
                 "Error: Conversion failed.")
+
+        if not args.keep:
+            os.remove(audio_for_api)
+            print("\n\"{name}\" has been deleted.".format(name=audio_for_api))
 
         if 's' in args.audio_process:
             raise exceptions.AutosubException(
@@ -909,11 +916,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         )
 
         if not text_list or len(text_list) != len(regions):
-            raise exceptions.AutosubException("\nAll works done.")
-
-        if not args.keep:
-            os.remove(audio_for_api)
-            print("\n\"{name}\" has been deleted.\n".format(name=audio_for_api))
+            raise exceptions.SpeechToTextException(
+                "Error: Speech-to-text failed.\nAll works done.")
 
         timed_text = get_timed_text(
             is_empty_dropped=args.drop_empty_regions,

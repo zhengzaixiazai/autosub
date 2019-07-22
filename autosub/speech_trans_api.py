@@ -73,7 +73,7 @@ class GoogleSpeechToTextV2(object):  # pylint: disable=too-few-public-methods
                                     result = line[:1].upper() + line[1:]
                                     result = result.replace('’', '\'')
                                     return result
-                                return ""
+                                return None
 
                             else:
                                 # can't find confidence in json

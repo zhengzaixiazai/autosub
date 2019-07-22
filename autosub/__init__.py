@@ -7,6 +7,7 @@ Defines autosub's commandline entry point functionality.
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Import built-in modules
+import os
 
 # Import third-party modules
 import pysubs2
@@ -24,6 +25,18 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
     """
 
     args = options.get_cmd_args()
+
+    if args.https_proxy:
+        os.environ['https_proxy'] = args.https_proxy
+
+    if args.http_proxy:
+        os.environ['http_proxy'] = args.http_proxy
+
+    if args.proxy_username:
+        os.environ['proxy_username'] = args.proxy_username
+
+    if args.proxy_password:
+        os.environ['proxy_password'] = args.proxy_password
 
     try:
         ffmpeg_cmd = ffmpeg_utils.get_cmd("ffmpeg")

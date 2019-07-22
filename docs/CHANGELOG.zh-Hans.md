@@ -49,6 +49,7 @@
 - 添加临时文件保存功能。[issue #22](https://github.com/BingLingGroup/autosub/issues/22)
 - 添加仅音频片段输出功能。[issue #44](https://github.com/BingLingGroup/autosub/issues/44)
 - 添加检测首行字幕语言的功能(googletrans)。[issue #40](https://github.com/BingLingGroup/autosub/issues/40)
+- 添加http, https代理支持。（设置环境变量）[issue #17](https://github.com/BingLingGroup/autosub/issues/17)
 
 #### 改动(未发布的部分)
 

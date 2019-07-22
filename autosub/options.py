@@ -61,6 +61,9 @@ Bug report: https://github.com/agermanidis/autosub\n
         'Args to control translation.(Not been tested) '
         'If the api key is given, '
         'it will replace the py-googletrans method.')
+    network_group = parser.add_argument_group(
+        'Network Options',
+        'Options to control network.')
     options_group = parser.add_argument_group(
         'Other Options',
         'Other options to control.')
@@ -285,7 +288,7 @@ Bug report: https://github.com/agermanidis/autosub\n
 
     pygt_group.add_argument(
         '-surl', '--service-urls',
-        metavar='url',
+        metavar='URL',
         nargs='*',
         help="(Experimental)Customize request urls. "
              "Ref: https://py-googletrans.readthedocs.io/en/latest/"
@@ -327,11 +330,51 @@ Bug report: https://github.com/agermanidis/autosub\n
              "(arg_num = 1) (default: %(default)s)"
     )
 
-    options_group.add_argument(
+    network_group.add_argument(
+        '-hsa', '--http-speech-api',
+        action='store_true',
+        help="Change the Google Speech V2 API "
+             "URL into the http one. "
+             "(arg_num = 0)"
+    )
+
+    network_group.add_argument(
+        '-hsp', '--https-proxy',
+        nargs='?', metavar='URL',
+        const='https://127.0.0.1:1080',
+        help="Add https proxy by setting environment variables. "
+             "If arg_num is 0, use const proxy url. "
+             "(const: %(const)s) (arg_num = 0 or 1)"
+    )
+
+    network_group.add_argument(
+        '-hp', '--http-proxy',
+        nargs='?', metavar='URL',
+        const='http://127.0.0.1:1080',
+        help="Add http proxy by setting environment variables. "
+             "If arg_num is 0, use const proxy url. "
+             "(const: %(const)s) (arg_num = 0 or 1)"
+    )
+
+    network_group.add_argument(
+        '-pu', '--proxy-username',
+        metavar='username',
+        help="Set proxy username. "
+             "(arg_num = 1)"
+    )
+
+    network_group.add_argument(
+        '-pp', '--proxy-password',
+        metavar='password',
+        help="Set proxy password. "
+             "(arg_num = 1)"
+    )
+
+    network_group.add_argument(
         '-htp', '--http-speech-to-text-api',
         action='store_true',
         help="Change the Google Speech V2 API "
-             "url into the http one. "
+             "URL into the http one. "
              "(arg_num = 0)"
     )
 

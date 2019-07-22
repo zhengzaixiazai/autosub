@@ -22,7 +22,6 @@ from autosub import speech_trans_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
-from autosub import exceptions
 
 
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
@@ -87,7 +86,7 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
         output=output,
         is_keep=is_keep)
 
-    print("Converting speech regions to short-term fragments.")
+    print("\nConverting speech regions to short-term fragments.")
     widgets = ["Converting: ",
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
@@ -157,7 +156,7 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 text_list.append(transcript)
                 pbar.update(i)
             else:
-                raise exceptions.SpeechToTextException
+                text_list.append("")
         pbar.finish()
 
     except KeyboardInterrupt:
@@ -165,12 +164,6 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
         pool.terminate()
         pool.join()
         return None
-
-    except exceptions.SpeechToTextException:
-        pbar.finish()
-        pool.terminate()
-        pool.join()
-        return text_list
 
     return text_list
 
