@@ -742,7 +742,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     Give args and process an input audio or video file.
     """
 
-    if args.http_speech_to_text_api:
+    if args.http_speech_api:
         gsv2_api_url = "http://" + constants.GOOGLE_SPEECH_V2_API_URL
     else:
         gsv2_api_url = "https://" + constants.GOOGLE_SPEECH_V2_API_URL

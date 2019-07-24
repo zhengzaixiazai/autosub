@@ -11,7 +11,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 import multiprocessing
 import sys
 
-
 if __package__ is None and not hasattr(sys, "frozen"):
     # direct call of __main__.py
     # Reference: https://github.com/rg3/youtube-dl/blob/master/youtube_dl/__main__.py

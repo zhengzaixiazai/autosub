@@ -18,3 +18,6 @@ LONG_DESCRIPTION = (
 AUTHOR = 'Anastasis Germanidis'
 AUTHOR_EMAIL = 'agermanidis@gmail.com'
 HOMEPAGE = 'https://github.com/agermanidis/autosub'
+
+ENCODING = 'UTF-8'
+LOCALE_PATH = '../data/locale'
