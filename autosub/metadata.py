@@ -6,6 +6,23 @@ Defines autosub's metadata.
 
 from __future__ import unicode_literals
 
+# Import built-in modules
+import gettext
+
+# Any changes to the path and your own modules
+from autosub import constants
+
+META_TEXT = gettext.translation(domain=__name__,
+                                localedir=constants.LOCALE_PATH,
+                                languages=[constants.CURRENT_LOCALE],
+                                fallback=True)
+
+try:
+    _ = META_TEXT.ugettext
+except AttributeError:
+    # Python 3 fallback
+    _ = META_TEXT.gettext
+
 NAME = 'autosub'
 VERSION = '0.4.1-alpha'
 DESCRIPTION = 'Auto-generates subtitles for any video or audio file.'
@@ -18,6 +35,3 @@ LONG_DESCRIPTION = (
 AUTHOR = 'Anastasis Germanidis'
 AUTHOR_EMAIL = 'agermanidis@gmail.com'
 HOMEPAGE = 'https://github.com/agermanidis/autosub'
-
-ENCODING = 'UTF-8'
-LOCALE_PATH = '../data/locale'

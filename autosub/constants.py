@@ -6,6 +6,35 @@ Defines constants used by autosub.
 
 from __future__ import unicode_literals
 
+# Import built-in modules
+import os
+import locale
+
+# Import third-party modules
+
+# Any changes to the path and your own modules
+
+SUPPORT_LOCALE = {
+    "en_US",
+    "zh_CN"
+}
+# Ref: https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html#Locale-Names
+
+ENCODING = 'UTF-8'
+LOCALE_PATH = '../data/locale'
+
+EXT_LOCALE = os.path.abspath(os.path.join(os.getcwd(), os.pardir)) + os.sep + "locale"
+if os.path.isfile(EXT_LOCALE):
+    with open(EXT_LOCALE, "r") as in_file:
+        LINE = in_file.readline()
+        LINE_LIST = LINE.split()
+        if LINE_LIST[0] in SUPPORT_LOCALE:
+            CURRENT_LOCALE = LINE_LIST[0]
+        else:
+            CURRENT_LOCALE = locale.getdefaultlocale()[0]
+else:
+    CURRENT_LOCALE = locale.getdefaultlocale()[0]
+
 GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
 GOOGLE_SPEECH_V2_API_URL = \
     "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"

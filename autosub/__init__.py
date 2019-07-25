@@ -8,6 +8,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 # Import built-in modules
 import os
+import gettext
 
 # Import third-party modules
 import pysubs2
@@ -17,6 +18,18 @@ from autosub import ffmpeg_utils
 from autosub import cmdline_utils
 from autosub import options
 from autosub import exceptions
+from autosub import constants
+
+INIT_TEXT = gettext.translation(domain=__name__,
+                                localedir=constants.LOCALE_PATH,
+                                languages=[constants.CURRENT_LOCALE],
+                                fallback=True)
+
+try:
+    _ = INIT_TEXT.ugettext
+except AttributeError:
+    # Python 3 fallback
+    _ = INIT_TEXT.gettext
 
 
 def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
@@ -42,12 +55,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         ffmpeg_cmd = ffmpeg_utils.get_cmd("ffmpeg")
         if not ffmpeg_cmd:
             raise exceptions.AutosubException(
-                "Error: Dependency ffmpeg on this machine."
+                _("Error: Dependency ffmpeg"
+                  " not found on this machine.")
             )
 
         ffmpeg_cmd = ffmpeg_cmd + ' '
         if cmdline_utils.list_args(args):
-            raise exceptions.AutosubException("\nAll works done.")
+            raise exceptions.AutosubException(_("\nAll works done."))
 
         if not args.yes:
             try:
@@ -73,12 +87,12 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                     )
                     if not prcs_file:
                         raise exceptions.AutosubException(
-                            "No works done."
+                            _("No works done.")
                         )
                     else:
                         args.input = prcs_file
                         raise exceptions.AutosubException(
-                            "Audio pre-processing complete.\nAll works done."
+                            _("Audio pre-processing complete.\nAll works done.")
                         )
 
                 if 'y' in args.audio_process:
@@ -93,11 +107,11 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         no_audio_prcs = False
                     else:
                         args.input = prcs_file
-                        print("Audio pre-processing complete.")
+                        print(_("Audio pre-processing complete."))
                         no_audio_prcs = True
                 elif 'n' in args.audio_process:
-                    print("No extra check/conversion "
-                          "before the speech-to-text procedure.")
+                    print(_("No extra check/conversion "
+                            "before the speech-to-text procedure."))
                     no_audio_prcs = True
                 else:
                     no_audio_prcs = False
@@ -127,14 +141,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                                      styles_list=None)
 
     except KeyboardInterrupt:
-        print("\nKeyboardInterrupt. Works stopped.")
+        print(_("\nKeyboardInterrupt. Works stopped."))
         return 1
     except pysubs2.exceptions.Pysubs2Error:
-        print("\nError: pysubs2.exceptions. Check your file format.")
+        print(_("\nError: pysubs2.exceptions. Check your file format."))
         return 1
     except exceptions.AutosubException as err_msg:
         print(err_msg)
         return 0
 
-    print("\nAll works done.")
+    print(_("\nAll works done."))
     return 0

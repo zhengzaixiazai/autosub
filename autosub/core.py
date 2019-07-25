@@ -10,6 +10,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import os
 import multiprocessing
 import time
+import gettext
 
 # Import third-party modules
 import progressbar
@@ -22,6 +23,17 @@ from autosub import speech_trans_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
+
+CORE_TEXT = gettext.translation(domain=__name__,
+                                localedir=constants.LOCALE_PATH,
+                                languages=[constants.CURRENT_LOCALE],
+                                fallback=True)
+
+try:
+    _ = CORE_TEXT.ugettext
+except AttributeError:
+    # Python 3 fallback
+    _ = CORE_TEXT.gettext
 
 
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
@@ -459,10 +471,10 @@ def list_to_ass_str(  # pylint: disable=too-many-arguments
             formatted_subtitles = pysubs2_obj.to_string(format_='json')
     else:
         # fallback process
-        print("Format \"{fmt}\" not supported. \
-                Using \"{default_fmt}\" instead.".format(
-                    fmt=subtitles_file_format,
-                    default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        print("Format \"{fmt}\" not supported. "
+              "Using \"{default_fmt}\" instead.".format(
+                  fmt=subtitles_file_format,
+                  default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
         pysubs2_obj = pysubs2.SSAFile()
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
@@ -488,8 +500,8 @@ def str_to_file(
 
     if input_m:
         while os.path.isfile(dest):
-            print("There is already a file with the same name"
-                  " in this location: \"{dest_name}\".".format(dest_name=dest))
+            print("There is already a file with the same name "
+                  "in this location: \"{dest_name}\".".format(dest_name=dest))
             dest = input_m(
                 "Input a new path (including directory and file name) for output file.\n")
             dest = os.path.splitext(dest)[0]

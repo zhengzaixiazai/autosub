@@ -8,7 +8,6 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 # Import built-in modules
 import argparse
-import locale
 import gettext
 
 # Import third-party modules
@@ -18,18 +17,16 @@ import gettext
 from autosub import metadata
 from autosub import constants
 
+OPTIONS_TEXT = gettext.translation(domain=__name__,
+                                   localedir=constants.LOCALE_PATH,
+                                   languages=[constants.CURRENT_LOCALE],
+                                   fallback=True)
 
-CURRENT_LOCALE = locale.getdefaultlocale()[0]
-
-LANGUAGE = gettext.translation(domain=__name__,
-                               localedir=metadata.LOCALE_PATH,
-                               languages=[CURRENT_LOCALE],
-                               fallback=True)
 try:
-    _ = LANGUAGE.ugettext
+    _ = OPTIONS_TEXT.ugettext
 except AttributeError:
     # Python 3 fallback
-    _ = LANGUAGE.gettext
+    _ = OPTIONS_TEXT.gettext
 
 
 def get_cmd_args():  # pylint: disable=too-many-statements
@@ -38,17 +35,18 @@ def get_cmd_args():  # pylint: disable=too-many-statements
     """
     parser = argparse.ArgumentParser(
         prog=metadata.NAME,
-        usage=_('\n  %(prog)s <input> [options]'),
+        usage=_('\n  %(prog)s [-i path] [options]'),
         description=metadata.DESCRIPTION,
-        epilog=_("""Make sure the argument with space is in quotes.
-The default value is used 
-when the option is not given at the command line.
-\"(arg_num)\" means if the option is given,
-the number of the arguments is required.\n
-Author: {author}
-Email: {email}
-Bug report: https://github.com/agermanidis/autosub\n
-""").format(author=metadata.AUTHOR, email=metadata.AUTHOR_EMAIL),
+        epilog=_("Make sure the argument with space is in quotes.\n"
+                 "The default value is used\n"
+                 "when the option is not given at the command line.\n"
+                 "\"(arg_num)\" means if the option is given,\n"
+                 "the number of the arguments is required.\n"
+                 "Author: {author}\n"
+                 "Email: {email}\n"
+                 "Bug report: https://github.com/agermanidis/autosub\n").format(
+                     author=metadata.AUTHOR,
+                     email=metadata.AUTHOR_EMAIL),
         add_help=False,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )

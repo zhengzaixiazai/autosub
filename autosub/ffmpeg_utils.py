@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import re
 import os
+import gettext
 
 # Import third-party modules
 
@@ -18,6 +19,17 @@ import os
 # Any changes to the path and your own modules
 from autosub import constants
 from autosub import exceptions
+
+FFMPEG_UTILS_TEXT = gettext.translation(domain=__name__,
+                                        localedir=constants.LOCALE_PATH,
+                                        languages=[constants.CURRENT_LOCALE],
+                                        fallback=True)
+
+try:
+    _ = FFMPEG_UTILS_TEXT.ugettext
+except AttributeError:
+    # Python 3 fallback
+    _ = FFMPEG_UTILS_TEXT.gettext
 
 
 class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
@@ -143,7 +155,7 @@ def which_exe(program_name):
         """
         return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
 
-    fpath, _ = os.path.split(program_name)
+    fpath = os.path.split(program_name)[0]
     if fpath:
         if is_exe(program_name):
             return program_name

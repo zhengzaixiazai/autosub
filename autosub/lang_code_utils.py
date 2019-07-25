@@ -7,12 +7,24 @@ Defines autosub's lang codes functionality.
 from __future__ import absolute_import, print_function, unicode_literals
 
 # Import built-in modules
-
+import gettext
 
 # Import third-party modules
 import langcodes
 
 # Any changes to the path and your own modules
+from autosub import constants
+
+LANG_CODE_TEXT = gettext.translation(domain=__name__,
+                                     localedir=constants.LOCALE_PATH,
+                                     languages=[constants.CURRENT_LOCALE],
+                                     fallback=True)
+
+try:
+    _ = LANG_CODE_TEXT.ugettext
+except AttributeError:
+    # Python 3 fallback
+    _ = LANG_CODE_TEXT.gettext
 
 
 def better_match(desired_language,
