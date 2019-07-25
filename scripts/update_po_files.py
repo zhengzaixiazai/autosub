@@ -40,7 +40,9 @@ if __name__ == "__main__":
 
     os.chdir(os.pardir)
 
-    locale_dir = "data/locale/{}/LC_MESSAGES/".format(locale_name)
+    locale_dir = "{name}/data/locale/{ln}/LC_MESSAGES/".format(
+        name=name,
+        ln=locale_name)
     if not os.path.exists(locale_dir):
         os.makedirs(locale_dir)
 

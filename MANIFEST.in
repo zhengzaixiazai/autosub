@@ -1,3 +1,4 @@
 include README.md
 include LICENSE
-recursive-include *po
+include data/locale/zh_CN/LC_MESSAGES/*po
+include data/locale/zh_CN/LC_MESSAGES/*mo

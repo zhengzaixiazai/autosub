@@ -21,9 +21,12 @@ SUPPORT_LOCALE = {
 # Ref: https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html#Locale-Names
 
 ENCODING = 'UTF-8'
-LOCALE_PATH = '../data/locale'
+LOCALE_PATH = os.path.abspath(
+    os.path.join(
+        os.path.split(__file__)[0],
+        "data/locale"))
 
-EXT_LOCALE = os.path.abspath(os.path.join(os.getcwd(), os.pardir)) + os.sep + "locale"
+EXT_LOCALE = os.path.abspath(os.path.join(os.getcwd(), "locale"))
 if os.path.isfile(EXT_LOCALE):
     with open(EXT_LOCALE, "r") as in_file:
         LINE = in_file.readline()

@@ -29,8 +29,9 @@ setup(
     entry_points={
         'console_scripts': [
             'autosub = autosub:main',
-        ],
+        ]
     },
+    package_data={str('autosub'): [str('data/locale/zh_CN/LC_MESSAGES/*mo')]},
     install_requires=[
         'google-api-python-client>=1.4.2',
         'requests>=2.3.0',
@@ -40,5 +41,5 @@ setup(
         'googletrans>=2.4.0',
         'langcodes-py2>=1.2.0'
     ],
-    license=open("LICENSE").read()
+    license=open(os.path.join(here, "LICENSE")).read()
 )

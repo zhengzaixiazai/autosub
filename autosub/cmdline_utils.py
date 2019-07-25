@@ -280,7 +280,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                     if best_result:
                         print(_("Use langcodes-py2 to standardize the result."))
                         args.speech_language = langcodes.standardize_tag(best_result[0])
-                        print(_("Use \"{lang_code}\" instead.").format(lang_code=args.speech_language))
+                        print(_("Use \"{lang_code}\" instead.").format(
+                            lang_code=args.speech_language))
                     else:
                         print(
                             _("Match failed. Still using \"{lang_code}\".").format(
@@ -329,7 +330,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                             match_list=list(googletrans.constants.LANGUAGES.keys()),
                             min_score=args.min_score)
                         if best_result:
-                            print(_("Use \"{lang_code}\" instead.").format(lang_code=best_result[0]))
+                            print(_("Use \"{lang_code}\" instead.").format(
+                                lang_code=best_result[0]))
                             args.src_language = best_result[0]
                         else:
                             raise exceptions.AutosubException(
@@ -359,7 +361,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                             match_list=list(googletrans.constants.LANGUAGES.keys()),
                             min_score=args.min_score)
                         if best_result:
-                            print(_("Use \"{lang_code}\" instead.").format(lang_code=best_result[0]))
+                            print(_("Use \"{lang_code}\" instead.").format(
+                                lang_code=best_result[0]))
                             args.dst_language = best_result[0]
                         else:
                             raise exceptions.AutosubException(
@@ -522,7 +525,7 @@ def fix_args(args,
             print(
                 _("Your minimum region size {mrs0} is smaller than {mrs}.\n"
                   "Now reset to {mrs}.").format(mrs0=args.min_region_size,
-                                               mrs=constants.MIN_REGION_SIZE)
+                                                mrs=constants.MIN_REGION_SIZE)
             )
             args.min_region_size = constants.MIN_REGION_SIZE
 
@@ -530,7 +533,7 @@ def fix_args(args,
             print(
                 _("Your maximum region size {mrs0} is larger than {mrs}.\n"
                   "Now reset to {mrs}.").format(mrs0=args.max_region_size,
-                                               mrs=constants.MAX_EXT_REGION_SIZE)
+                                                mrs=constants.MAX_EXT_REGION_SIZE)
             )
             args.max_region_size = constants.MAX_EXT_REGION_SIZE
 
@@ -538,7 +541,7 @@ def fix_args(args,
             print(
                 _("Your maximum continuous silence {mxcs} is smaller than 0.\n"
                   "Now reset to {dmxcs}.").format(mxcs=args.max_continuous_silence,
-                                                 dmxcs=constants.DEFAULT_CONTINUOUS_SILENCE)
+                                                  dmxcs=constants.DEFAULT_CONTINUOUS_SILENCE)
             )
             args.max_continuous_silence = constants.DEFAULT_CONTINUOUS_SILENCE
 
