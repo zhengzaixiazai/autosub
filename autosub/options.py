@@ -22,21 +22,29 @@ OPTIONS_TEXT = gettext.translation(domain=__name__,
                                    languages=[constants.CURRENT_LOCALE],
                                    fallback=True)
 
+META_TEXT = gettext.translation(domain=metadata.__name__,
+                                localedir=constants.LOCALE_PATH,
+                                languages=[constants.CURRENT_LOCALE],
+                                fallback=True)
+
 try:
     _ = OPTIONS_TEXT.ugettext
+    M_ = META_TEXT.ugettext
 except AttributeError:
     # Python 3 fallback
     _ = OPTIONS_TEXT.gettext
+    M_ = META_TEXT.gettext
 
 
 def get_cmd_args():  # pylint: disable=too-many-statements
     """
     Get command-line arguments.
     """
+
     parser = argparse.ArgumentParser(
         prog=metadata.NAME,
         usage=_('\n  %(prog)s [-i path] [options]'),
-        description=metadata.DESCRIPTION,
+        description=M_(metadata.DESCRIPTION),
         epilog=_("Make sure the argument with space is in quotes.\n"
                  "The default value is used\n"
                  "when the option is not given at the command line.\n"
