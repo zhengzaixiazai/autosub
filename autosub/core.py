@@ -98,8 +98,8 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
         output=output,
         is_keep=is_keep)
 
-    print("\nConverting speech regions to short-term fragments.")
-    widgets = ["Converting: ",
+    print(_("\nConverting speech regions to short-term fragments."))
+    widgets = [_("Converting: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
@@ -156,8 +156,8 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
             rate=audio_rate,
             is_keep=is_keep)
 
-    print("\nSending short-term fragments to API and getting result.")
-    widgets = ["Speech-to-Text: ",
+    print(_("\nSending short-term fragments to API and getting result."))
+    widgets = [_("Speech-to-Text: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
@@ -202,7 +202,7 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
                                             src=src_language,
                                             dst=dst_language)
 
-    print("\nTranslating text from {0} to {1}.".format(
+    print(_("\nTranslating text from \"{0}\" to \"{1}\".").format(
         src_language,
         dst_language))
 
@@ -212,7 +212,7 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
     else:
         trans_list = [text_list]
 
-    widgets = ["Translation: ",
+    widgets = [_("Translation: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
@@ -231,7 +231,7 @@ def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
         pbar.finish()
         pool.terminate()
         pool.join()
-        print("Cancelling transcription.")
+        print(_("Cancelling transcription."))
         return 1
 
     return translated_text
@@ -253,7 +253,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
     if not text_list:
         return None
 
-    print("\nTranslating text from {0} to {1}.".format(
+    print(_("\nTranslating text from \"{0}\" to \"{1}\".").format(
         src_language,
         dst_language))
 
@@ -276,7 +276,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
         # python sequence
         # every group's end index
 
-    widgets = ["Translation: ",
+    widgets = [_("Translation: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
@@ -323,7 +323,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
 
     except KeyboardInterrupt:
         pbar.finish()
-        print("Cancelling transcription.")
+        print(_("Cancelling transcription."))
         return 1
 
     return translated_text
@@ -404,10 +404,10 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
 
     else:
         # fallback process
-        print("Format \"{fmt}\" not supported. \
-        Using \"{default_fmt}\" instead.".format(
-            fmt=subtitles_file_format,
-            default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        print(_("Format \"{fmt}\" not supported. "
+                "Using \"{default_fmt}\" instead.").format(
+                    fmt=subtitles_file_format,
+                    default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
         pysubs2_obj = pysubs2.SSAFile()
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
@@ -471,10 +471,10 @@ def list_to_ass_str(  # pylint: disable=too-many-arguments
             formatted_subtitles = pysubs2_obj.to_string(format_='json')
     else:
         # fallback process
-        print("Format \"{fmt}\" not supported. "
-              "Using \"{default_fmt}\" instead.".format(
-                  fmt=subtitles_file_format,
-                  default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
+        print(_("Format \"{fmt}\" not supported. "
+                "Using \"{default_fmt}\" instead.").format(
+                    fmt=subtitles_file_format,
+                    default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
         pysubs2_obj = pysubs2.SSAFile()
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
@@ -500,10 +500,10 @@ def str_to_file(
 
     if input_m:
         while os.path.isfile(dest):
-            print("There is already a file with the same name "
-                  "in this location: \"{dest_name}\".".format(dest_name=dest))
+            print(_("There is already a file with the same name "
+                    "in this location: \"{dest_name}\".").format(dest_name=dest))
             dest = input_m(
-                "Input a new path (including directory and file name) for output file.\n")
+                _("Input a new path (including directory and file name) for output file.\n"))
             dest = os.path.splitext(dest)[0]
             dest = "{base}".format(base=dest)
 

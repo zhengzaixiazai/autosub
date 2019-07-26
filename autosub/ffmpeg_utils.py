@@ -88,8 +88,8 @@ class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
 
         except subprocess.CalledProcessError:
             raise exceptions.AutosubException(
-                "Error: ffmpeg can't split your file. "
-                "Check your audio processing options."
+                _("Error: ffmpeg can't split your file. "
+                  "Check your audio processing options.")
             )
 
 
@@ -110,17 +110,17 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
             raise ValueError
 
     except (subprocess.CalledProcessError, ValueError):
-        print("ffprobe(ffmpeg) can't get video fps.\n"
-              "It is necessary when output is \".sub\".")
+        print(_("ffprobe(ffmpeg) can't get video fps.\n"
+                "It is necessary when output is \".sub\"."))
         if input_m:
-            input_str = input_m("Input your video fps. "
-                                "Any illegal input will regard as \".srt\" instead.\n")
+            input_str = input_m(_("Input your video fps. "
+                                  "Any illegal input will regard as \".srt\" instead.\n"))
             try:
                 fps = float(input_str)
                 if fps <= 0.0:
                     raise ValueError
             except ValueError:
-                print("Use \".srt\" instead.")
+                print(_("Use \".srt\" instead."))
                 fps = 0.0
         else:
             return 0.0
@@ -133,14 +133,14 @@ def ffprobe_check_file(filename):
     Give an audio or video file
     and check whether it is not empty by get its bitrate.
     """
-    ffprobe_prcs = subprocess.Popen(
-        "ffprobe {in_} -show_format -pretty -loglevel quiet".format(
-            in_=filename),
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    out = ffprobe_prcs.communicate()[0]
-    bitrate_idx = out.find('bit_rate')
+    ffprobe_bytes = subprocess.check_output(
+        "ffprobe {in_} -show_format -pretty -loglevel quiet".format(in_=filename),
+        stdin=open(os.devnull),
+        shell=False)
+    ffprobe_str = ffprobe_bytes.decode('utf-8')
+    bitrate_idx = ffprobe_str.find('bit_rate')
     if bitrate_idx < 0 or \
-            out[bitrate_idx + 9:bitrate_idx + 10].lower() == 'n':
+            ffprobe_str[bitrate_idx + 9:bitrate_idx + 10].lower() == 'n':
         return False
     return True
 
@@ -201,10 +201,11 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
 
             if input_m:
                 while os.path.isfile(output_list[i]):
-                    print("There is already a file with the same name"
-                          " in this location: \"{dest_name}\".".format(dest_name=output_list[i]))
+                    print(_("There is already a file with the same name"
+                            " in this location: \"{dest_name}\".").format(dest_name=output_list[i]))
                     output_list[i] = input_m(
-                        "Input a new path (including directory and file name) for output file.\n")
+                        _("Input a new path (including directory and file name) "
+                          "for output file.\n"))
                     output_list[i] = os.path.splitext(output_list[i])[0]
                     output_list[i] = "{base}.{extension}".format(base=output_list[i],
                                                                  extension='temp.flac')
@@ -218,7 +219,7 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
             command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
             if not ffprobe_check_file(output_list[i]):
-                print("Audio pre-processing failed. Try default method.")
+                print(_("Audio pre-processing failed. Try default method."))
                 return None
 
     else:
@@ -246,7 +247,7 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
             os.remove(output_list[i - 1])
             if not ffprobe_check_file(output_list[i]):
-                print("Audio pre-processing failed. Try default method.")
+                print(_("Audio pre-processing failed. Try default method."))
                 os.remove(output_list[i])
                 return None
 

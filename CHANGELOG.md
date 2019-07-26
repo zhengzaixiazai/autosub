@@ -51,6 +51,8 @@ Click up arrow to go back to TOC.
 - Add only audio fragments output. [issue #44](https://github.com/BingLingGroup/autosub/issues/44)
 - Add subtitles(first line) language detection powered by googletrans. [issue #40](https://github.com/BingLingGroup/autosub/issues/40)
 - Add http, https proxy support.(Set environment variables) [issue #17](https://github.com/BingLingGroup/autosub/issues/17)
+- Add i18n support. [issue #9](https://github.com/BingLingGroup/autosub/issues/9)
+- Add i18n language choice. [issue #45](https://github.com/BingLingGroup/autosub/issues/45)
 
 #### Changed(Unreleased)
 

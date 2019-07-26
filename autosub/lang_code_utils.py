@@ -89,18 +89,18 @@ def match_print(
     if not min_score:
         min_score = 90
 
-    print("Now match lang codes.")
+    print(_("Now match lang codes."))
 
     if min_score < 0 or min_score > 100:
-        print("The value of arg of \"-mns\"/\"--min-score\" isn't legal.")
+        print(_("The value of arg of \"-mns\"/\"--min-score\" isn't legal."))
         return None
 
     print("{column_1}{column_2}".format(
-        column_1="Input:".ljust(16),
+        column_1=_("Input:").ljust(16),
         column_2=dsr_lang))
 
     print("{column_1}{column_2}".format(
-        column_1="Score above:".ljust(16),
+        column_1=_("Score above:").ljust(16),
         column_2=min_score))
 
     match_scores = better_match(
@@ -109,12 +109,12 @@ def match_print(
         min_score=min_score
     )[0]
     if match_scores[0][0] == 'und':
-        print("No lang codes been matched.")
+        print(_("No lang codes been matched."))
         return None
 
     print("{column_1}{column_2}".format(
-        column_1="Match result".ljust(16),
-        column_2="Score (0-100)"))
+        column_1=_("Match result").ljust(16),
+        column_2=_("Score (0-100)")))
     for match in match_scores:
         print("{column_1}{column_2}".format(
             column_1=match[0].ljust(16),

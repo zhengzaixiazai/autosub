@@ -1,0 +1,46 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-07-26 09:41+0800\n"
+"PO-Revision-Date: 2019-07-26 09:40+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh_CN\n"
+"X-Generator: Poedit 2.2.3\n"
+
+#: autosub/lang_code_utils.py:92
+msgid "Now match lang codes."
+msgstr "现在匹配语言代码。"
+
+#: autosub/lang_code_utils.py:95
+msgid "The value of arg of \"-mns\"/\"--min-score\" isn't legal."
+msgstr "\"-mns\"/\"--min-score\"的参数的值不合法。"
+
+#: autosub/lang_code_utils.py:99
+msgid "Input:"
+msgstr "输入："
+
+#: autosub/lang_code_utils.py:103
+msgid "Score above:"
+msgstr "分数高于："
+
+#: autosub/lang_code_utils.py:112
+msgid "No lang codes been matched."
+msgstr "没有匹配到语言代码。"
+
+#: autosub/lang_code_utils.py:116
+msgid "Match result"
+msgstr "匹配结果"
+
+#: autosub/lang_code_utils.py:117
+msgid "Score (0-100)"
+msgstr "分数（0-100）"
