@@ -11,6 +11,7 @@ import gettext
 
 # Import third-party modules
 import langcodes
+import wcwidth
 
 # Any changes to the path and your own modules
 from autosub import constants
@@ -79,6 +80,26 @@ def better_match(desired_language,
     return match_scores, unsupported_languages
 
 
+def wjust(
+        str_just,
+        length,
+        is_left=True
+):
+    """
+    Use wcwidth to just string.
+    """
+    u_width = wcwidth.wcswidth(str_just)
+    if length > u_width:
+        just_space = " " * (length - u_width)
+    else:
+        just_space = ""
+
+    if is_left:
+        return str_just + just_space
+
+    return just_space + str_just
+
+
 def match_print(
         dsr_lang,
         match_list,
@@ -96,11 +117,11 @@ def match_print(
         return None
 
     print("{column_1}{column_2}".format(
-        column_1=_("Input:").ljust(16),
+        column_1=wjust(str_just=_("Input:"), length=18),
         column_2=dsr_lang))
 
     print("{column_1}{column_2}".format(
-        column_1=_("Score above:").ljust(16),
+        column_1=wjust(str_just=_("Score above:"), length=18),
         column_2=min_score))
 
     match_scores = better_match(
@@ -113,10 +134,10 @@ def match_print(
         return None
 
     print("{column_1}{column_2}".format(
-        column_1=_("Match result").ljust(16),
+        column_1=wjust(str_just=_("Match result"), length=18),
         column_2=_("Score (0-100)")))
     for match in match_scores:
         print("{column_1}{column_2}".format(
-            column_1=match[0].ljust(16),
+            column_1=wjust(str_just=match[0], length=18),
             column_2=match[1]))
     return match_scores[0]

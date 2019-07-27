@@ -39,7 +39,8 @@ setup(
         'progressbar2>=3.34.3',
         'auditok>=0.1.5',
         'googletrans>=2.4.0',
-        'langcodes-py2>=1.2.0'
+        'langcodes-py2>=1.2.0',
+        'wcwidth>=0.1.7'
     ],
     license=open(os.path.join(here, "LICENSE")).read()
 )

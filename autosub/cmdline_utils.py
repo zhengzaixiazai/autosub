@@ -45,19 +45,19 @@ def list_args(args):
     if args.list_formats:
         print(_("List of output formats:\n"))
         print("{column_1}{column_2}".format(
-            column_1=_("Format").ljust(16),
+            column_1=lang_code_utils.wjust(_("Format"), 18),
             column_2=_("Description")))
         for subtitles_format, format_description in sorted(constants.OUTPUT_FORMAT.items()):
             print("{column_1}{column_2}".format(
-                column_1=subtitles_format.ljust(16),
+                column_1=lang_code_utils.wjust(subtitles_format, 18),
                 column_2=format_description))
         print(_("\nList of input formats:\n"))
         print("{column_1}{column_2}".format(
-            column_1=_("Format").ljust(16),
+            column_1=lang_code_utils.wjust(_("Format"), 18),
             column_2=_("Description")))
         for subtitles_format, format_description in sorted(constants.INPUT_FORMAT.items()):
             print("{column_1}{column_2}".format(
-                column_1=subtitles_format.ljust(16),
+                column_1=lang_code_utils.wjust(subtitles_format, 18),
                 column_2=format_description))
         return True
 
@@ -69,10 +69,10 @@ def list_args(args):
             service_urls=args.service_urls)
         result_obj = translator.detect(pysubs2_obj.events[0].text)
         print("{column_1}{column_2}".format(
-            column_1=_("Lang code").ljust(16),
+            column_1=lang_code_utils.wjust(_("Lang code"), 18),
             column_2=_("Confidence")))
         print("{column_1}{column_2}\n".format(
-            column_1=result_obj.lang.ljust(16),
+            column_1=lang_code_utils.wjust(result_obj.lang, 18),
             column_2=result_obj.confidence))
         args.list_speech_codes = result_obj.lang
 
@@ -80,11 +80,11 @@ def list_args(args):
         if args.list_speech_codes == ' ':
             print(_("List of all lang codes for speech-to-text:\n"))
             print("{column_1}{column_2}".format(
-                column_1=_("Lang code").ljust(16),
+                column_1=lang_code_utils.wjust(_("Lang code"), 18),
                 column_2=_("Description")))
             for code, language in sorted(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.items()):
                 print("{column_1}{column_2}".format(
-                    column_1=code.ljust(16),
+                    column_1=lang_code_utils.wjust(code, 18),
                     column_2=language))
         else:
             print(_("Match Google Speech V2 lang codes."))
@@ -98,11 +98,11 @@ def list_args(args):
         if args.list_translation_codes == ' ':
             print(_("List of all lang codes for translation:\n"))
             print("{column_1}{column_2}".format(
-                column_1=_("Lang code").ljust(16),
+                column_1=lang_code_utils.wjust(_("Lang code"), 18),
                 column_2=_("Description")))
             for code, language in sorted(constants.TRANSLATION_LANGUAGE_CODES.items()):
                 print("{column_1}{column_2}".format(
-                    column_1=code.ljust(16),
+                    column_1=lang_code_utils.wjust(code, 18),
                     column_2=language))
         else:
             print(_("Match py-googletrans lang codes."))
