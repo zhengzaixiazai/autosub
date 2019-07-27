@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import re
 import os
+import sys
 import gettext
 
 # Import third-party modules
@@ -103,7 +104,7 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
     try:
         command = constants.DEFAULT_VIDEO_FPS_CMD.format(in_=video_file)
         input_str = subprocess.check_output(command, stdin=open(os.devnull), shell=False)
-        num_list = map(int, re.findall(r'\d+', input_str.decode('utf-8')))
+        num_list = map(int, re.findall(r'\d+', input_str.decode(sys.stdout.encoding)))
         if len(list(num_list)) == 2:
             fps = float(num_list[0]) / float(num_list[1])
         else:
@@ -137,7 +138,7 @@ def ffprobe_check_file(filename):
         "ffprobe {in_} -show_format -pretty -loglevel quiet".format(in_=filename),
         stdin=open(os.devnull),
         shell=False)
-    ffprobe_str = ffprobe_bytes.decode('utf-8')
+    ffprobe_str = ffprobe_bytes.decode(sys.stdout.encoding)
     bitrate_idx = ffprobe_str.find('bit_rate')
     if bitrate_idx < 0 or \
             ffprobe_str[bitrate_idx + 9:bitrate_idx + 10].lower() == 'n':
