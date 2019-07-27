@@ -1,14 +1,14 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# autosub metadata.py translation file.
+# Copyright (C) 2019 BingLingFanSub
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# BingLingFanSub <binglingfansub@gmail.com>, 2019.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-26 09:31+0800\n"
-"PO-Revision-Date: 2019-07-26 09:32+0800\n"
+"POT-Creation-Date: 2019-07-27 21:54+0800\n"
+"PO-Revision-Date: 2019-07-27 20:10+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,11 +17,11 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.2.3\n"
 
-#: autosub/metadata.py:28
-msgid "Auto-generates subtitles for video/audio/subtitles file."
+#: autosub/metadata.py:18
+msgid "Auto-generate subtitles for video/audio/subtitles file."
 msgstr "为视频/音频/字幕文件自动生成字幕。"
 
-#: autosub/metadata.py:30
+#: autosub/metadata.py:20
 msgid ""
 "Autosub is an automatic subtitles generating utility. It can detect speech "
 "regions automatically by using Auditok, split the audio files according to "

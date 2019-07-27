@@ -13,6 +13,6 @@ MANIFEST
 /autosub.pyproj
 /.idea
 /.build_and_dist
-/.build_and_dist27
+/.build_and_dist_win32
 /.release
 *.po~

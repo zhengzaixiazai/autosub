@@ -57,6 +57,10 @@ if __name__ == "__main__":
                 ld=locale_dir,
                 name=name,
                 py=python_code)
+            new_mo = "{ld}{name}.{py}.mo".format(
+                ld=locale_dir,
+                name=name,
+                py=python_code)
             if os.path.exists(old_po):
                 new_po = "{ld}{name}.{py}.new.po".format(
                     ld=locale_dir,
@@ -92,6 +96,10 @@ if __name__ == "__main__":
                 ld=locale_dir,
                 name=name)
 
+            new_mo = "{ld}{name}.mo".format(
+                ld=locale_dir,
+                name=name)
+
             if os.path.exists(old_po):
                 new_po = "{ld}{name}.new.po".format(
                     ld=locale_dir,
@@ -118,3 +126,9 @@ if __name__ == "__main__":
                     old_po=old_po,
                     ld=locale_dir)
                 run_cmd(xgt_cmd)
+
+        msgfmt_cmd = "msgfmt \"{old_po}\" -o \"{new_mo}\"".format(
+            old_po=old_po,
+            new_mo=new_mo
+        )
+        run_cmd(msgfmt_cmd)
