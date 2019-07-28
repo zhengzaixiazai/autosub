@@ -78,7 +78,11 @@ if __name__ == "__main__":
     copytree(src="{}/data".format(package_name), dst=target_data)
     copytree(src="{}/data".format(package_name), dst=target_data_pyi)
     copytree(src=".build_and_dist/{}.dist".format(release_name), dst=target_nuitka)
-    copytree(src="scripts/release_files", dst=target)
+
+    exe_dir = "binaries"
+    if os.path.isdir(exe_dir):
+        copytree(src=exe_dir, dst=target_nuitka)
+        copytree(src=exe_dir, dst=target_pyi)
     output_bytes = subprocess.check_output("7z a -sdel \".release/{release_name}-{version}-win-x64.7z\" "
                                            "\"{target}\"".format(release_name=release_name,
                                                                  version=metadata['VERSION'],

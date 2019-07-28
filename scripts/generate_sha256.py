@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import hashlib, os, sys
+import hashlib
+import os
+import sys
 
 text = '''| 文件名 | SHA256 |
 | :- | :- |'''
+
 
 def checksum(filename):
     algorithm = hashlib.sha256()
@@ -21,8 +24,11 @@ def filelist(path):
             r.append(f)
     return r
 
-if len(sys.argv) == 2:
-    print(text)
-    r = filelist(str(sys.argv[1]))
-    for i in r:
-        print('| {0} | {1} |'.format(i, checksum(str(sys.argv[1]) + '\\' + i)))
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        print(text)
+        for item in os.listdir(sys.argv[1]):
+            file_name = os.path.join(sys.argv[1], item)
+            if os.path.isfile(file_name):
+                print('| {0} | {1} |'.format(item, checksum(file_name)))

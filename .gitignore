@@ -1,6 +1,7 @@
 *pyc
 *.egg-info
 *html
+binaries/
 build/
 dist/
 .DS_Store
