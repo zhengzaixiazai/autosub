@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
-- [[Unreleased]](#Unreleased)
-  - [Added](#addedunreleased)
-  - [Changed](#changedunreleased)
+- [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
+  - [Added](#added050-alpha)
+  - [Changed](#changed050-alpha)
 - [[0.4.1-alpha] - 2019-07-11](#041-alpha---2019-07-11)
   - [Added](#added041-alpha)
   - [Changed](#changed041-alpha)
@@ -20,9 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Click up arrow to go back to TOC.
 
-### [Unreleased]
+### [0.5.0-alpha] - 2019-07-27
 
-#### Added(Unreleased)
+#### Added(0.5.0-alpha)
 
 - Add arguments for min and max region size. [issue #3](https://github.com/BingLingGroup/autosub/issues/3)
 - Add metadata.py. [issue #5](https://github.com/BingLingGroup/autosub/issues/5)
@@ -54,7 +54,7 @@ Click up arrow to go back to TOC.
 - Add i18n support. [issue #9](https://github.com/BingLingGroup/autosub/issues/9)
 - Add i18n language choice. [issue #45](https://github.com/BingLingGroup/autosub/issues/45)
 
-#### Changed(Unreleased)
+#### Changed(0.5.0-alpha)
 
 - [issue #5](https://github.com/BingLingGroup/autosub/issues/5).
   - Rewrite help messages.

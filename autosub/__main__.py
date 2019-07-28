@@ -3,11 +3,9 @@
 """
 Defines autosub's entry point.
 """
-
-from __future__ import absolute_import, print_function, unicode_literals
-
 # Import built-in modules
 # pylint: disable=no-member, protected-access
+from __future__ import absolute_import, print_function, unicode_literals
 import multiprocessing
 import sys
 

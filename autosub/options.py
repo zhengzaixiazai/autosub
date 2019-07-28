@@ -3,10 +3,8 @@
 """
 Defines autosub's command line options.
 """
-
-from __future__ import absolute_import, print_function, unicode_literals
-
 # Import built-in modules
+from __future__ import absolute_import, print_function, unicode_literals
 import argparse
 import gettext
 
@@ -414,22 +412,22 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "If not given the option, "
                "do normal conversion work. "
                "(default: %(default)s) "
-               "\"y\": process the input first "
+               "\"y\": pre-process the input first "
                "then start normal workflow. "
                "If succeed, no more conversion before "
                "the speech-to-text procedure. "
-               "\"o\": only process the input audio. "
+               "\"o\": only pre-process the input audio. "
                "(\"-k\"/\"--keep\" is true) "
                "\"s\": only split the input audio. "
                "(\"-k\"/\"--keep\" is true) "
                "\"n\": FORCED NO EXTRA CHECK/CONVERSION "
                "before the speech-to-text procedure. "
-               "Default command to process the audio: "
+               "Default command to pre-process the audio: "
                "{dft_1} | {dft_2} | {dft_3} "
                "(Ref: "
                "https://github.com/stevenj/autosub/blob/master/scripts/subgen.sh "
                "https://ffmpeg.org/ffmpeg-filters.html) "
-               "(2 >= arg_num = >= 1)").format(
+               "(2 >= arg_num >= 1)").format(
                    dft_1=constants.DEFAULT_AUDIO_PRCS[0],
                    dft_2=constants.DEFAULT_AUDIO_PRCS[1],
                    dft_3=constants.DEFAULT_AUDIO_PRCS[2])

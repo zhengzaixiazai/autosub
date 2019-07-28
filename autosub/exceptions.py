@@ -5,7 +5,7 @@ Defines exceptions used by autosub.
 """
 
 # Import built-in modules
-
+from __future__ import absolute_import, print_function, unicode_literals
 
 # Import third-party modules
 

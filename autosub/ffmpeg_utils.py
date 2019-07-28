@@ -3,10 +3,8 @@
 """
 Defines ffmpeg command line calling functionality.
 """
-
-from __future__ import absolute_import, print_function, unicode_literals
-
 # Import built-in modules
+from __future__ import absolute_import, print_function, unicode_literals
 import subprocess
 import tempfile
 import re
@@ -103,6 +101,7 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
     """
     try:
         command = constants.DEFAULT_VIDEO_FPS_CMD.format(in_=video_file)
+        print(command)
         input_str = subprocess.check_output(command, stdin=open(os.devnull), shell=False)
         num_list = map(int, re.findall(r'\d+', input_str.decode(sys.stdout.encoding)))
         if len(list(num_list)) == 2:
@@ -134,8 +133,10 @@ def ffprobe_check_file(filename):
     Give an audio or video file
     and check whether it is not empty by get its bitrate.
     """
+    command = "ffprobe {in_} -show_format -pretty -loglevel quiet".format(in_=filename)
+    print(command)
     ffprobe_bytes = subprocess.check_output(
-        "ffprobe {in_} -show_format -pretty -loglevel quiet".format(in_=filename),
+        command,
         stdin=open(os.devnull),
         shell=False)
     ffprobe_str = ffprobe_bytes.decode(sys.stdout.encoding)
@@ -218,6 +219,7 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
                 in_=output_list[i - 1],
                 out_=output_list[i])
             command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
+            print(command)
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
             if not ffprobe_check_file(output_list[i]):
                 print(_("Audio pre-processing failed. Try default method."))
@@ -233,6 +235,7 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
         command = cmds[0].format(
             in_=output_list[0],
             out_=output_list[1])
+        print(command)
         subprocess.check_output(command, stdin=open(os.devnull), shell=False)
         for i in range(2, len(cmds) + 1):
             temp_file = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
@@ -245,6 +248,7 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
                 in_=output_list[i - 1],
                 out_=output_list[i])
             command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
+            print(command)
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
             os.remove(output_list[i - 1])
             if not ffprobe_check_file(output_list[i]):

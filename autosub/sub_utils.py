@@ -3,10 +3,8 @@
 """
 Defines subtitle formatters used by autosub.
 """
-
-from __future__ import absolute_import, unicode_literals
-
 # Import built-in modules
+from __future__ import absolute_import, unicode_literals
 import wave
 import json
 

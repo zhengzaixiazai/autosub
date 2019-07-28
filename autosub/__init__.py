@@ -3,10 +3,8 @@
 """
 Defines autosub's commandline entry point functionality.
 """
-
-from __future__ import absolute_import, print_function, unicode_literals
-
 # Import built-in modules
+from __future__ import absolute_import, print_function, unicode_literals
 import os
 import gettext
 
@@ -76,6 +74,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
         if validate_result == 0:
             if args.audio_process:
+                args.audio_process = {k.lower() for k in args.audio_process}
+                args.audio_process = \
+                    args.audio_process & constants.DEFAULT_AUDIO_PRCS_MODE_SET
+                if not args.audio_process:
+                    raise exceptions.AutosubException(
+                        _("Error: The args of \"-ap\"/\"--audio-process\" are wrong."
+                          "\nNo works done.")
+                    )
                 if 'o' in args.audio_process:
                     args.keep = True
                     prcs_file = ffmpeg_utils.audio_pre_prcs(

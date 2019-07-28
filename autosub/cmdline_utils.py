@@ -4,10 +4,8 @@
 Defines autosub's command line functionality.
 """
 # pylint: disable=too-many-lines
-
-from __future__ import absolute_import, print_function, unicode_literals
-
 # Import built-in modules
+from __future__ import absolute_import, print_function, unicode_literals
 import os
 import tempfile
 import subprocess
@@ -776,6 +774,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             sample_rate=16000,
             out_=audio_wav
         )
+        print(command)
         subprocess.check_output(command, stdin=open(os.devnull), shell=False)
         regions = sub_utils.sub_to_speech_regions(
             audio_wav=audio_wav,
@@ -805,6 +804,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         print(_("\nConvert source audio to \"{name}\" "
                 "and get audio length for regions detection.").format(
                     name=audio_wav))
+        print(command)
         subprocess.check_output(command, stdin=open(os.devnull), shell=False)
 
         if not ffmpeg_utils.ffprobe_check_file(audio_wav):
@@ -827,7 +827,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         raise exceptions.AutosubException(
             _("Error: Can't get speech regions.")
         )
-    if args.speech_language:
+    if args.speech_language or 's' in args.audio_process:
         # process output first
         try:
             args.output_files.remove("regions")
@@ -865,7 +865,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         except KeyError:
             pass
 
-        # speech to text
         if not no_audio_prcs:
             audio_for_api_temp = tempfile.NamedTemporaryFile(
                 suffix=args.api_suffix,
@@ -881,6 +880,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             print(_("\nConvert to \"{name}\" "
                     "for API.").format(
                         name=audio_for_api))
+            print(command)
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
             if not ffmpeg_utils.ffprobe_check_file(audio_for_api):
                 raise exceptions.AutosubException(
@@ -916,6 +916,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             raise exceptions.AutosubException(
                 _("Audio processing complete.\nAll works done."))
 
+        # speech to text
         text_list = core.audio_to_text(
             audio_fragments=audio_fragments,
             api_url=gsv2_api_url,

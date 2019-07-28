@@ -3,10 +3,8 @@
 """
 Defines constants used by autosub.
 """
-
-from __future__ import unicode_literals
-
 # Import built-in modules
+from __future__ import unicode_literals
 import os
 import sys
 import locale
@@ -68,6 +66,7 @@ DEFAULT_SUBTITLES_FORMAT = 'srt'
 DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual'}
 DEFAULT_SUB_MODE_SET = {'dst', 'bilingual'}
 DEFAULT_LANG_MODE_SET = {'s', 'src', 'd'}
+DEFAULT_AUDIO_PRCS_MODE_SET = {'o', 's', 'y', 'n'}
 
 DEFAULT_AUDIO_PRCS = [
     "ffmpeg -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\

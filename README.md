@@ -21,23 +21,140 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
 ### TOC
 
 1. [Description](#description)
-   - 1.1 [Input](#input)
-   - 1.2 [Divide](#divide)
-   - 1.3 [Speech-to-Text/Translation API request](#speech-to-texttranslation-api-request)
-   - 1.4 [Speech-to-Text/Translation language support](#speech-to-texttranslation-language-support)
-   - 1.5 [Output](#Output)
 2. [License](#license)
-3. [Download and Installation](#download-and-installation)
-   - 3.1 [Branches](#branches)
-   - 3.2 [Install on Ubuntu](#install-on-ubuntu)
-   - 3.3 [Install on Windows](#install-on-windows)
-4. [Usage](#usage)
+3. [Dependencies](dependencies)
+4. [Download and Installation](#download-and-installation)
+   - 4.1 [Branches](#branches)
+   - 4.2 [Install on Ubuntu](#install-on-ubuntu)
+   - 4.3 [Install on Windows](#install-on-windows)
+5. [Workflow](#workflow)
+   - 5.1 [Input](#input)
+   - 5.2 [Divide](#divide)
+   - 5.3 [Speech-to-Text/Translation API request](#speech-to-texttranslation-api-request)
+   - 5.4 [Speech-to-Text/Translation language support](#speech-to-texttranslation-language-support)
+   - 5.5 [Output](#Output)
+6. [Usage](#usage)
 
 Click up arrow to go back to TOC.
 
 ### Description
 
-Autosub is a utility for automatic speech recognition, subtitle generation based on [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2) or [Chrome-Web-Speech-api](https://github.com/agermanidis/autosub/issues/1). It can also translate the subtitle's text by using [googleapiclient](http://googleapis.github.io/google-api-python-client/docs/epy/index.html). Currently not supports the latest Google Cloud APIs.
+Autosub is an automatic subtitles generating utility. It can detect speech regions automatically by using Auditok, split the audio files according to regions by using ffmpeg, transcribe speech based on [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)([Chrome-Web-Speech-api](https://github.com/agermanidis/autosub/issues/1)) and translate the subtitles' text by using py-googletrans. It currently not supports the latest Google Cloud APIs.
+
+### License
+
+**[ATTENTION]**: This repo has a different license from [the original repo](https://github.com/agermanidis/autosub).
+
+[GPLv3](LICENSE)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub?ref=badge_shield)
+
+### Dependencies
+
+Autosub depends on these third party softwares or python packages. Much appreciation to all of these projects.
+
+- [ffmpeg](https://ffmpeg.org/)
+- [auditok](https://github.com/amsehili/auditok)
+- [pysubs2](https://github.com/tkarabela/pysubs2)
+- [py-googletrans](https://github.com/ssut/py-googletrans)
+- [langcodes](https://github.com/LuminosoInsight/langcodes)
+- [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
+- ...
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+### License
+
+**[ATTENTION]**: This repo has a different license from [the original repo](https://github.com/agermanidis/autosub).
+
+[GPLv3](LICENSE)
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub)
+
+### Download and Installation
+
+**[ATTENTION]**: Except the PyPI version, others include non-original codes not from the original repository.
+
+After autosub-0.4.0, all of the codes is compatible with both Python 2.7 and Python 3. The installation commands below including the specific Python version don't matter.
+
+#### Branches
+
+[alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha)
+
+- Include many changes from [the original repo](https://github.com/agermanidis/autosub). Details in [Changelog](CHANGELOG.md). Codes will be updated when an alpha version have been released. It is stabler than the dev branch
+
+[origin branch](https://github.com/BingLingGroup/autosub/tree/origin)
+
+- Include the least changes from [the original repo](https://github.com/agermanidis/autosub) except all new features in the [alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha). The changes in [origin branch](https://github.com/BingLingGroup/autosub/tree/dev) just make sure there's no critical bugs when the program is running on Windows. Currently isn't maintained.
+
+[dev branch](https://github.com/BingLingGroup/autosub/tree/dev)
+
+- The latest codes will be pushed to this branch. If it works fine, it will be merged to alpha branch when new version released.
+- Only used to test or pull request. Don't install them unless you know what you are doing.
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+#### Install on Ubuntu
+
+**[ATTENTION]**: Dependencies install commands on the first line.
+
+Install from PyPI.
+
+```bash
+apt install ffmpeg python python-pip -y
+pip install autosub
+```
+
+Install from `origin` branch.
+
+```bash
+apt install ffmpeg python python-pip git -y
+pip install git+https://github.com/BingLingGroup/autosub.git@origin
+```
+
+Install from `alpha` branch.
+
+```bash
+apt install ffmpeg python python-pip git -y
+pip install git+https://github.com/BingLingGroup/autosub.git@alpha
+```
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+#### Install on Windows
+
+You can just go to the [release page](https://github.com/BingLingGroup/autosub/releases) and download the latest release for Windows.
+
+- The one without pyinstaller suffix is built by Nuitka. It's faster than the pyinstaller due to its compiling feature different from pyinstaller which just bundles the application.
+- If there's anything wrong on the both releases. You can use the traditional python package installation method below.
+
+Or install python environment(if you still don't have one) from choco and then install the package.
+
+Choco install command for cmd usage.
+
+```batch
+@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+```
+
+Install from `origin` branch.
+
+```batch
+choco install git python2 curl -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip install git+https://github.com/BingLingGroup/autosub.git@origin
+```
+
+Install from `alpha` branch.
+
+```batch
+choco install git python2 curl -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip install git+https://github.com/BingLingGroup/autosub.git@alpha
+```
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 #### Input
 
@@ -74,96 +191,6 @@ To see which, run the utility with the argument `-lsc` or `--list-speech-to-text
 #### Output
 
 Currently suppports `.srt`, `.vtt`, `.json`, `.txt`(the same as the Aegisub plain text output).
-
-<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
-
-### License
-
-**[ATTENTION]**: This repo has a different license from [the original repo](https://github.com/agermanidis/autosub).
-
-[GPLv3](LICENSE)
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub)
-
-### Download and Installation
-
-**[ATTENTION]**: Except the PyPI version, others include non-original codes not from the original repository.
-
-#### Branches
-
-[alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha)
-
-- Include many changes from [the original repo](https://github.com/agermanidis/autosub). Details in [Changelog](CHANGELOG.md). Codes will update when alpha released. It is stabler than the dev branch
-
-[origin branch](https://github.com/BingLingGroup/autosub/tree/origin)
-
-- Include the least changes from [the original repo](https://github.com/agermanidis/autosub) except all new features in the [alpha branch](https://github.com/BingLingGroup/autosub/tree/alpha). The changes in [origin branch](https://github.com/BingLingGroup/autosub/tree/dev) just make sure there's no critical bugs when the program running on Windows. Currently not maintained.
-
-[dev branch](https://github.com/BingLingGroup/autosub/tree/dev)
-
-- The latest codes will be pushed to this branch. If it works fine, it will be merged to alpha branch when new version released.
-- Only used to test or pull request. Don't install them unless you know what you are doing.
-
-<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
-
-#### Install on Ubuntu
-
-**[ATTENTION]**: Dependency install commands on the first line.
-
-Install from PyPI.
-
-```bash
-apt install ffmpeg python python-pip -y
-pip install autosub
-```
-
-Install from `origin` branch.
-
-```bash
-apt install ffmpeg python python-pip git -y
-pip install git+https://github.com/BingLingGroup/autosub.git@origin
-```
-
-Install from `alpha` branch.
-
-```bash
-apt install ffmpeg python python-pip git -y
-pip install git+https://github.com/BingLingGroup/autosub.git@alpha
-```
-
-<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
-
-#### Install on Windows
-
-You can just go to the [release page](https://github.com/BingLingGroup/autosub/releases) and download the latest release for Windows.
-
-- **[ATTENTION]**: Current Pre-release for autosub is built by pyinstaller, which means you can feel a little delay when open it but it is normal. A faster version built by nuitka is coming soon.
-
-Or install it from choco.
-
-Choco install command on cmd.
-
-```batch
-@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
-```
-
-Install from `origin` branch.
-
-```batch
-choco install git python2 curl -y
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py
-pip install git+https://github.com/BingLingGroup/autosub.git@origin
-```
-
-Install from `alpha` branch.
-
-```batch
-choco install git python2 curl -y
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py
-pip install git+https://github.com/BingLingGroup/autosub.git@alpha
-```
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 

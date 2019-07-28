@@ -3,10 +3,8 @@
 """
 Defines autosub's lang codes functionality.
 """
-
-from __future__ import absolute_import, print_function, unicode_literals
-
 # Import built-in modules
+from __future__ import absolute_import, print_function, unicode_literals
 import gettext
 
 # Import third-party modules

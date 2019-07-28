@@ -3,10 +3,8 @@
 """
 Defines autosub's core functionality.
 """
-
-from __future__ import absolute_import, print_function, unicode_literals
-
 # Import built-in modules
+from __future__ import absolute_import, print_function, unicode_literals
 import os
 import multiprocessing
 import time

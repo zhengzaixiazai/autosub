@@ -8,9 +8,9 @@
 
 ## 目录
 
-- [未发布的部分](#未发布的部分)
-  - [添加](#添加未发布的部分)
-  - [改动](#改动未发布的部分)
+- [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
+  - [添加](#添加050-alpha)
+  - [改动](#改动050-alpha)
 - [[0.4.1-alpha] - 2019-07-11](#041-alpha---2019-07-11)
   - [添加](#添加041-alpha)
   - [改动](#改动041-alpha)
@@ -19,9 +19,9 @@
 
 点击上箭头以返回目录。
 
-### [未发布的部分]
+### [[0.5.0-alpha] - 2019-07-27]
 
-#### 添加(未发布的部分)
+#### 添加(0.5.0-alpha)
 
 - 为根据音量自动分句时的分句大小提供外部输入参数控制。[issue #3](https://github.com/BingLingGroup/autosub/issues/3)
 - 添加项目元数据文件。[issue #5](https://github.com/BingLingGroup/autosub/issues/5)
@@ -53,7 +53,7 @@
 - 添加i18n支持。[issue #9](https://github.com/BingLingGroup/autosub/issues/9)
 - 添加i18n语言选择功能。[issue #45](https://github.com/BingLingGroup/autosub/issues/45)
 
-#### 改动(未发布的部分)
+#### 改动(0.5.0-alpha)
 
 - [issue #5](https://github.com/BingLingGroup/autosub/issues/5)。
   - 重写帮助信息。

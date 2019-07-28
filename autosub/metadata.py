@@ -3,10 +3,8 @@
 """
 Defines autosub's metadata.
 """
-
-from __future__ import unicode_literals
-
 # Import built-in modules
+from __future__ import unicode_literals
 
 # Any changes to the path and your own modules
 
