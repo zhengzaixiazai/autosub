@@ -1,6 +1,6 @@
 # Autosub
 
-<escape><a href="https://travis-ci.org/BingLingGroup/autosub"><img src="https://travis-ci.org/BingLingGroup/autosub.svg?branch=alpha"></img></a></escape>
+<escape><a href="https://travis-ci.org/BingLingGroup/autosub"><img src="https://travis-ci.org/BingLingGroup/autosub.svg?branch=alpha"></img></a> <a href="https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=shield"></img></a></escape>
 
 [English](../README.md)
 
@@ -83,7 +83,7 @@ ffmpeg支持的视频或者音频文件。程序会使用ffmpeg来将相关文�
 
 [GPLv3](LICENSE)
 
-MIT对GPLv3是兼容的，GPLv3对MIT不兼容。
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub)
 
 ### 下载与安装
 
