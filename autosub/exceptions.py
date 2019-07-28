@@ -6,6 +6,7 @@ Defines exceptions used by autosub.
 
 # Import built-in modules
 from __future__ import absolute_import, print_function, unicode_literals
+import sys
 
 # Import third-party modules
 
@@ -21,7 +22,10 @@ class AutosubException(Exception):
 
     def __init__(self, msg):
         super(AutosubException, self).__init__(msg)
-        self.msg = msg
+        try:
+            self.msg = str(msg)
+        except UnicodeEncodeError:
+            self.msg = msg.encode(sys.stdout.encoding)
 
     def __str__(self):
         return self.msg
