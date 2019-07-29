@@ -72,6 +72,7 @@ if __name__ == "__main__":
     copytree(src=target, dst=target_pyi)
     shutil.copy2(".build_and_dist/pyinstaller.build/{}.exe".format(release_name), target_pyi)
     copytree(src="scripts/release_files_pyi", dst=target_pyi)
+    copytree(src="scripts/release_files", dst=target)
 
     os.makedirs(target_data)
     os.makedirs(target_data_pyi)
@@ -81,27 +82,41 @@ if __name__ == "__main__":
 
     exe_dir = "binaries"
     if os.path.isdir(exe_dir):
-        copytree(src=exe_dir, dst=target_nuitka)
-        copytree(src=exe_dir, dst=target_pyi)
-    output_bytes = subprocess.check_output("7z a -sdel \".release/{release_name}-{version}-win-x64.7z\" "
-                                           "\"{target}\"".format(release_name=release_name,
-                                                                 version=metadata['VERSION'],
-                                                                 target=target),
+        ffmpeg_norm_nuitka = os.path.join(exe_dir, "ffmpeg-normalize-Nuitka", "ffmpeg-normalize.exe")
+        ffmpeg_norm_pyinstaller = os.path.join(exe_dir, "ffmpeg-normalize-pyinstaller", "ffmpeg-normalize.exe")
+        if os.path.isfile(ffmpeg_norm_nuitka) and os.path.isfile(ffmpeg_norm_pyinstaller):
+            shutil.copy2(ffmpeg_norm_nuitka, target_nuitka)
+            shutil.copy2(ffmpeg_norm_pyinstaller, target_pyi)
+        shutil.copy2("binaries/ffmpeg.exe", target_nuitka)
+        shutil.copy2("binaries/ffprobe.exe", target_nuitka)
+        shutil.copy2("binaries/ffmpeg.exe", target_pyi)
+        shutil.copy2("binaries/ffprobe.exe", target_pyi)
+
+    command = "7z a -sdel \".release/{release_name}-{version}-win-x64.7z\" \"{target}\"".format(
+        release_name=release_name,
+        version=metadata['VERSION'],
+        target=target)
+    print(command)
+    output_bytes = subprocess.check_output(command,
                                            stdin=open(os.devnull),
                                            shell=False)
     output_str = output_bytes.decode(sys.stdout.encoding)
     print(output_str)
 
-    output_bytes = subprocess.check_output("7z a -sdel \".release/{release_name}-{version}-win-x64-pyinstaller.7z\" "
-                                           "\"{target_pyi}\"".format(release_name=release_name,
-                                                                     version=metadata['VERSION'],
-                                                                     target_pyi=target_pyi),
+    command = "7z a -sdel \".release/{release_name}-{version}-win-x64-pyinstaller.7z\" "
+    "\"{target_pyi}\"".format(release_name=release_name,
+                              version=metadata['VERSION'],
+                              target_pyi=target_pyi)
+    print(command)
+    output_bytes = subprocess.check_output(command,
                                            stdin=open(os.devnull),
                                            shell=False)
     output_str = output_bytes.decode(sys.stdout.encoding)
     print(output_str)
 
-    output_bytes = subprocess.check_output("python scripts/generate_sha256.py .release",
+    command = "python scripts/generate_sha256.py .release"
+    print(command)
+    output_bytes = subprocess.check_output(command,
                                            stdin=open(os.devnull),
                                            shell=False)
     output_str = output_bytes.decode(sys.stdout.encoding)
