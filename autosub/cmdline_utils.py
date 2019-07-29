@@ -36,6 +36,7 @@ except AttributeError:
     # Python 3 fallback
     _ = CMDLINE_UTILS_TEXT.gettext
 
+
 def list_args(args):
     """
     Check if there's any list args.
@@ -388,10 +389,11 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
     else:
         if args.ext_regions:
-            raise exceptions.AutosubException(
-                _("You've already input times. "
-                  "No works done.")
-            )
+            if not args.keep:
+                raise exceptions.AutosubException(
+                    _("You've already input times. "
+                      "No works done.")
+                )
 
         else:
             print(
@@ -767,7 +769,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     if args.ext_regions:
         # use external speech regions
         print(_("Use external speech regions."))
-        audio_wav = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+        audio_wav_temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+        audio_wav = audio_wav_temp.name
+        audio_wav_temp.close()
         command = args.audio_conversion_cmd.format(
             in_=args.input,
             channel=1,
@@ -827,7 +831,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         raise exceptions.AutosubException(
             _("Error: Can't get speech regions.")
         )
-    if args.speech_language or 's' in args.audio_process:
+    if args.speech_language or \
+            args.audio_process and 's' in args.audio_process:
         # process output first
         try:
             args.output_files.remove("regions")
@@ -912,7 +917,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             os.remove(audio_for_api)
             print(_("\n\"{name}\" has been deleted.").format(name=audio_for_api))
 
-        if 's' in args.audio_process:
+        if args.audio_process and 's' in args.audio_process:
             raise exceptions.AutosubException(
                 _("Audio processing complete.\nAll works done."))
 

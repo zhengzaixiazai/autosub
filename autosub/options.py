@@ -407,11 +407,9 @@ def get_cmd_args():  # pylint: disable=too-many-statements
     audio_prcs_group.add_argument(
         '-ap', '--audio-process',
         nargs='*', metavar=_('mode'),
-        default=['d', ],
         help=_("Option to control audio process. "
                "If not given the option, "
                "do normal conversion work. "
-               "(default: %(default)s) "
                "\"y\": pre-process the input first "
                "then start normal workflow. "
                "If succeed, no more conversion before "
@@ -448,7 +446,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "Every line of the commands need to be in quotes. "
                "Input file name is {in_}. "
                "Output file name is {out_}. "
-               "(arg_num = 0 or 1)")
+               "(arg_num >= 1)")
     )
 
     audio_prcs_group.add_argument(

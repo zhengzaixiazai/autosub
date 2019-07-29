@@ -50,17 +50,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         os.environ['proxy_password'] = args.proxy_password
 
     try:
-        ffmpeg_cmd = ffmpeg_utils.get_cmd("ffmpeg")
-        if not ffmpeg_cmd:
-            raise exceptions.AutosubException(
-                _("Error: Dependency ffmpeg"
-                  " not found on this machine.")
-            )
-
-        ffmpeg_cmd = ffmpeg_cmd + ' '
-        if cmdline_utils.list_args(args):
-            raise exceptions.AutosubException(_("\nAll works done."))
-
         if not args.yes:
             try:
                 input_m = raw_input
@@ -73,6 +62,17 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         validate_result = cmdline_utils.validate_io(args, styles_list)
 
         if validate_result == 0:
+            ffmpeg_cmd = ffmpeg_utils.get_cmd("ffmpeg")
+            if not ffmpeg_cmd:
+                raise exceptions.AutosubException(
+                    _("Error: Dependency ffmpeg"
+                      " not found on this machine.")
+                )
+
+            ffmpeg_cmd = ffmpeg_cmd + ' '
+            if cmdline_utils.list_args(args):
+                raise exceptions.AutosubException(_("\nAll works done."))
+
             if args.audio_process:
                 args.audio_process = {k.lower() for k in args.audio_process}
                 args.audio_process = \
@@ -88,6 +88,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         filename=args.input,
                         is_keep=args.keep,
                         cmds=args.audio_process_cmd,
+                        output_name=args.output,
                         input_m=input_m,
                         ffmpeg_cmd=ffmpeg_cmd
                     )
@@ -101,11 +102,15 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                             _("Audio pre-processing complete.\nAll works done.")
                         )
 
+                if 's' in args.audio_process:
+                    args.keep = True
+
                 if 'y' in args.audio_process:
                     prcs_file = ffmpeg_utils.audio_pre_prcs(
                         filename=args.input,
                         is_keep=args.keep,
                         cmds=args.audio_process_cmd,
+                        output_name=args.output,
                         input_m=input_m,
                         ffmpeg_cmd=ffmpeg_cmd
                     )
@@ -121,9 +126,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                     no_audio_prcs = True
                 else:
                     no_audio_prcs = False
-
-                if 's' in args.audio_process:
-                    args.keep = True
 
             else:
                 no_audio_prcs = False

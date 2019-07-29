@@ -46,11 +46,15 @@ class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
             include_before=0.25,
             include_after=0.25):
         self.source_path = source_path
-        self.include_before = include_before
-        self.include_after = include_after
         self.cmd = cmd
         self.suffix = suffix
         self.is_keep = is_keep
+        if is_keep:
+            self.include_before = 0.0
+            self.include_after = 0.0
+        else:
+            self.include_before = include_before
+            self.include_after = include_after
         self.output = output
 
     def __call__(self, region):
@@ -181,7 +185,7 @@ def get_cmd(program_name):
     return None
 
 
-def audio_pre_prcs(  # pylint: disable=too-many-arguments
+def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
         filename,
         is_keep,
         cmds,
@@ -195,6 +199,12 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
     output_list = [filename, ]
     if not cmds:
         cmds = constants.DEFAULT_AUDIO_PRCS
+        ffmpeg_norm_cmd = get_cmd("ffmpeg-normalize")
+        if not ffmpeg_norm_cmd:
+            print(_("Warning: Dependency ffmpeg-normalize "
+                    "not found on this machine. "
+                    "Try default method."))
+            return None
 
     if is_keep and output_name:
         for i in range(1, len(cmds) + 1):
@@ -250,10 +260,10 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments
             command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
             print(command)
             subprocess.check_output(command, stdin=open(os.devnull), shell=False)
-            os.remove(output_list[i - 1])
             if not ffprobe_check_file(output_list[i]):
                 print(_("Audio pre-processing failed. Try default method."))
                 os.remove(output_list[i])
                 return None
+            os.remove(output_list[i - 1])
 
     return output_list[-1]

@@ -33,6 +33,9 @@ def sub_to_speech_regions(
     for event in ext_regions.events:
         if not event.is_comment:
             # not a comment region
+            if event.start > audio_file_length:
+                # even later than the source file length
+                continue
             if event.duration <= ext_max_size_ms:
                 regions.append((event.start,
                                 event.start + event.duration))
