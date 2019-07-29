@@ -50,6 +50,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         os.environ['proxy_password'] = args.proxy_password
 
     try:
+        if cmdline_utils.list_args(args):
+            raise exceptions.AutosubException(_("\nAll works done."))
+
         if not args.yes:
             try:
                 input_m = raw_input
@@ -70,8 +73,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                 )
 
             ffmpeg_cmd = ffmpeg_cmd + ' '
-            if cmdline_utils.list_args(args):
-                raise exceptions.AutosubException(_("\nAll works done."))
 
             if args.audio_process:
                 args.audio_process = {k.lower() for k in args.audio_process}
