@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-28 10:31+0800\n"
+"POT-Creation-Date: 2019-07-29 15:01+0800\n"
 "PO-Revision-Date: 2019-07-28 10:47+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,20 +17,20 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.2.3\n"
 
-#: autosub/cmdline_utils.py:46
+#: autosub/cmdline_utils.py:45
 msgid "List of output formats:\n"
 msgstr "列出所有输出格式：\n"
 
-#: autosub/cmdline_utils.py:48 autosub/cmdline_utils.py:56
+#: autosub/cmdline_utils.py:47 autosub/cmdline_utils.py:55
 msgid "Format"
 msgstr "格式"
 
-#: autosub/cmdline_utils.py:49 autosub/cmdline_utils.py:57
-#: autosub/cmdline_utils.py:84 autosub/cmdline_utils.py:102
+#: autosub/cmdline_utils.py:48 autosub/cmdline_utils.py:56
+#: autosub/cmdline_utils.py:83 autosub/cmdline_utils.py:101
 msgid "Description"
 msgstr "描述"
 
-#: autosub/cmdline_utils.py:54
+#: autosub/cmdline_utils.py:53
 msgid ""
 "\n"
 "List of input formats:\n"
@@ -38,36 +38,36 @@ msgstr ""
 "\n"
 "列出所有输入格式：\n"
 
-#: autosub/cmdline_utils.py:65
+#: autosub/cmdline_utils.py:64
 msgid "Use py-googletrans to detect a sub file's first line language."
 msgstr "使用py-googletrans来检测字幕文件第一行的语言。"
 
-#: autosub/cmdline_utils.py:72 autosub/cmdline_utils.py:83
-#: autosub/cmdline_utils.py:101
+#: autosub/cmdline_utils.py:71 autosub/cmdline_utils.py:82
+#: autosub/cmdline_utils.py:100
 msgid "Lang code"
 msgstr "语言代码"
 
-#: autosub/cmdline_utils.py:73
+#: autosub/cmdline_utils.py:72
 msgid "Confidence"
 msgstr "可信度"
 
-#: autosub/cmdline_utils.py:81
+#: autosub/cmdline_utils.py:80
 msgid "List of all lang codes for speech-to-text:\n"
 msgstr "列出所有语音转文字的语言代码：\n"
 
-#: autosub/cmdline_utils.py:90
+#: autosub/cmdline_utils.py:89
 msgid "Match Google Speech V2 lang codes."
 msgstr "匹配Google Speech V2的语言代码。"
 
-#: autosub/cmdline_utils.py:99
+#: autosub/cmdline_utils.py:98
 msgid "List of all lang codes for translation:\n"
 msgstr "列出所有翻译的语言代码：\n"
 
-#: autosub/cmdline_utils.py:108
+#: autosub/cmdline_utils.py:107
 msgid "Match py-googletrans lang codes."
 msgstr "匹配py-googletrans的语言代码。"
 
-#: autosub/cmdline_utils.py:126
+#: autosub/cmdline_utils.py:125
 msgid ""
 "Error: arg of \"-i\"/\"--input\": \"{path}\" isn't valid. You need to give a "
 "valid path."
@@ -75,7 +75,7 @@ msgstr ""
 "错误：\"-i\"/\"--input\"的参数：\"{path}\"是无效的。你需要提供一个有效的路"
 "径。"
 
-#: autosub/cmdline_utils.py:132
+#: autosub/cmdline_utils.py:131
 msgid ""
 "Error: arg of \"-sty\"/\"--styles\": \"{path}\" isn't valid. You need to "
 "give a valid path."
@@ -83,15 +83,15 @@ msgstr ""
 "错误：\"-sty\"/\"--styles\"的参数：\"{path}\"是无效的。你需要提供一个有效的路"
 "径。"
 
-#: autosub/cmdline_utils.py:138
+#: autosub/cmdline_utils.py:137
 msgid "Error: Too many \"-sn\"/\"--styles-name\" arguments."
 msgstr "错误：\"-sn\"/\"--styles-name\"的参数过多。"
 
-#: autosub/cmdline_utils.py:151 autosub/cmdline_utils.py:159
+#: autosub/cmdline_utils.py:150 autosub/cmdline_utils.py:158
 msgid "Error: \"-sn\"/\"--styles-name\" arguments aren't in \"{path}\"."
 msgstr "错误：\"-sn\"/\"--styles-name\"的参数不在 \"{path}\"文件内。"
 
-#: autosub/cmdline_utils.py:165
+#: autosub/cmdline_utils.py:164
 msgid ""
 "Error: arg of \"-er\"/\"--ext-regions\": \"{path}\" isn't valid. You need to "
 "give a valid path."
@@ -99,16 +99,16 @@ msgstr ""
 "错误：\"-er\"/\"--ext-regions\"的参数：\"{path}\"是无效的。你需要提供一个有效"
 "的路径。"
 
-#: autosub/cmdline_utils.py:182 autosub/cmdline_utils.py:200
+#: autosub/cmdline_utils.py:181 autosub/cmdline_utils.py:199
 msgid "No output format specified. Use input format \"{fmt}\" for output."
 msgstr "没有指定输出格式。使用输入的格式\"{fmt}\"作为输出格式。"
 
-#: autosub/cmdline_utils.py:194
+#: autosub/cmdline_utils.py:193
 msgid ""
 "Your output is a directory not a file path. Now file path set to \"{new}\"."
 msgstr "你的输出路径是一个目录不是一个文件路径。现在输出路径设置为\"{new}\"。"
 
-#: autosub/cmdline_utils.py:216
+#: autosub/cmdline_utils.py:215
 msgid ""
 "Error: Output subtitles format \"{fmt}\" not supported. Run with \"-lf\"/\"--"
 "list-formats\" to see all supported formats.\n"
@@ -118,19 +118,19 @@ msgstr ""
 "看所有支持的格式。\n"
 "或者使用ffmpeg或者SubtitleEdit来转换格式。"
 
-#: autosub/cmdline_utils.py:230 autosub/cmdline_utils.py:237
+#: autosub/cmdline_utils.py:229 autosub/cmdline_utils.py:236
 msgid "Error: No valid \"-of\"/\"--output-files\" arguments."
 msgstr "错误：\"-of\"/\"--output-files\"参数无效。"
 
-#: autosub/cmdline_utils.py:249
+#: autosub/cmdline_utils.py:248
 msgid "Input is a subtitles file."
 msgstr "输入是一个字幕文件。"
 
-#: autosub/cmdline_utils.py:262
+#: autosub/cmdline_utils.py:261
 msgid "Error: \"-slp\"/\"--sleep-seconds\" arg is illegal."
 msgstr "错误：\"-slp\"/\"--sleep-seconds\"参数非法。"
 
-#: autosub/cmdline_utils.py:271
+#: autosub/cmdline_utils.py:270
 msgid ""
 "Warning: Speech language \"{src}\" not recommended. Run with \"-lsc\"/\"--"
 "list-speech-codes\" to see all supported languages."
@@ -138,33 +138,33 @@ msgstr ""
 "警告：语音语言\"{src}\"不在推荐的清单里面。用\"-lsc\"/\"--list-speech-codes"
 "\"选项运行来查看所有支持的语言。"
 
-#: autosub/cmdline_utils.py:281
+#: autosub/cmdline_utils.py:280
 msgid "Use langcodes-py2 to standardize the result."
 msgstr "使用langcodes-py2来标准化结果。"
 
-#: autosub/cmdline_utils.py:283 autosub/cmdline_utils.py:333
-#: autosub/cmdline_utils.py:364 autosub/cmdline_utils.py:450
+#: autosub/cmdline_utils.py:282 autosub/cmdline_utils.py:332
+#: autosub/cmdline_utils.py:363 autosub/cmdline_utils.py:450
 #: autosub/cmdline_utils.py:480
 msgid "Use \"{lang_code}\" instead."
 msgstr "改用\"{lang_code}\"。"
 
-#: autosub/cmdline_utils.py:287
+#: autosub/cmdline_utils.py:286
 msgid "Match failed. Still using \"{lang_code}\"."
 msgstr "匹配失败。仍在使用\"{lang_code}\"。"
 
-#: autosub/cmdline_utils.py:292
+#: autosub/cmdline_utils.py:291
 msgid "Error: The arg of \"-mnc\"/\"--min-confidence\" isn't legal."
 msgstr "错误：\"-mnc\"/\"--min-confidence\"参数的值不合法。"
 
-#: autosub/cmdline_utils.py:297
+#: autosub/cmdline_utils.py:296
 msgid "Destination language not provided. Only performing speech recognition."
 msgstr "翻译目的语言未提供。只进行语音识别。"
 
-#: autosub/cmdline_utils.py:304
+#: autosub/cmdline_utils.py:303
 msgid "Source language not provided. Use Speech language instead."
 msgstr "翻译源语言未提供。改用语音语言。"
 
-#: autosub/cmdline_utils.py:324 autosub/cmdline_utils.py:441
+#: autosub/cmdline_utils.py:323 autosub/cmdline_utils.py:441
 msgid ""
 "Warning: Source language \"{src}\" not supported. Run with \"-lsc\"/\"--list-"
 "translation-codes\" to see all supported languages."
@@ -172,12 +172,12 @@ msgstr ""
 "警告：源语言\"{src}\"不在推荐的清单里面。用 \"-lsc\"/\"--list-translation-"
 "codes\"选项运行来查看所有支持的语言。"
 
-#: autosub/cmdline_utils.py:338 autosub/cmdline_utils.py:369
+#: autosub/cmdline_utils.py:337 autosub/cmdline_utils.py:368
 #: autosub/cmdline_utils.py:454 autosub/cmdline_utils.py:484
 msgid "Match failed. Still using \"{lang_code}\". Program stopped."
 msgstr "匹配失败。仍在使用\"{lang_code}\"。程序终止。"
 
-#: autosub/cmdline_utils.py:344 autosub/cmdline_utils.py:460
+#: autosub/cmdline_utils.py:343 autosub/cmdline_utils.py:460
 msgid ""
 "Error: Source language \"{src}\" not supported. Run with \"-lsc\"/\"--list-"
 "translation-codes\" to see all supported languages. Or use \"-bm\"/\"--best-"
@@ -187,7 +187,7 @@ msgstr ""
 "codes\"选项运行来查看所有支持的语言。或者使用\"-bm\"/\"--best-match\"来获得最"
 "佳匹配。"
 
-#: autosub/cmdline_utils.py:355 autosub/cmdline_utils.py:471
+#: autosub/cmdline_utils.py:354 autosub/cmdline_utils.py:471
 msgid ""
 "Warning: Destination language \"{dst}\" not supported. Run with \"-lsc\"/\"--"
 "list-translation-codes\" to see all supported languages."
@@ -195,7 +195,7 @@ msgstr ""
 "警告：不支持目的语言\"{dst}\"。用 \"-lsc\"/\"--list-translation-codes\"选项运"
 "行来查看所有支持的语言。"
 
-#: autosub/cmdline_utils.py:375 autosub/cmdline_utils.py:490
+#: autosub/cmdline_utils.py:374 autosub/cmdline_utils.py:490
 msgid ""
 "Error: Destination language \"{dst}\" not supported. Run with \"-lsc\"/\"--"
 "list-translation-codes\" to see all supported languages. Or use \"-bm\"/\"--"
@@ -205,7 +205,7 @@ msgstr ""
 "看所有支持的格式。\n"
 "或者使用ffmpeg或者SubtitleEdit来转换格式。"
 
-#: autosub/cmdline_utils.py:385
+#: autosub/cmdline_utils.py:384
 msgid ""
 "Speech language is the same as the Destination language. Only performing "
 "speech recognition."
@@ -267,12 +267,12 @@ msgstr ""
 "\n"
 "啥都没做。检查你的\"-of\"/\"--output-files\"选项。"
 
-#: autosub/cmdline_utils.py:673 autosub/cmdline_utils.py:1043
+#: autosub/cmdline_utils.py:673 autosub/cmdline_utils.py:1046
 msgid "Bilingual subtitles file created at \"{}\"."
 msgstr "双语字幕创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:677 autosub/cmdline_utils.py:865
-#: autosub/cmdline_utils.py:978 autosub/cmdline_utils.py:1047
+#: autosub/cmdline_utils.py:677 autosub/cmdline_utils.py:868
+#: autosub/cmdline_utils.py:981 autosub/cmdline_utils.py:1050
 msgid ""
 "\n"
 "All works done."
@@ -280,7 +280,7 @@ msgstr ""
 "\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:716 autosub/cmdline_utils.py:1086
+#: autosub/cmdline_utils.py:716 autosub/cmdline_utils.py:1089
 msgid "Destination language subtitles file created at \"{}\"."
 msgstr "目的语言字幕文件创建在了\"{}\"。"
 
@@ -288,7 +288,7 @@ msgstr "目的语言字幕文件创建在了\"{}\"。"
 msgid "Use external speech regions."
 msgstr "使用外部时间轴。"
 
-#: autosub/cmdline_utils.py:806
+#: autosub/cmdline_utils.py:808
 msgid ""
 "\n"
 "Convert source audio to \"{name}\" and get audio length for regions "
@@ -297,11 +297,11 @@ msgstr ""
 "\n"
 "将源音频转换为\"{name}\"来获取源音频的总长度，用于语音区域检测。"
 
-#: autosub/cmdline_utils.py:814 autosub/cmdline_utils.py:890
+#: autosub/cmdline_utils.py:816 autosub/cmdline_utils.py:892
 msgid "Error: Convert source audio to \"{name}\" failed."
 msgstr "错误：转换源音频至\"{name}\"失败。"
 
-#: autosub/cmdline_utils.py:826 autosub/cmdline_utils.py:916
+#: autosub/cmdline_utils.py:828 autosub/cmdline_utils.py:918
 msgid ""
 "\n"
 "\"{name}\" has been deleted."
@@ -309,15 +309,15 @@ msgstr ""
 "\n"
 "\"{name}\"已被删除。"
 
-#: autosub/cmdline_utils.py:830
+#: autosub/cmdline_utils.py:832
 msgid "Error: Can't get speech regions."
 msgstr "错误：无法得到语音区域。"
 
-#: autosub/cmdline_utils.py:862 autosub/cmdline_utils.py:1162
+#: autosub/cmdline_utils.py:865 autosub/cmdline_utils.py:1165
 msgid "Times file created at \"{}\"."
 msgstr "时间轴文件创建在了\"{}\"."
 
-#: autosub/cmdline_utils.py:883
+#: autosub/cmdline_utils.py:885
 msgid ""
 "\n"
 "Convert to \"{name}\" for API."
@@ -325,11 +325,11 @@ msgstr ""
 "\n"
 "为API转换为\"{name}\"。"
 
-#: autosub/cmdline_utils.py:912
+#: autosub/cmdline_utils.py:914
 msgid "Error: Conversion failed."
 msgstr "错误：转换失败。"
 
-#: autosub/cmdline_utils.py:920
+#: autosub/cmdline_utils.py:922
 msgid ""
 "Audio processing complete.\n"
 "All works done."
@@ -337,7 +337,7 @@ msgstr ""
 "音频处理完毕。\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:936
+#: autosub/cmdline_utils.py:939
 msgid ""
 "Error: Speech-to-text failed.\n"
 "All works done."
@@ -345,15 +345,15 @@ msgstr ""
 "错误：语音转文字失败。\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:974 autosub/cmdline_utils.py:1128
+#: autosub/cmdline_utils.py:977 autosub/cmdline_utils.py:1131
 msgid "Speech language subtitles file created at \"{}\"."
 msgstr "语音字幕文件创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:1007
+#: autosub/cmdline_utils.py:1010
 msgid "Error: Translation failed."
 msgstr "错误：翻译失败。"
 
-#: autosub/cmdline_utils.py:1095
+#: autosub/cmdline_utils.py:1098
 msgid ""
 "Override \"-of\"/\"--output-files\" due to your args too few.\n"
 "Output source subtitles file only."
@@ -361,7 +361,7 @@ msgstr ""
 "因为你其他参数输入得太少了，忽略\"-of\"/\"--output-files\"参数。\n"
 "只输出源语言字幕文件。"
 
-#: autosub/cmdline_utils.py:1133
+#: autosub/cmdline_utils.py:1136
 msgid ""
 "Override \"-of\"/\"--output-files\" due to your args too few.\n"
 "Output regions subtitles file only."
