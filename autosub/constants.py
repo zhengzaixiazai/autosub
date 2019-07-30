@@ -31,7 +31,7 @@ else:
 
 LOCALE_PATH = os.path.abspath(os.path.join(APP_PATH, "data/locale"))
 
-EXT_LOCALE = os.path.abspath(os.path.join(APP_PATH, "locale"))
+EXT_LOCALE = os.path.abspath(os.path.join(os.getcwd(), "locale"))
 if os.path.isfile(EXT_LOCALE):
     with open(EXT_LOCALE, "r") as in_file:
         LINE = in_file.readline()

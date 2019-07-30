@@ -67,7 +67,9 @@ if __name__ == "__main__":
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     copytree(src=here, dst=target, ext=[".md", ".txt"])
-    copytree(src="docs", dst=target, ext=[".md"])
+    target_docs = os.path.join(target, "docs")
+    os.makedirs(target_docs)
+    copytree(src="docs", dst=target_docs)
     shutil.copy2("LICENSE", target)
     copytree(src=target, dst=target_pyi)
     shutil.copy2(".build_and_dist/pyinstaller.build/{}.exe".format(release_name), target_pyi)
@@ -103,10 +105,10 @@ if __name__ == "__main__":
     output_str = output_bytes.decode(sys.stdout.encoding)
     print(output_str)
 
-    command = "7z a -sdel \".release/{release_name}-{version}-win-x64-pyinstaller.7z\" "
-    "\"{target_pyi}\"".format(release_name=release_name,
-                              version=metadata['VERSION'],
-                              target_pyi=target_pyi)
+    command = "7z a -sdel \".release/{release_name}-{version}-win-x64-pyinstaller.7z\" \"{target_pyi}\"".format(
+        release_name=release_name,
+        version=metadata['VERSION'],
+        target_pyi=target_pyi)
     print(command)
     output_bytes = subprocess.check_output(command,
                                            stdin=open(os.devnull),
