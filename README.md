@@ -35,7 +35,7 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
    - 5.5 [Output](#Output)
 6. [Usage](#usage)
    - 6.1 [Typical usage](#typical-usage)
-     - 6.1.1 [Audio Pre-process](#audio-pre-process)
+     - 6.1.1 [Pre-process Audio](#pre-process-audio)
      - 6.1.2 [Detect Regions](#detect-regions)
      - 6.1.3 [Split Audio](#split-audio)
      - 6.1.4 [Transcribe Audio To Subtitles](#transcribe-audio-to-subtitles)
