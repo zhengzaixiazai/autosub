@@ -71,7 +71,9 @@ class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
                                           dura=end - start,
                                           in_=self.source_path,
                                           out_=temp.name)
-                subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+                subprocess.check_output(
+                    constants.cmd_conversion(command),
+                    stdin=open(os.devnull))
                 return temp.name
 
             filename = self.output \
@@ -83,7 +85,9 @@ class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
                                       dura=end - start,
                                       in_=self.source_path,
                                       out_=filename)
-            subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+            subprocess.check_output(
+                constants.cmd_conversion(command),
+                stdin=open(os.devnull))
             return filename
 
         except KeyboardInterrupt:
@@ -106,7 +110,9 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
     try:
         command = constants.DEFAULT_VIDEO_FPS_CMD.format(in_=video_file)
         print(command)
-        input_str = subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+        input_str = subprocess.check_output(
+            constants.cmd_conversion(command),
+            stdin=open(os.devnull))
         num_list = map(int, re.findall(r'\d+', input_str.decode(sys.stdout.encoding)))
         if len(list(num_list)) == 2:
             fps = float(num_list[0]) / float(num_list[1])
@@ -140,7 +146,7 @@ def ffprobe_check_file(filename):
     command = "ffprobe {in_} -show_format -pretty -loglevel quiet".format(in_=filename)
     print(command)
     ffprobe_bytes = subprocess.check_output(
-        command,
+        constants.cmd_conversion(command),
         stdin=open(os.devnull),
         shell=False)
     ffprobe_str = ffprobe_bytes.decode(sys.stdout.encoding)
@@ -230,7 +236,9 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
                 out_=output_list[i])
             command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
             print(command)
-            subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+            subprocess.check_output(
+                constants.cmd_conversion(command),
+                stdin=open(os.devnull))
             if not ffprobe_check_file(output_list[i]):
                 print(_("Audio pre-processing failed. Try default method."))
                 return None
@@ -246,7 +254,9 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
             in_=output_list[0],
             out_=output_list[1])
         print(command)
-        subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+        subprocess.check_output(
+            constants.cmd_conversion(command),
+            stdin=open(os.devnull))
         for i in range(2, len(cmds) + 1):
             temp_file = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
             temp = temp_file.name
@@ -259,7 +269,9 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
                 out_=output_list[i])
             command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
             print(command)
-            subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+            subprocess.check_output(
+                constants.cmd_conversion(command),
+                stdin=open(os.devnull))
             if not ffprobe_check_file(output_list[i]):
                 print(_("Audio pre-processing failed. Try default method."))
                 os.remove(output_list[i])

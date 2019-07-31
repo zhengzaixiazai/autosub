@@ -4,9 +4,10 @@
 Defines constants used by autosub.
 """
 # Import built-in modules
-from __future__ import unicode_literals
+from __future__ import absolute_import, print_function, unicode_literals
 import os
 import sys
+import shlex
 import locale
 
 # Import third-party modules
@@ -28,6 +29,11 @@ if getattr(sys, 'frozen', False):
     APP_PATH = os.path.dirname(sys.executable)
 else:
     APP_PATH = os.path.dirname(__file__)
+
+if sys.platform.startswith('win'):
+    IS_UNIX = False
+else:
+    IS_UNIX = True
 
 LOCALE_PATH = os.path.abspath(os.path.join(APP_PATH, "data/locale"))
 
@@ -340,3 +346,16 @@ INPUT_FORMAT = {
     'tmp': 'TMP Player Subtitle Format',
     'json': 'json(Complex ass content json)'
 }
+
+
+def cmd_conversion(
+        command
+):
+    """
+    Give a command and return a cross-platform command
+    """
+    if not IS_UNIX:
+        cmd_args = command
+    else:
+        cmd_args = shlex.split(command)
+    return cmd_args

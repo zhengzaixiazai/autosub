@@ -7,6 +7,7 @@ Defines release creation scripts.
 # Import built-in modules
 import os
 import sys
+import shlex
 import shutil
 import subprocess
 
@@ -62,10 +63,19 @@ if __name__ == "__main__":
     if os.path.isdir(target_pyi):
         shutil.rmtree(target_pyi)
     os.makedirs(target_pyi)
-    p = subprocess.Popen("pipreqs --encoding=utf-8 --force "
-                         "--savepath requirements.txt {}".format(package_name),
+    command = "pipreqs --encoding=utf-8 --force --savepath requirements.txt {}".format(package_name)
+    if sys.platform.startswith('win'):
+        args = command
+    else:
+        args = shlex.split(command)
+    p = subprocess.Popen(args,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    if out:
+        print(out.decode(sys.stdout.encoding))
+    if err:
+        print(err.decode(sys.stdout.encoding))
     copytree(src=here, dst=target, ext=[".md", ".txt"])
     target_docs = os.path.join(target, "docs")
     os.makedirs(target_docs)
@@ -99,28 +109,49 @@ if __name__ == "__main__":
         version=metadata['VERSION'],
         target=target)
     print(command)
-    output_bytes = subprocess.check_output(command,
-                                           stdin=open(os.devnull),
-                                           shell=False)
-    output_str = output_bytes.decode(sys.stdout.encoding)
-    print(output_str)
+    if sys.platform.startswith('win'):
+        args = command
+    else:
+        args = shlex.split(command)
+    p = subprocess.Popen(args,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    if out:
+        print(out.decode(sys.stdout.encoding))
+    if err:
+        print(err.decode(sys.stdout.encoding))
 
     command = "7z a -sdel \".release/{release_name}-{version}-win-x64-pyinstaller.7z\" \"{target_pyi}\"".format(
         release_name=release_name,
         version=metadata['VERSION'],
         target_pyi=target_pyi)
     print(command)
-    output_bytes = subprocess.check_output(command,
-                                           stdin=open(os.devnull),
-                                           shell=False)
-    output_str = output_bytes.decode(sys.stdout.encoding)
-    print(output_str)
+    if sys.platform.startswith('win'):
+        args = command
+    else:
+        args = shlex.split(command)
+    p = subprocess.Popen(args,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    if out:
+        print(out.decode(sys.stdout.encoding))
+    if err:
+        print(err.decode(sys.stdout.encoding))
 
     command = "python scripts/generate_sha256.py .release"
     print(command)
-    output_bytes = subprocess.check_output(command,
-                                           stdin=open(os.devnull),
-                                           shell=False)
-    output_str = output_bytes.decode(sys.stdout.encoding)
-    print(output_str)
+    if sys.platform.startswith('win'):
+        args = command
+    else:
+        args = shlex.split(command)
+    p = subprocess.Popen(args,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    if out:
+        print(out.decode(sys.stdout.encoding))
+    if err:
+        print(err.decode(sys.stdout.encoding))
     input("输入任何字符以退出：")

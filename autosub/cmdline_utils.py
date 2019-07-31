@@ -378,7 +378,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                                   dst=args.speech_language)
                         )
 
-        if args.dst_language == args.speech_language\
+        if args.dst_language == args.speech_language \
                 or args.src_language == args.dst_language:
             print(
                 _("Speech language is the same as the Destination language. "
@@ -779,7 +779,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             out_=audio_wav
         )
         print(command)
-        subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+        subprocess.check_output(
+            constants.cmd_conversion(command),
+            stdin=open(os.devnull))
         regions = sub_utils.sub_to_speech_regions(
             audio_wav=audio_wav,
             sub_file=args.ext_regions
@@ -809,7 +811,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 "and get audio length for regions detection.").format(
                     name=audio_wav))
         print(command)
-        subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+        subprocess.check_output(
+            constants.cmd_conversion(command),
+            stdin=open(os.devnull))
 
         if not ffmpeg_utils.ffprobe_check_file(audio_wav):
             raise exceptions.AutosubException(
@@ -886,7 +890,9 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     "for API.").format(
                         name=audio_for_api))
             print(command)
-            subprocess.check_output(command, stdin=open(os.devnull), shell=False)
+            subprocess.check_output(
+                constants.cmd_conversion(command),
+                stdin=open(os.devnull))
             if not ffmpeg_utils.ffprobe_check_file(audio_for_api):
                 raise exceptions.AutosubException(
                     _("Error: Convert source audio to \"{name}\" failed.").format(
