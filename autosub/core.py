@@ -300,7 +300,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments
             result_list = result_text.split('\n')
 
             while i < index:
-                if i == valid_index[j]:
+                if j < len(valid_index) and i == valid_index[j]:
                     # if text is the valid one, append it
                     translated_text.append(
                         result_list[valid_index[j] - last_index])
