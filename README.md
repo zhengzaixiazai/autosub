@@ -88,7 +88,16 @@ Except the PyPI version, others include non-original codes not from the original
 
 After autosub-0.4.0, all of the codes is compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
 
-About the dependencies installation, if you install autosub by pip, ffmpeg and ffmpeg-normalize won't be installed together not like the Python site-packages already listed on the `setup.py` or `requirements.txt`. You need to install them separately. But of course they are optional. They aren't necessary if you only use autosub to translate your subtitles.
+About the dependencies installation. If you install autosub by pip, ffmpeg and ffmpeg-normalize won't be installed together not like the Python site-packages already listed on the `setup.py` or `requirements.txt`. You need to install them separately. But of course they are optional. They aren't necessary if you only use autosub to translate your subtitles.
+
+About the git installation. If you don't want to install git to use pip [VCS](https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support) support to install python package or just confused with git environment variables, you can manually click that clone and download button to download the source code and use pip to install the source code [locally](https://pip.pypa.io/en/stable/reference/pip_install/#description) by input these commands.
+
+```batch
+cd the_directory_contains_the_source_code
+pip install .
+```
+
+Due to the autosub PyPI project is maintained by the original autosub repo's owner, I can't modify it or upload a project with the same name. Perhaps later when this version of autosub becomes stabler, I will rename and duplicate this repo and then upload it to PyPI.
 
 #### Branches
 
@@ -184,7 +193,7 @@ A video/audio/subtitles file.
 
 If it is a video or audio file, use ffmpeg to convert the format into [the proper one](https://github.com/gillesdemey/google-speech-v2#data) for API. Current default format for [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2) is 24bit/44100Hz/mono flac. API only accept mono audio files varied from the data from the repo mentioned above.
 
-Also, you can use the built-in audio pre-processing function. The default [pre-processing commands](https://github.com/agermanidis/autosub/issues/40) depend on the ffmpeg-normalize and ffmpeg.
+Also, you can use the built-in audio pre-processing function. The default [pre-processing commands](https://github.com/agermanidis/autosub/issues/40#issuecomment-509928060) depend on the ffmpeg-normalize and ffmpeg. The commands include three commands. The [first](https://trac.ffmpeg.org/wiki/AudioChannelManipulation) is for converting stereo to mono. The [second](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg) is for filtering out the sound not in the frequency of speech. The third is to normalize the audio to make sure it is not too loud or too quiet. If you are not satisfied with the default commands, you can also modified them yourself by input `-apc` option.
 
 If it is a subtitles file and you give the proper arguments, only translate it by py-googletrans.
 
@@ -278,7 +287,7 @@ autosub -i input_file -ap o
 Pre-processing as a part.
 
 ```
-autosub -i input_file -ap ...(other options)
+autosub -i input_file -ap y ...(other options)
 ```
 
 ##### Detect Regions
@@ -663,7 +672,7 @@ If you want to translate this program into other languages, first install the ge
 
 [issue #11](https://github.com/BingLingGroup/autosub/issues/11), [issue 10](https://github.com/BingLingGroup/autosub/issues/10)
 
-I won't add any new features unless I'm less busier in the future. However, pull requests are welcomed.
+I won't add any new features unless I'm less busy in the future. However, pull requests are welcomed.
 
 #### Batch processing
 

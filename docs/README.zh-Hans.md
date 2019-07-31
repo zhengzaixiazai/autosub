@@ -90,6 +90,15 @@ Autosub依赖于这些第三方的软件或者Python的site-packages。非常感
 
 至于依赖的安装，如果你是通过pip来安装的autosub，那么ffmpeg和ffmpeg-normalize不会被一块儿安装，不像site-packages那样列在`setup.py`或者`requirements.txt`里面自动安装了。你需要分别安装它们。当然安装是可选的，如果你只是翻译字幕，不需要安装这两个软件。
 
+至于git的安装，如果你不想通过pip的[VCS](https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support)支持来安装python包或者只是不想碰git的环境变量这些东西，你可以手动点击clone and download来下载源码并在[本地](https://pip.pypa.io/en/stable/reference/pip_install/#description)进行安装。指令如下。
+
+```batch
+cd 有源码的目录
+pip install .
+```
+
+因为autosub的PyPI版本是被原repo的拥有者所维护的，我无法修改它，也无法上传一个有着相同名字的项目。也许等到这个项目变得更加稳定的时候，我会重命名并复制这个仓库，然后再把它传到PyPI去。
+
 #### 分支
 
 [alpha分支](https://github.com/BingLingGroup/autosub/tree/alpha)
@@ -172,7 +181,7 @@ python get-pip.py
 pip install git+https://github.com/BingLingGroup/autosub.git@origin
 ```
 
-PyPI的版本(autosub-0.3.12)不推荐在windows上使用，因为它无法成功运行。查看[origin分支的更新日志](CHANGELOG.md#040-alpha---2019-02-17)来了解详情。
+PyPI的版本(autosub-0.3.12)不推荐在windows上使用，因为它无法成功运行。查看[origin分支的更新日志](CHANGELOG.zh-Hans.md#040-alpha---2019-02-17)来了解详情。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
@@ -184,7 +193,7 @@ PyPI的版本(autosub-0.3.12)不推荐在windows上使用，因为它无法成�
 
 如果是一个视频或者音频文件，使用ffmpeg来将格式转换为[API支持的格式](https://github.com/gillesdemey/google-speech-v2#data)。当前提供给[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)的默认格式是24bit/44100Hz/单声道flac。API只接受单声道文件，而非那个仓库里所说的那样。
 
-你也可以使用自带的音频预处理功能。默认的[音频预处理指令](https://github.com/agermanidis/autosub/issues/40)同时依赖于ffmpeg和ffmpeg-normalize。
+你也可以使用自带的音频预处理功能。默认的[音频预处理指令](https://github.com/agermanidis/autosub/issues/40)同时依赖于ffmpeg和ffmpeg-normalize。这些命令包含三个子命令。[第一个](https://trac.ffmpeg.org/wiki/AudioChannelManipulation)是用来把双声道的音频转换为单声道的。[第二个](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg)是通过人声的频率范围来过滤噪音的。第三个则是正常化音频的音量来确保它的音量不是太大或者太小。如果你对默认指令的效果不满意，你也可以通过输入`-apc`选项来自行修改。
 
 如果输入是字幕文件，同时你提供的参数适合，程序仅会将其通过py-googletrans来翻译。
 
@@ -278,7 +287,7 @@ autosub -i 输入文件 -ap o
 音频预处理只是处理过程中的一部分。
 
 ```
-autosub -i 输入文件 -ap ...(其他选项)
+autosub -i 输入文件 -ap y ...(其他选项)
 ```
 
 ##### 检测语音区域
