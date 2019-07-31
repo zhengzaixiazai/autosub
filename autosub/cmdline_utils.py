@@ -298,12 +298,16 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             )
 
         else:
-            if args.src_language is None:
+            if not args.src_language:
                 print(
                     _("Source language not provided. "
                       "Use Speech language instead.")
                 )
                 args.src_language = args.speech_language
+                if not args.best_match:
+                    args.best_match = {'src'}
+                elif 'src' not in args.best_match:
+                    args.best_match.add('src')
 
             is_src_matched = False
             is_dst_matched = False
@@ -344,7 +348,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                               "Run with \"-lsc\"/\"--list-translation-codes\" "
                               "to see all supported languages. "
                               "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                                  src=args.speech_language)
+                                  src=args.src_language)
                         )
 
             if not is_dst_matched:
@@ -375,7 +379,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                               "Run with \"-lsc\"/\"--list-translation-codes\" "
                               "to see all supported languages. "
                               "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                                  dst=args.speech_language)
+                                  dst=args.dst_language)
                         )
 
         if args.dst_language == args.speech_language \
