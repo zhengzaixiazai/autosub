@@ -31,7 +31,7 @@ Click up arrow to go back to TOC.
 
 #### Changed(0.5.1-alpha)
 
-- Fix method list_to_googletrans index error bug.
+- Fix method list_to_googletrans index error bug. [issue #48](https://github.com/BingLingGroup/autosub/issues/48)
 - Fix unix subprocess.check_output compatibility. [issue #47](https://github.com/BingLingGroup/autosub/issues/47)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>

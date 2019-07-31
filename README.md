@@ -120,7 +120,7 @@ Due to the autosub PyPI project is maintained by the original autosub repo's own
 
 Include dependencies installation commands.
 
-Install from `alpha` branch.(autosub-0.5.1a)
+Install from `alpha` branch.(latest autosub release)
 
 ```bash
 apt install ffmpeg python python-pip git -y
@@ -163,7 +163,7 @@ Choco installation command is for cmd.(not Powershell)
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
-Install from `alpha` branch.(autosub-0.5.1a)
+Install from `alpha` branch.(latest autosub release)
 
 ```batch
 choco install git python2 curl ffmpeg -y

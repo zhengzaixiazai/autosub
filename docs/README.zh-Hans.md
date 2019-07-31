@@ -120,21 +120,21 @@ pip install .
 
 第一行包含依赖的安装。
 
-从`alpha`分支安装。(autosub-0.5.0a)
+从`alpha`分支安装。（最新alpha版）
 
 ```bash
 apt install ffmpeg python python-pip git -y
 pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
 ```
 
-从`origin`分支安装。(autosub-0.4.0a)
+从`origin`分支安装。（autosub-0.4.0a）
 
 ```bash
 apt install ffmpeg python python-pip git -y
 pip install git+https://github.com/BingLingGroup/autosub.git@origin
 ```
 
-从PyPI安装。(autosub-0.3.12)
+从PyPI安装。（autosub-0.3.12）
 
 ```bash
 apt install ffmpeg python python-pip -y
@@ -163,7 +163,7 @@ pip install autosub
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
-从`alpha`分支安装。(autosub-0.5.0a)
+从`alpha`分支安装。（最新alpha版）
 
 ```batch
 choco install git python2 curl ffmpeg -y
@@ -172,7 +172,7 @@ python get-pip.py
 pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
 ```
 
-从`origin`分支安装。(autosub-0.4.0a)
+从`origin`分支安装。（autosub-0.4.0a）
 
 ```batch
 choco install git python2 curl ffmpeg -y
@@ -181,7 +181,7 @@ python get-pip.py
 pip install git+https://github.com/BingLingGroup/autosub.git@origin
 ```
 
-PyPI的版本(autosub-0.3.12)不推荐在windows上使用，因为它无法成功运行。查看[origin分支的更新日志](CHANGELOG.zh-Hans.md#040-alpha---2019-02-17)来了解详情。
+PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法成功运行。查看[origin分支的更新日志](CHANGELOG.zh-Hans.md#040-alpha---2019-02-17)来了解详情。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 

@@ -30,7 +30,7 @@
 
 #### 改动(0.5.1-alpha)
 
-- 修复方法list_to_googletrans的列表越界bug。
+- 修复方法list_to_googletrans的列表越界bug。[issue #48](https://github.com/BingLingGroup/autosub/issues/48)
 - 修复unix subprocess.check_output的兼容性问题。[issue #47](https://github.com/BingLingGroup/autosub/issues/47)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>

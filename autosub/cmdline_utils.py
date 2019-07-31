@@ -631,11 +631,15 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
             service_urls=args.service_urls
         )
 
+    if not translated_text or len(translated_text) != len(text_list):
+        raise exceptions.AutosubException(
+            _("Error: Translation failed."))
+
     try:
         args.output_files.remove("bilingual")
         bilingual_sub = pysubs2.SSAFile()
         bilingual_sub.styles = src_sub.styles
-        bilingual_sub.events = src_sub.events.copy()
+        bilingual_sub.events = src_sub.events[:]
         if args.styles and \
                 len(styles_list) == 2 and \
                 (args.format == 'ass' or
@@ -1015,7 +1019,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     service_urls=args.service_urls
                 )
 
-            if len(translated_text) != len(regions):
+            if not translated_text or len(translated_text) != len(regions):
                 raise exceptions.AutosubException(
                     _("Error: Translation failed."))
 
