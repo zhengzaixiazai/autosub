@@ -55,7 +55,7 @@ Click up arrow to go back to TOC.
 
 Autosub is an automatic subtitles generating utility. It can detect speech regions automatically by using Auditok, split the audio files according to regions by using ffmpeg, transcribe speech based on [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)([Chrome-Web-Speech-api](https://github.com/agermanidis/autosub/issues/1)) and translate the subtitles' text by using py-googletrans. It currently not supports the latest Google Cloud APIs.
 
-The new features mentioned above are only available after autosub-0.5.0a (0.5.0-alpha). Not available on PyPI or the original repo.
+The new features mentioned above are only available after autosub-0.5.1a (0.5.0-alpha). Not available on PyPI or the original repo.
 
 ### License
 
@@ -120,7 +120,7 @@ Due to the autosub PyPI project is maintained by the original autosub repo's own
 
 Include dependencies installation commands.
 
-Install from `alpha` branch.(autosub-0.5.0a)
+Install from `alpha` branch.(autosub-0.5.1a)
 
 ```bash
 apt install ffmpeg python python-pip git -y
@@ -163,7 +163,7 @@ Choco installation command is for cmd.(not Powershell)
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
-Install from `alpha` branch.(autosub-0.5.0a)
+Install from `alpha` branch.(autosub-0.5.1a)
 
 ```batch
 choco install git python2 curl ffmpeg -y

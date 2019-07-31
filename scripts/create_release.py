@@ -46,9 +46,15 @@ if __name__ == "__main__":
     release_name = "autosub"
     package_name = release_name
 
+    here = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    os.chdir(here)
+    pyinstaller_dist_path = ".build_and_dist/pyinstaller.build"
+    dist_path = ".build_and_dist"
+
+    if not os.path.isdir(dist_path):
+        os.makedirs(dist_path)
+
     metadata = {}
-    os.chdir(os.pardir)
-    here = os.getcwd()
     with open(os.path.join(here, package_name, "metadata.py")) as metafile:
         exec(metafile.read(), metadata)
 
@@ -64,6 +70,7 @@ if __name__ == "__main__":
         shutil.rmtree(target_pyi)
     os.makedirs(target_pyi)
     command = "pipreqs --encoding=utf-8 --force --savepath requirements.txt {}".format(package_name)
+    print(command)
     if sys.platform.startswith('win'):
         args = command
     else:
@@ -103,7 +110,6 @@ if __name__ == "__main__":
         shutil.copy2("binaries/ffprobe.exe", target_nuitka)
         shutil.copy2("binaries/ffmpeg.exe", target_pyi)
         shutil.copy2("binaries/ffprobe.exe", target_pyi)
-
     command = "7z a -sdel \".release/{release_name}-{version}-win-x64.7z\" \"{target}\"".format(
         release_name=release_name,
         version=metadata['VERSION'],

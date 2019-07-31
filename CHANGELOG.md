@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
+- [[0.5.1-alpha] - 2019-07-31](#051-alpha---2019-07-31)
+  - [Added](#added051-alpha)
+  - [Changed](#changed051-alpha)
 - [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
   - [Added](#added050-alpha)
   - [Changed](#changed050-alpha)
@@ -19,6 +22,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Changed](#changed040-alpha)
 
 Click up arrow to go back to TOC.
+
+### [0.5.1-alpha] - 2019-07-31
+
+#### Added(0.5.1-alpha)
+
+- Add translation source lang code auto match.
+
+#### Changed(0.5.1-alpha)
+
+- Fix method list_to_googletrans index error bug.
+- Fix unix subprocess.check_output compatibility. [issue #47](https://github.com/BingLingGroup/autosub/issues/47)
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.0-alpha] - 2019-07-27
 
@@ -53,6 +69,8 @@ Click up arrow to go back to TOC.
 - Add http, https proxy support.(Set environment variables) [issue #17](https://github.com/BingLingGroup/autosub/issues/17)
 - Add i18n support. [issue #9](https://github.com/BingLingGroup/autosub/issues/9)
 - Add i18n language choice. [issue #45](https://github.com/BingLingGroup/autosub/issues/45)
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 #### Changed(0.5.0-alpha)
 

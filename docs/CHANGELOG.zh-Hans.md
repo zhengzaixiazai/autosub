@@ -8,6 +8,9 @@
 
 ## 目录
 
+- [[0.5.1-alpha] - 2019-07-31](#051-alpha---2019-07-27)
+  - [添加](#添加050-alpha)
+  - [改动](#改动050-alpha)
 - [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
   - [添加](#添加050-alpha)
   - [改动](#改动050-alpha)
@@ -19,7 +22,20 @@
 
 点击上箭头以返回目录。
 
-### [[0.5.0-alpha] - 2019-07-27]
+### [0.5.1-alpha] - 2019-07-31
+
+#### 添加(0.5.1-alpha)
+
+- 添加翻译源语言代码自动匹配功能。
+
+#### 改动(0.5.1-alpha)
+
+- 修复方法list_to_googletrans的列表越界bug。
+- 修复unix subprocess.check_output的兼容性问题。[issue #47](https://github.com/BingLingGroup/autosub/issues/47)
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+### [0.5.0-alpha] - 2019-07-27
 
 #### 添加(0.5.0-alpha)
 
