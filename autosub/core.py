@@ -15,6 +15,7 @@ import progressbar
 import pysubs2
 import auditok
 import googletrans
+import wcwidth
 
 # Any changes to the path and your own modules
 from autosub import speech_trans_api
@@ -266,7 +267,18 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                 is_last = text
                 valid_index.append(i)
                 # valid_index for valid text position start
-            size = size + len(text)
+            wcswidth_text = wcwidth.wcswidth(text)
+            if wcswidth_text * 10 / len(text) >= 10:
+                # If text contains full-wide char,
+                # count its length about 4 times than the ordinary text.
+                # Avoid weird problem when text has full-wide char.
+                # In this case google will count a full-wide char
+                # at least 2 times larger than a half-wide char.
+                # It will certainly exceed the limit of the size_per_trans.
+                # Causing a googletrans internal jsondecode error.
+                size = size + wcswidth_text * 2
+            else:
+                size = size + len(text)
             if size > size_per_trans:
                 # use size_per_trans to split the list
                 partial_index.append(i)
