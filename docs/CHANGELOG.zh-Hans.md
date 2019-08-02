@@ -8,7 +8,7 @@
 
 ## 目录
 
-- [[0.5.1-alpha] - 2019-07-31](#051-alpha---2019-07-27)
+- [[0.5.1-alpha] - 2019-08-02](#051-alpha---2019-08-02)
   - [添加](#添加050-alpha)
   - [改动](#改动050-alpha)
 - [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
@@ -22,7 +22,7 @@
 
 点击上箭头以返回目录。
 
-### [0.5.1-alpha] - 2019-07-31
+### [0.5.1-alpha] - 2019-08-02
 
 #### 添加(0.5.1-alpha)
 
@@ -32,6 +32,7 @@
 
 - 修复方法list_to_googletrans的列表越界bug。[issue #48](https://github.com/BingLingGroup/autosub/issues/48)
 - 修复unix subprocess.check_output的兼容性问题。[issue #47](https://github.com/BingLingGroup/autosub/issues/47)
+- 修复googletrans全角字符长度过长翻译错误的问题。[issue #49](https://github.com/BingLingGroup/autosub/issues/49)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
-- [[0.5.1-alpha] - 2019-07-31](#051-alpha---2019-07-31)
+- [[0.5.1-alpha] - 2019-08-02](#051-alpha---2019-08-02)
   - [Added](#added051-alpha)
   - [Changed](#changed051-alpha)
 - [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Click up arrow to go back to TOC.
 
-### [0.5.1-alpha] - 2019-07-31
+### [0.5.1-alpha] - 2019-08-02
 
 #### Added(0.5.1-alpha)
 
@@ -33,6 +33,7 @@ Click up arrow to go back to TOC.
 
 - Fix method list_to_googletrans index error bug. [issue #48](https://github.com/BingLingGroup/autosub/issues/48)
 - Fix unix subprocess.check_output compatibility. [issue #47](https://github.com/BingLingGroup/autosub/issues/47)
+- Fix googletrans full-wide chars length too long issue. [issue #49](https://github.com/BingLingGroup/autosub/issues/49)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 

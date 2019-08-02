@@ -120,7 +120,7 @@ pip install .
 
 第一行包含依赖的安装。
 
-从`alpha`分支安装。（最新alpha版）
+从`alpha`分支安装。（最新alpha发布版）
 
 ```bash
 apt install ffmpeg python python-pip git -y
@@ -163,7 +163,7 @@ pip install autosub
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
-从`alpha`分支安装。（最新alpha版）
+从`alpha`分支安装。（最新alpha发布版）
 
 ```batch
 choco install git python2 curl ffmpeg -y
@@ -205,11 +205,11 @@ PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法�
 
 #### 语音转文字/翻译API请求
 
-使用Python的多进程库对API请求进行并行化处理，来加速转录速度。
+使用Python的多进程库对API请求进行并行化处理，来加速转录速度。一个语音片段一次请求。识别速度主要取决于你网络的上传速度。
 
 - 可能需要对字幕文件行进行手动后处理，某些行可能长度过长，导致无法被放在视频画面长度中的同一行。
 
-最后，把字幕翻译成别的语言，最后再把结果保存在本地。
+在语音转文字之后，把字幕翻译成别的语言。将多行文本融合为一块长文本然后送去请求。详见[issue #49](https://github.com/BingLingGroup/autosub/issues/49)。最后再把结果保存在本地。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
