@@ -311,7 +311,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         nargs='*',
         help=_("(Experimental)Customize request urls. "
                "Ref: https://py-googletrans.readthedocs.io/en/latest/ "
-               "(arg_num = 1)")
+               "(arg_num >= 1)")
     )
 
     pygt_group.add_argument(
