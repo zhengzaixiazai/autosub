@@ -355,13 +355,13 @@ autosub -i 输入文件 -S 语言代码 -of src ...(其他选项)
 从音频/视频文件翻译字幕。
 
 ```
-autosub -i 输入文件 -S 语言代码 (-Src 语言代码) -D 语言代码
+autosub -i 输入文件 -S 语言代码 (-SRC 语言代码) -D 语言代码
 ```
 
 从字幕文件翻译字幕。
 
 ```
-autosub -i 输入文件 -Src 语言代码 -D 语言代码
+autosub -i 输入文件 -SRC 语言代码 -D 语言代码
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
@@ -406,12 +406,12 @@ usage:
                         py2从列表里获取一个最佳匹配选项"-S"/"--speech-language"的语言代码。如果使用py-
                         googletrans作为翻译的方法，错误的输入会终止运行。（参数个数为1）（默认参数为None）
   -D 语言代码, --dst-language 语言代码
-                        用于翻译的目标语言的语言代码/语言标识符。同样的注意参考选项"-Src"/"--src-
+                        用于翻译的目标语言的语言代码/语言标识符。同样的注意参考选项"-SRC"/"--src-
                         language"。（参数个数为1）（默认参数为None）
   -bm [模式 [模式 ...]], --best-match [模式 [模式 ...]]
                         在输入有误的情况下，允许langcodes-py2为输入获取一个最佳匹配的语言代码。仅在使用py-
                         googletrans和Google Speech V2时起作用。可选的模式：s, src, d,
-                        all。"s"指"-S"/"--speech-language"。"src"指"-Src"/"--src-
+                        all。"s"指"-S"/"--speech-language"。"src"指"-SRC"/"--src-
                         language"。"d"指"-D"/"--dst-language"。（参数个数在1到3之间）
   -mns integer, --min-score integer
                         一个介于0和100之间的整数用于控制以下两个选项的匹配结果组，"-lsc"/"--list-speech-

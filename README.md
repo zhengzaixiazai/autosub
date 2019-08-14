@@ -355,13 +355,13 @@ Translate subtitles to another language.
 Translate subtitles from an audio/video file.
 
 ```
-autosub -i input_file -S lang_code (-Src lang_code) -D lang_code
+autosub -i input_file -S lang_code (-SRC lang_code) -D lang_code
 ```
 
 Translate subtitles from a subtitles file.
 
 ```
-autosub -i input_file -Src lang_code -D lang_code
+autosub -i input_file -SRC lang_code -D lang_code
 ```
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
@@ -422,14 +422,14 @@ Language Options:
                         (arg_num = 1) (default: None)
   -D lang_code, --dst-language lang_code
                         Lang code/Lang tag for translation destination
-                        language. Same attention in the "-Src"/"--src-
+                        language. Same attention in the "-SRC"/"--src-
                         language". (arg_num = 1) (default: None)
   -bm [mode [mode ...]], --best-match [mode [mode ...]]
                         Allow langcodes-py2 to get a best matching lang code
                         when your input is wrong. Only functional for py-
                         googletrans and Google Speech V2. Available modes: s,
                         src, d, all. "s" for "-S"/"--speech-language". "src"
-                        for "-Src"/"--src-language". "d" for "-D"/"--dst-
+                        for "-SRC"/"--src-language". "d" for "-D"/"--dst-
                         language". (3 >= arg_num >= 1)
   -mns integer, --min-score integer
                         An integer between 0 and 100 to control the good match

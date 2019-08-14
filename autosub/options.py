@@ -173,7 +173,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-D', '--dst-language',
         metavar=_('lang_code'),
         help=_("Lang code/Lang tag for translation destination language. "
-               "Same attention in the \"-Src\"/\"--src-language\". "
+               "Same attention in the \"-SRC\"/\"--src-language\". "
                "(arg_num = 1) (default: %(default)s)")
     )
 
@@ -187,7 +187,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "Available modes: "
                "s, src, d, all. "
                "\"s\" for \"-S\"/\"--speech-language\". "
-               "\"src\" for \"-Src\"/\"--src-language\". "
+               "\"src\" for \"-SRC\"/\"--src-language\". "
                "\"d\" for \"-D\"/\"--dst-language\". "
                "(3 >= arg_num >= 1)")
     )
