@@ -260,7 +260,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
     i = 0
     partial_index = []
     valid_index = []
-    is_last = False
+    is_last = ""
     for text in text_list:
         if text:
             if not is_last:
@@ -351,6 +351,14 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                 pbar.update(i)
             if len(partial_index) > 1:
                 time.sleep(sleep_seconds)
+
+        i = valid_index[-1]
+        while i < partial_index[-1]:
+            # if valid_index[-1] is less than partial_index[-1]
+            # add empty strings
+            translated_text.append("")
+            i = i + 1
+
         pbar.finish()
 
     except KeyboardInterrupt:
