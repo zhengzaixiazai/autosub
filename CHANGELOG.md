@@ -126,3 +126,9 @@ Click up arrow to go back to TOC.
 - Fix JSONDecodeError caused crash. [agermanidis/autosub pull request #131](https://github.com/agermanidis/autosub/pull/131) by [@raryelcostasouza](https://github.com/raryelcostasouza)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...HEAD
+[0.5.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.0-alpha...0.5.1-alpha
+[0.5.0-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.1-alpha...0.5.0-alpha
+[0.4.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.0-alpha...0.4.1-alpha
+[0.4.0-alpha]: https://github.com/BingLingGroup/autosub/releases/tag/0.4.0-alpha

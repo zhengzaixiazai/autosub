@@ -1,13 +1,13 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: 'Bug report'
+about: 'Create a report to help us improve'
 title: ''
 labels: 'Status: Review Needed'
 assignees: ''
 
 ---
 
-**Make sure you have searched and read the issues related to yours. Otherwise it will be considered as a duplicate which will be closed immediately.**
+**Make sure you have read the readme, searched and read the issues related to yours. Otherwise it will be considered as a duplicate which will be closed immediately.**
 
 **Describe the bug**
 A clear and concise description of what the bug is.
