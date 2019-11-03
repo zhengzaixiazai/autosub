@@ -157,26 +157,33 @@ def ffprobe_check_file(filename):
     return True
 
 
-def which_exe(program_name):
+def is_exe(file_path):
+    """
+    Checks whether a file is executable.
+    """
+    return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
+
+
+def which_exe(program_path):
     """
     Return the path for a given executable.
     """
-    def is_exe(file_path):
-        """
-        Checks whether a file is executable.
-        """
-        return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
-
-    fpath = os.path.split(program_name)[0]
-    if fpath:
-        if is_exe(program_name):
-            return program_name
+    program_dir = os.path.split(program_path)[0]
+    if program_dir:
+        # if program directory exists
+        if is_exe(program_path):
+            return program_path
     else:
+        # else find the program path
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
-            exe_file = os.path.join(path, program_name)
-            if is_exe(exe_file):
-                return exe_file
+            program = os.path.join(path, program_path)
+            if is_exe(program):
+                return program
+        # if program located locally
+        program_name = os.path.join(constants.APP_PATH, os.path.basename(program_path))
+        if is_exe(program_name):
+            return program_name
     return None
 
 

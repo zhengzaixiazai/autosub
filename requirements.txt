@@ -1,9 +1,9 @@
-pysubs2==0.2.4
-langcodes_py2==1.2.0
 googletrans==2.4.0
-requests==2.21.0
 wcwidth==0.1.7
+langcodes_py2==1.2.0
 auditok==0.1.5
-google_api_python_client==1.7.10
+pysubs2==0.2.4
+requests==2.21.0
+google_api_python_client==1.7.11
 langcodes==1.4.1
-progressbar2==3.42.0
+progressbar2==3.47.0
