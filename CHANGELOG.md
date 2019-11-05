@@ -9,19 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
-- [[0.5.2-alpha] - 2019-11-05](#052-alpha---2019-11-05)
+- [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
   - [Added](#added052-alpha)
   - [Changed](#changed052-alpha)
-- [[0.5.1-alpha] - 2019-08-02](#051-alpha---2019-08-02)
+- [0.5.1-alpha - 2019-08-02](#051-alpha---2019-08-02)
   - [Added](#added051-alpha)
   - [Changed](#changed051-alpha)
-- [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
+- [0.5.0-alpha - 2019-07-27](#050-alpha---2019-07-27)
   - [Added](#added050-alpha)
   - [Changed](#changed050-alpha)
-- [[0.4.1-alpha] - 2019-07-11](#041-alpha---2019-07-11)
+- [0.4.1-alpha - 2019-07-11](#041-alpha---2019-07-11)
   - [Added](#added041-alpha)
   - [Changed](#changed041-alpha)
-- [[0.4.0-alpha] - 2019-02-17](#040-alpha---2019-02-17)
+- [0.4.0-alpha - 2019-02-17](#040-alpha---2019-02-17)
   - [Changed](#changed040-alpha)
 
 Click up arrow to go back to TOC.
@@ -36,6 +36,8 @@ Click up arrow to go back to TOC.
 
 - Fix last row of empty translation text missing issue. [issue #62](https://github.com/BingLingGroup/autosub/issues/62)
 - Fix executable file detection problem in the current directory.
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.1-alpha] - 2019-08-02
 
@@ -141,7 +143,8 @@ Click up arrow to go back to TOC.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
-[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...HEAD
+[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...HEAD
+[0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha
 [0.5.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.0-alpha...0.5.1-alpha
 [0.5.0-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.1-alpha...0.5.0-alpha
 [0.4.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.0-alpha...0.4.1-alpha

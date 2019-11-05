@@ -8,19 +8,19 @@
 
 ## 目录
 
-- [[0.5.2-alpha] - 2019-11-05](#052-alpha---2019-11-05)
+- [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
   - [添加](#添加052-alpha)
   - [改动](#改动052-alpha)
-- [[0.5.1-alpha] - 2019-08-02](#051-alpha---2019-08-02)
+- [0.5.1-alpha - 2019-08-02](#051-alpha---2019-08-02)
   - [添加](#添加051-alpha)
   - [改动](#改动051-alpha)
-- [[0.5.0-alpha] - 2019-07-27](#050-alpha---2019-07-27)
+- [0.5.0-alpha - 2019-07-27](#050-alpha---2019-07-27)
   - [添加](#添加050-alpha)
   - [改动](#改动050-alpha)
-- [[0.4.1-alpha] - 2019-07-11](#041-alpha---2019-07-11)
+- [0.4.1-alpha - 2019-07-11](#041-alpha---2019-07-11)
   - [添加](#添加041-alpha)
   - [改动](#改动041-alpha)
-- [[0.4.0-alpha] - 2019-02-17](#040-alpha---2019-02-17)
+- [0.4.0-alpha - 2019-02-17](#040-alpha---2019-02-17)
   - [改动](#改动040-alpha)
 
 点击上箭头以返回目录。
@@ -36,6 +36,8 @@
 - 修复最后一排空翻译丢行问题。[issue #62](https://github.com/BingLingGroup/autosub/issues/62)
 - 修复当前运行路径的可执行文件检测问题。
 
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
+
 ### [0.5.1-alpha] - 2019-08-02
 
 #### 添加(0.5.1-alpha)
@@ -48,7 +50,7 @@
 - 修复unix subprocess.check_output的兼容性问题。[issue #47](https://github.com/BingLingGroup/autosub/issues/47)
 - 修复googletrans全角字符长度过长翻译错误的问题。[issue #49](https://github.com/BingLingGroup/autosub/issues/49)
 
-<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.0-alpha] - 2019-07-27
 
@@ -134,7 +136,8 @@
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
-[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...HEAD
+[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...HEAD
+[0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha
 [0.5.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.0-alpha...0.5.1-alpha
 [0.5.0-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.1-alpha...0.5.0-alpha
 [0.4.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.0-alpha...0.4.1-alpha
