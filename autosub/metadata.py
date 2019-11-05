@@ -12,7 +12,7 @@ _ = str
 # For gettext po files
 
 NAME = 'autosub'
-VERSION = '0.5.1-alpha'
+VERSION = '0.5.2-alpha'
 DESCRIPTION = _('Auto-generate subtitles for video/audio/subtitles file.')
 LONG_DESCRIPTION = (
     _('Autosub is an automatic subtitles generating utility. '

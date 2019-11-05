@@ -546,8 +546,8 @@ def str_to_file(
                 _("Input a new path (including directory and file name) for output file.\n"))
             ext = os.path.splitext(dest)[-1]
             dest = os.path.splitext(dest)[0]
-            dest = "{base}.{ext}".format(base=dest,
-                                         ext=ext)
+            dest = "{base}{ext}".format(base=dest,
+                                        ext=ext)
 
     with open(dest, 'wb') as output_file:
         output_file.write(str_.encode("utf-8"))

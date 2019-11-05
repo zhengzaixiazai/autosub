@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
+- [[0.5.2-alpha] - 2019-11-05](#052-alpha---2019-11-05)
+  - [Added](#added052-alpha)
+  - [Changed](#changed052-alpha)
 - [[0.5.1-alpha] - 2019-08-02](#051-alpha---2019-08-02)
   - [Added](#added051-alpha)
   - [Changed](#changed051-alpha)
@@ -22,6 +25,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Changed](#changed040-alpha)
 
 Click up arrow to go back to TOC.
+
+### [0.5.2-alpha] - 2019-11-05
+
+### Added(0.5.2-alpha)
+
+- Add issue templates.
+
+### Changed(0.5.2-alpha)
+
+- Fix last row of empty translation text missing issue. [issue #62](https://github.com/BingLingGroup/autosub/issues/62)
+- Fix executable file detection problem in the current directory.
 
 ### [0.5.1-alpha] - 2019-08-02
 
