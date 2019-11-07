@@ -648,10 +648,10 @@ for /f "delims=^" %%i in ('dir /b %in_format%') do (
 
 Nuitka的构建有点麻烦。以下是我尝试成功的两种环境。
 
-1. [Nuitka readme](https://github.com/Nuitka/Nuitka#id6)推荐的Anacondare环境。
+1. [Nuitka readme](https://github.com/Nuitka/Nuitka#id6)推荐的Anaconda环境。
    - Python 3.5版本
    - mingw-w64的包[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc) (只要你是用Anaconda命令行启动的，就不需要单独设置环境变量)
-2. 设置环境变量`CC`的值为相应C编译器可执行文件的目录（包括其名称）来使用其他C的编译器，而不是[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc)。。譬如，你想让Nuitka使用你存储上安装的[MingW-W64-builds](http://mingw-w64.org/doku.php/download/mingw-builds)。在这种情况下，依然推荐使用Python 3.5。
+2. 设置环境变量`CC`的值为相应C编译器可执行文件的目录（包括其名称）来使用其他C的编译器，而不是[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc)。譬如，你想让Nuitka使用你存储上安装的[MingW-W64-builds](http://mingw-w64.org/doku.php/download/mingw-builds)。在这种情况下，依然推荐使用Python 3.5。
 
 其他的C编译器或者Python环境可能在编译时失败，原因不明。对于那些操作系统语言不是`en_US`，请在构建前先设置成`en_US`。否则你会遇到这个[已知问题](https://github.com/Nuitka/Nuitka/issues/193)。
 
