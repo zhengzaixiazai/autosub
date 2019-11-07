@@ -180,8 +180,12 @@ def which_exe(program_path):
             program = os.path.join(path, program_path)
             if is_exe(program):
                 return program
-        # if program located locally
+        # if program located at app's directory
         program_name = os.path.join(constants.APP_PATH, os.path.basename(program_path))
+        if is_exe(program_name):
+            return program_name
+        # if program located at current directory
+        program_name = os.path.join(os.getcwd(), os.path.basename(program_path))
         if is_exe(program_name):
             return program_name
     return None
