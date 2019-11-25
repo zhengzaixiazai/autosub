@@ -84,7 +84,7 @@ pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]amix\" \
     "ffmpeg-normalize -v \"{in_}\" -ar 44100 -ofmt flac -c:a flac -pr -p -o \"{out_}\""
 ]
 
-DEFAULT_AUDIO_CVT = "ffmpeg -hide_banner -y -i \"{in_}\" -ac {channel} -ar {sample_rate} \"{out_}\""
+DEFAULT_AUDIO_CVT = "ffmpeg -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
 
 DEFAULT_AUDIO_SPLT = \
     "ffmpeg -ss {start} -t {dura} -y -i \"{in_}\" -c copy -loglevel error \"{out_}\""
