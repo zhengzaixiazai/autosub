@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
+- [Unreleased](#unreleased)
+  - [Changed](#changedunreleased)
 - [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
   - [Added](#added052-alpha)
   - [Changed](#changed052-alpha)
@@ -25,6 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Changed](#changed040-alpha)
 
 Click up arrow to go back to TOC.
+
+### [Unreleased]
+
+### Changed(Unreleased)
+
+- Fix excessive transcoding time issue.
+- Fix Auditok option issues.
 
 ### [0.5.2-alpha] - 2019-11-05
 
