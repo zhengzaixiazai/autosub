@@ -1,6 +1,6 @@
 # Autosub
 
-<escape><a href="https://travis-ci.org/BingLingGroup/autosub"><img src="https://travis-ci.org/BingLingGroup/autosub.svg?branch=alpha"></img></a> <a href="https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=shield"></img></a> <a href="https://t.me/autosubs"><img src="https://img.shields.io/badge/Channel-Telegram-blue"></img></a></escape>
+<escape><a href="https://travis-ci.org/BingLingGroup/autosub"><img src="https://travis-ci.org/BingLingGroup/autosub.svg?branch=alpha"></img></a> <a href="https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=shield"></img></a></escape>
 
 [简体中文](docs/README.zh-Hans.md)
 
@@ -713,11 +713,20 @@ Bugs and suggestions can be reported at [issues](https://github.com/BingLingGrou
 
 I only write the scripts for building standalone executable files on windows, [Nuitka script](scripts/nuitka_build.bat) and [pyinstaller script](scripts/pyinstaller_build.bat).
 
-Nuitka build is pretty tricky. I use anaconda as the package manager because [Nuitka readme](https://github.com/Nuitka/Nuitka#id6) recommends using it. I use anaconda Python3.5 and [m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc) to build. [m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc) perhaps is the stablest 64bit C compiler on this specific case. Other C compiler or Python environment may fail to compile due to unknown reasons. And for those whose os language is not `en_US`, please set it to `en_US` and then start to build. Otherwise you will encounter this [known issue](https://github.com/Nuitka/Nuitka/issues/193).
+Nuitka build is pretty tricky. These two environments I tried and worked.
+
+1. Anaconda recommended by [Nuitka readme](https://github.com/Nuitka/Nuitka#id6).
+   - Python version 3.5
+   - mingw-w64 package [m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc) (No need to set the environment variables separately if you run it on Anaconda Prompt)
+2. Use other C Compiler rather than the [m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc) by setting the value of environment variable `CC` which is the path to the C Compiler, including the executable name. For example, you install [MingW-W64-builds](http://mingw-w64.org/doku.php/download/mingw-builds) somewhere on your storage and you want Nuitka to use it. In this case, Python 3.5 is still recommended.
+
+And for those whose os language is not `en_US`, please set it to `en_US` and then start to build. Otherwise you may encounter this [known issue](https://github.com/Nuitka/Nuitka/issues/193).
 
 Pyinstaller build is more robust. No issues encountered when the spec file is written in the proper way.
 
-[create_release.py](scripts/create_release.py) is used to make the two release packages. You need to create a `binaries` folder containing ffmpeg and ffmpeg-normalize executable files if you want to create a "fully" standalone release like the one I release. `ffmpeg.exe` and `ffprobe.exe` are from [Zeranoe ffmpeg windows build](https://ffmpeg.zeranoe.com/builds/). It should have the directory structure like this below.
+[create_release.py](scripts/create_release.py) is used to make the two release packages. You need to create a `binaries` folder containing ffmpeg and ffmpeg-normalize executable files if you want to create a "fully" standalone release like the one I release. `ffmpeg.exe` and `ffprobe.exe` are from [Zeranoe ffmpeg windows build](https://ffmpeg.zeranoe.com/builds/). `ffmpeg-normalize.exe` built in the same way as I mentioned [above](#install-on-windows).
+
+It should have the directory structure like this below.
 
 ```
 binaries\ffmpeg.exe

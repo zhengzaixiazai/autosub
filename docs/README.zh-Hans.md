@@ -1,6 +1,6 @@
 # Autosub
 
-<escape><a href="https://travis-ci.org/BingLingGroup/autosub"><img src="https://travis-ci.org/BingLingGroup/autosub.svg?branch=alpha"></img></a> <a href="https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=shield"></img></a> <a href="https://t.me/autosubs"><img src="https://img.shields.io/badge/Channel-Telegram-blue"></img></a></escape>
+<escape><a href="https://travis-ci.org/BingLingGroup/autosub"><img src="https://travis-ci.org/BingLingGroup/autosub.svg?branch=alpha"></img></a> <a href="https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=shield"></img></a></escape>
 
 [English](../README.md)
 
@@ -646,11 +646,20 @@ for /f "delims=^" %%i in ('dir /b %in_format%') do (
 
 我只写了在windows上构建独立运行程序的脚本，一个用于[Nuitka](../scripts/nuitka_build.bat)一个用于[pyinstaller](../scripts/pyinstaller_build.bat)。
 
-Nuitka的构建有点麻烦。我使用anaconda作为包管理器，因为[Nuitka readme](https://github.com/Nuitka/Nuitka#id6)是这么建议的。我使用anaconda的Python3.5和[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc)来构建。[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc)在这种情况也许是最稳定的64位C编译器。其他的C编译器或者Python环境可能在编译时失败，原因不明。对于那些操作系统语言不是`en_US`，请在构建前先设置成`en_US`。否则你会遇到这个[已知问题](https://github.com/Nuitka/Nuitka/issues/193)。
+Nuitka的构建有点麻烦。以下是我尝试成功的两种环境。
+
+1. [Nuitka readme](https://github.com/Nuitka/Nuitka#id6)推荐的Anaconda环境。
+   - Python 3.5版本
+   - mingw-w64的包[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc) (只要你是用Anaconda命令行启动的，就不需要单独设置环境变量)
+2. 设置环境变量`CC`的值为相应C编译器可执行文件的目录（包括其名称）来使用其他C的编译器，而不是[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc)。譬如，你想让Nuitka使用你存储上安装的[MingW-W64-builds](http://mingw-w64.org/doku.php/download/mingw-builds)。在这种情况下，依然推荐使用Python 3.5。
+
+其他的C编译器或者Python环境可能在编译时失败，原因不明。对于那些操作系统语言不是`en_US`，请在构建前先设置成`en_US`。否则你会遇到这个[已知问题](https://github.com/Nuitka/Nuitka/issues/193)。
 
 Pyinstaller的构建就比较稳定。只要配置文件写好了就没遇到问题。
 
-[create_release.py](../scripts/create_release.py)是用来创建两个发布包的。如果你想创建一个“完全”独立运行的发布包像我制作的那样，你需要创建一个`binaries`文件夹，里面包含ffmpeg和ffmpeg-normalize的可执行文件。我使用的`ffmpeg.exe`和`ffprobe.exe`都来自[Zeranoe的ffmpeg windows构建](https://ffmpeg.zeranoe.com/builds/)。它的文件目录应该如下。
+[create_release.py](../scripts/create_release.py)是用来创建两个发布包的。如果你想创建一个“完全”独立运行的发布包像我制作的那样，你需要创建一个`binaries`文件夹，里面包含ffmpeg和ffmpeg-normalize的可执行文件。我使用的`ffmpeg.exe`和`ffprobe.exe`都来自[Zeranoe的ffmpeg windows构建](https://ffmpeg.zeranoe.com/builds/)。`ffmpeg-normalize.exe` 使用[如上](#在Windows上安装)所说的相同的方式进行构建。
+
+它的文件目录应该如下。
 
 ```
 binaries\ffmpeg.exe
