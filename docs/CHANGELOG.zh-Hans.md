@@ -8,6 +8,9 @@
 
 ## 目录
 
+- [未发布](#未发布)
+- [0.5.3-alpha - 2019-12-30](#053-alpha---2019-12-30)
+  - [改动](#改动053-alpha)
 - [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
   - [添加](#添加052-alpha)
   - [改动](#改动052-alpha)
@@ -27,18 +30,21 @@
 
 ### [未发布]
 
-### 改动(未发布)
+### [0.5.3-alpha] - 2019-12-30
 
-- 修复ffmpeg参数导致的过长转码时间问题。
-- 修复Auditok选项问题。
+#### 改动(0.5.3-alpha)
+
+- 修复ffmpeg参数导致的过长转码时间问题。[pull request #66](https://github.com/BingLingGroup/autosub/pull/66)
+- 修复Auditok选项问题。[issue #70](https://github.com/BingLingGroup/autosub/issues/70)
+- 修复输出选项问题。[issue #73](https://github.com/BingLingGroup/autosub/issues/73)
 
 ### [0.5.2-alpha] - 2019-11-05
 
-### 添加(0.5.2-alpha)
+#### 添加(0.5.2-alpha)
 
 - 添加问题模板。
 
-### 改动(0.5.2-alpha)
+#### 改动(0.5.2-alpha)
 
 - 修复最后一排空翻译丢行问题。[issue #62](https://github.com/BingLingGroup/autosub/issues/62)
 - 修复当前运行路径的可执行文件检测问题。
@@ -143,7 +149,8 @@
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
-[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...HEAD
+[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...HEAD
+[0.5.3-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...0.5.3-alpha
 [0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha
 [0.5.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.0-alpha...0.5.1-alpha
 [0.5.0-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.1-alpha...0.5.0-alpha

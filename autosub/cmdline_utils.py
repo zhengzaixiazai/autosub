@@ -203,11 +203,12 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
                 # get format from default
                 args.format = constants.DEFAULT_SUBTITLES_FORMAT
     else:
+        output_name = os.path.splitext(args.output)
         if not args.format:
             # get format from output
-            args.format = input_ext.strip('.')
+            args.format = output_name[-1].strip('.')
             # format = output name extension without dot
-        args.output = input_path
+        args.output = output_name[0]
         # output = output name without extension
 
     if args.format not in constants.OUTPUT_FORMAT:

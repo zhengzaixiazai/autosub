@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## TOC
 
 - [Unreleased](#unreleased)
-  - [Changed](#changedunreleased)
+- [0.5.3-alpha - 2019-12-30](#053-alpha---2019-12-30)
+  - [Changed](#changed053-alpha)
 - [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
   - [Added](#added052-alpha)
   - [Changed](#changed052-alpha)
@@ -30,18 +31,21 @@ Click up arrow to go back to TOC.
 
 ### [Unreleased]
 
-### Changed(Unreleased)
+### [0.5.3-alpha] - 2019-12-30
 
-- Fix excessive transcoding time issue.
-- Fix Auditok option issues.
+#### Changed(0.5.3-alpha)
+
+- Fix excessive transcoding time issue. [pull request #66](https://github.com/BingLingGroup/autosub/pull/66)
+- Fix Auditok option issues. [issue #70](https://github.com/BingLingGroup/autosub/issues/70)
+- Fix output option issue. [issue #73](https://github.com/BingLingGroup/autosub/issues/73)
 
 ### [0.5.2-alpha] - 2019-11-05
 
-### Added(0.5.2-alpha)
+#### Added(0.5.2-alpha)
 
 - Add issue templates.
 
-### Changed(0.5.2-alpha)
+#### Changed(0.5.2-alpha)
 
 - Fix last row of empty translation text missing issue. [issue #62](https://github.com/BingLingGroup/autosub/issues/62)
 - Fix executable file detection problem in the current directory.
@@ -152,7 +156,8 @@ Click up arrow to go back to TOC.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
-[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...HEAD
+[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...HEAD
+[0.5.3-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...0.5.3-alpha
 [0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha
 [0.5.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.0-alpha...0.5.1-alpha
 [0.5.0-alpha]: https://github.com/BingLingGroup/autosub/compare/0.4.1-alpha...0.5.0-alpha
