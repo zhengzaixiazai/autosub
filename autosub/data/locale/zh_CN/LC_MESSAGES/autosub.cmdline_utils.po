@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-12-30 16:14+0800\n"
+"POT-Creation-Date: 2020-01-14 20:31+0800\n"
 "PO-Revision-Date: 2019-08-12 09:16+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -267,16 +267,16 @@ msgstr ""
 "\n"
 "啥都没做。检查你的\"-of\"/\"--output-files\"选项。"
 
-#: autosub/cmdline_utils.py:637 autosub/cmdline_utils.py:1025
+#: autosub/cmdline_utils.py:637 autosub/cmdline_utils.py:1033
 msgid "Error: Translation failed."
 msgstr "错误：翻译失败。"
 
-#: autosub/cmdline_utils.py:682 autosub/cmdline_utils.py:1061
+#: autosub/cmdline_utils.py:682 autosub/cmdline_utils.py:1069
 msgid "Bilingual subtitles file created at \"{}\"."
 msgstr "双语字幕创建在了\"{}\"。"
 
 #: autosub/cmdline_utils.py:686 autosub/cmdline_utils.py:881
-#: autosub/cmdline_utils.py:996 autosub/cmdline_utils.py:1065
+#: autosub/cmdline_utils.py:1004 autosub/cmdline_utils.py:1073
 msgid ""
 "\n"
 "All works done."
@@ -284,7 +284,7 @@ msgstr ""
 "\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:725 autosub/cmdline_utils.py:1104
+#: autosub/cmdline_utils.py:725 autosub/cmdline_utils.py:1112
 msgid "Destination language subtitles file created at \"{}\"."
 msgstr "目的语言字幕文件创建在了\"{}\"。"
 
@@ -305,7 +305,7 @@ msgstr ""
 msgid "Error: Convert source audio to \"{name}\" failed."
 msgstr "错误：转换源音频至\"{name}\"失败。"
 
-#: autosub/cmdline_utils.py:841 autosub/cmdline_utils.py:933
+#: autosub/cmdline_utils.py:841 autosub/cmdline_utils.py:941
 msgid ""
 "\n"
 "\"{name}\" has been deleted."
@@ -317,7 +317,7 @@ msgstr ""
 msgid "Error: Can't get speech regions."
 msgstr "错误：无法得到语音区域。"
 
-#: autosub/cmdline_utils.py:878 autosub/cmdline_utils.py:1180
+#: autosub/cmdline_utils.py:878 autosub/cmdline_utils.py:1188
 msgid "Times file created at \"{}\"."
 msgstr "时间轴文件创建在了\"{}\"."
 
@@ -329,11 +329,11 @@ msgstr ""
 "\n"
 "为API转换为\"{name}\"。"
 
-#: autosub/cmdline_utils.py:929
+#: autosub/cmdline_utils.py:937
 msgid "Error: Conversion failed."
 msgstr "错误：转换失败。"
 
-#: autosub/cmdline_utils.py:937
+#: autosub/cmdline_utils.py:945
 msgid ""
 "Audio processing complete.\n"
 "All works done."
@@ -341,7 +341,7 @@ msgstr ""
 "音频处理完毕。\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:954
+#: autosub/cmdline_utils.py:962
 msgid ""
 "Error: Speech-to-text failed.\n"
 "All works done."
@@ -349,11 +349,11 @@ msgstr ""
 "错误：语音转文字失败。\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:992 autosub/cmdline_utils.py:1146
+#: autosub/cmdline_utils.py:1000 autosub/cmdline_utils.py:1154
 msgid "Speech language subtitles file created at \"{}\"."
 msgstr "语音字幕文件创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:1113
+#: autosub/cmdline_utils.py:1121
 msgid ""
 "Override \"-of\"/\"--output-files\" due to your args too few.\n"
 "Output source subtitles file only."
@@ -361,7 +361,7 @@ msgstr ""
 "因为你其他参数输入得太少了，忽略\"-of\"/\"--output-files\"参数。\n"
 "只输出源语言字幕文件。"
 
-#: autosub/cmdline_utils.py:1151
+#: autosub/cmdline_utils.py:1159
 msgid ""
 "Override \"-of\"/\"--output-files\" due to your args too few.\n"
 "Output regions subtitles file only."

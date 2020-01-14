@@ -910,6 +910,14 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         else:
             audio_for_api = args.input
 
+        if args.api_suffix == ".flac":
+            headers = \
+                {"Content-Type": "audio/x-flac; rate={rate}".format(rate=args.api_sample_rate)}
+        else:
+            headers = \
+                {"Content-Type": "audio/aac; rate={rate}".format(rate=args.api_sample_rate)}
+            args.audio_split_cmd = args.audio_split_cmd.replace("-c copy ", "")
+
         audio_fragments = core.bulk_audio_conversion(
             source_file=audio_for_api,
             output=args.output,
@@ -940,12 +948,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         text_list = core.audio_to_text(
             audio_fragments=audio_fragments,
             api_url=gsv2_api_url,
+            headers=headers,
             regions=regions,
             api_key=args.gspeechv2,
             concurrency=args.speech_concurrency,
             src_language=args.speech_language,
             min_confidence=args.min_confidence,
-            audio_rate=args.api_sample_rate,
             is_keep=args.keep
         )
 

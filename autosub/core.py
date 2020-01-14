@@ -22,6 +22,7 @@ from autosub import speech_trans_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
+from autosub import exceptions
 
 CORE_TEXT = gettext.translation(domain=__name__,
                                 localedir=constants.LOCALE_PATH,
@@ -123,11 +124,11 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
         audio_fragments,
         api_url,
         regions,
+        headers,
         api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
         min_confidence=0.0,
-        audio_rate=44100,
         is_keep=False
 ):
     """
@@ -139,20 +140,21 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
 
     text_list = []
     pool = multiprocessing.Pool(concurrency)
+
     if api_key:
         recognizer = speech_trans_api.GoogleSpeechToTextV2(
             api_url=api_url,
             api_key=api_key,
+            headers=headers,
             min_confidence=min_confidence,
-            lang_code=src_language,
-            rate=audio_rate)
+            lang_code=src_language)
     else:
         recognizer = speech_trans_api.GoogleSpeechToTextV2(
             api_url=api_url,
             api_key=constants.GOOGLE_SPEECH_V2_API_KEY,
+            headers=headers,
             min_confidence=min_confidence,
             lang_code=src_language,
-            rate=audio_rate,
             is_keep=is_keep)
 
     print(_("\nSending short-term fragments to API and getting result."))
@@ -170,10 +172,15 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 text_list.append("")
         pbar.finish()
 
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, AttributeError) as error:
         pbar.finish()
         pool.terminate()
         pool.join()
+
+        if error == AttributeError:
+            raise exceptions.SpeechToTextException(
+                _("Error: Connection error happened too many times.\nAll works done."))
+
         return None
 
     return text_list

@@ -7,17 +7,17 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-03 21:22+0800\n"
-"PO-Revision-Date: 2019-07-25 20:25+0800\n"
+"POT-Creation-Date: 2020-01-14 20:33+0800\n"
+"PO-Revision-Date: 2020-01-14 20:33+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: zh_CN\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
 
-#: autosub/core.py:100
+#: autosub/core.py:101
 msgid ""
 "\n"
 "Converting speech regions to short-term fragments."
@@ -25,11 +25,11 @@ msgstr ""
 "\n"
 "按照语音区域将音频转换为多个短语音片段。"
 
-#: autosub/core.py:101
+#: autosub/core.py:102
 msgid "Converting: "
 msgstr "转换中： "
 
-#: autosub/core.py:158
+#: autosub/core.py:160
 msgid ""
 "\n"
 "Sending short-term fragments to API and getting result."
@@ -37,11 +37,19 @@ msgstr ""
 "\n"
 "将短片段语音发送给API并得到识别结果。"
 
-#: autosub/core.py:159
+#: autosub/core.py:161
 msgid "Speech-to-Text: "
 msgstr "语音转文字中： "
 
-#: autosub/core.py:204 autosub/core.py:255
+#: autosub/core.py:182
+msgid ""
+"Error: Connection error happened too many times.\n"
+"All works done."
+msgstr ""
+"错误：过多连接错误。\n"
+"做完了。"
+
+#: autosub/core.py:211 autosub/core.py:262
 msgid ""
 "\n"
 "Translating text from \"{0}\" to \"{1}\"."
@@ -49,24 +57,23 @@ msgstr ""
 "\n"
 "从\"{0}\"翻译为\"{1}\"。"
 
-#: autosub/core.py:214 autosub/core.py:305
+#: autosub/core.py:221 autosub/core.py:312
 msgid "Translation: "
 msgstr "翻译中： "
 
-#: autosub/core.py:233 autosub/core.py:366
+#: autosub/core.py:240 autosub/core.py:373
 msgid "Cancelling transcription."
 msgstr "取消翻译。"
 
-#: autosub/core.py:447 autosub/core.py:514
+#: autosub/core.py:454 autosub/core.py:521
 msgid "Format \"{fmt}\" not supported. Using \"{default_fmt}\" instead."
 msgstr "不支持格式\"{fmt}\"。改用\"{default_fmt}\"。"
 
-#: autosub/core.py:543
-msgid ""
-"There is already a file with the same name in this location: \"{dest_name}\"."
+#: autosub/core.py:550
+msgid "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/core.py:546
+#: autosub/core.py:553
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 

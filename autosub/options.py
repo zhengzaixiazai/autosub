@@ -316,8 +316,8 @@ def get_cmd_args():  # pylint: disable=too-many-statements
 
     pygt_group.add_argument(
         '-ua', '--user-agent',
-        metavar='User-Agent header',
-        help=_("(Experimental)Customize User-Agent header. "
+        metavar='User-Agent headers',
+        help=_("(Experimental)Customize User-Agent headers. "
                "Same docs above. "
                "(arg_num = 1)")
     )
