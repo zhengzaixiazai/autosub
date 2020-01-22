@@ -75,8 +75,8 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         _('Options to control translation. '
           'Default method to translate. '
           'Could be blocked at any time.'))
-    gsv2_group = parser.add_argument_group(
-        _('Google Speech V2 Options'),
+    gtv2_group = parser.add_argument_group(
+        _('Google Translate V2 Options'),
         _('Options to control translation.(Not been tested) '
           'If the API key is given, '
           'it will replace the py-googletrans method.'))
@@ -231,7 +231,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
     output_group.add_argument(
         '-y', '--yes',
         action='store_true',
-        help=_("Avoid any pause and overwriting files. "
+        help=_("Prevent pauses and allow files to be overwritten. "
                "Stop the program when your args are wrong. (arg_num = 0)")
     )
 
@@ -266,11 +266,24 @@ def get_cmd_args():  # pylint: disable=too-many-statements
     )
 
     speech_group.add_argument(
-        '-gsv2', '--gspeechv2',
+        '-sapi', '--speech-api',
+        metavar=_('api_code'),
+        default='gsv2',
+        help=_("Choose which Speech-to-Text API to use. "
+               "Currently supported: "
+               "gsv2: Google Speech V2 (https://github.com/gillesdemey/google-speech-v2). "
+               "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
+               "(https://cloud.google.com/speech-to-text/docs). "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    speech_group.add_argument(
+        '-skey', '--speech-key',
         metavar='key',
-        help=_("The Google Speech V2 API key to be used. "
-               "If not provided, use free API key instead."
-               "(arg_num = 1)")
+        help=_("The API key for Speech-to-Text API. (arg_num = 1) "
+               "Currently supported: "
+               "gsv2: The API key for gsv2. (default: Free API key) "
+               "gcsv1: The API key for gcsv1. "
+               "(Can be overridden by \"-sa\"/\"--service-account\")")
     )
 
     speech_group.add_argument(
@@ -278,7 +291,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         metavar='float',
         type=float,
         default=0.0,
-        help=_("Google Speech V2 API response for text confidence. "
+        help=_("API response for text confidence. "
                "A float value between 0 and 1. "
                "Confidence bigger means the result is better. "
                "Input this argument will drop any result below it. "
@@ -291,7 +304,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         metavar='integer',
         type=int,
         default=constants.DEFAULT_CONCURRENCY,
-        help=_("Number of concurrent Google Speech V2 requests to make. "
+        help=_("Number of concurrent Speech-to-Text requests to make. "
                "(arg_num = 1) (default: %(default)s)")
     )
 
@@ -322,15 +335,15 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(arg_num = 1)")
     )
 
-    gsv2_group.add_argument(
+    gtv2_group.add_argument(
         '-gtv2', '--gtransv2',
         metavar='key',
         help=_("The Google Translate V2 API key to be used. "
-               "If not provided, use free API(py-googletrans) instead. "
+               "If not provided, use free API (py-googletrans) instead. "
                "(arg_num = 1)")
     )
 
-    gsv2_group.add_argument(
+    gtv2_group.add_argument(
         '-lpt', '--lines-per-trans',
         metavar='integer',
         type=int,
@@ -339,7 +352,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(arg_num = 1) (default: %(default)s)")
     )
 
-    gsv2_group.add_argument(
+    gtv2_group.add_argument(
         '-tc', '--trans-concurrency',
         metavar='integer',
         type=int,
@@ -402,6 +415,18 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         + ' by ' + metadata.AUTHOR + ' <'
         + metadata.AUTHOR_EMAIL + '>',
         help=_("Show %(prog)s version and exit. (arg_num = 0)")
+    )
+
+    options_group.add_argument(
+        '-sa', '--service-account',
+        metavar=_('path'),
+        help=_("Set service account key environment variable. "
+               "It should be the file path of the JSON file "
+               "that contains your service account credentials. "
+               "If used, override the API key options. "
+               "Ref: https://cloud.google.com/docs/authentication/getting-started"
+               "Currently supported: gcsv1 (GOOGLE_APPLICATION_CREDENTIALS) "
+               "(arg_num = 1)")
     )
 
     audio_prcs_group.add_argument(
@@ -587,7 +612,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "If no arg is given, list all. "
                "Or else will list get a group of \"good match\" "
                "of the arg. Default \"good match\" standard is whose "
-               "match score above 90(score between 0 and 100). "
+               "match score above 90 (score between 0 and 100). "
                "Ref: https://tools.ietf.org/html/bcp47 "
                "https://github.com/LuminosoInsight/langcodes/blob/master/langcodes/__init__.py "
                "lang code example: language-script-region-variant-extension-privateuse "

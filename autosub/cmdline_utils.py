@@ -263,7 +263,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
         )
 
     if args.speech_language:  # pylint: disable=too-many-nested-blocks
-        if not args.gspeechv2:
+        if args.speech_api == "gsv2" or args.speech_api == "gcsv1":
             args.speech_language = args.speech_language.lower()
             if args.speech_language \
                     not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES:
@@ -291,6 +291,11 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                 raise exceptions.AutosubException(
                     _("Error: The arg of \"-mnc\"/\"--min-confidence\" isn't legal.")
                 )
+
+        else:
+            raise exceptions.AutosubException(
+                _("Error: Wrong API code.")
+            )
 
         if args.dst_language is None:
             print(
@@ -764,11 +769,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     Give args and process an input audio or video file.
     """
 
-    if args.http_speech_api:
-        gsv2_api_url = "http://" + constants.GOOGLE_SPEECH_V2_API_URL
-    else:
-        gsv2_api_url = "https://" + constants.GOOGLE_SPEECH_V2_API_URL
-
     if not args.output_files:
         raise exceptions.AutosubException(
             _("\nNo works done."
@@ -817,7 +817,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             out_=audio_wav
         )
         print(_("\nConvert source audio to \"{name}\" "
-                "and get audio length for regions detection.").format(
+                "to get audio length and detect audio regions.").format(
                     name=audio_wav))
         print(command)
         subprocess.check_output(
@@ -906,17 +906,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 raise exceptions.AutosubException(
                     _("Error: Convert source audio to \"{name}\" failed.").format(
                         name=audio_for_api))
-
         else:
             audio_for_api = args.input
-
-        if args.api_suffix == ".flac":
-            headers = \
-                {"Content-Type": "audio/x-flac; rate={rate}".format(rate=args.api_sample_rate)}
-        else:
-            headers = \
-                {"Content-Type": "audio/aac; rate={rate}".format(rate=args.api_sample_rate)}
-            args.audio_split_cmd = args.audio_split_cmd.replace("-c copy ", "")
 
         audio_fragments = core.bulk_audio_conversion(
             source_file=audio_for_api,
@@ -944,18 +935,95 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             raise exceptions.AutosubException(
                 _("Audio processing complete.\nAll works done."))
 
-        # speech to text
-        text_list = core.audio_to_text(
-            audio_fragments=audio_fragments,
-            api_url=gsv2_api_url,
-            headers=headers,
-            regions=regions,
-            api_key=args.gspeechv2,
-            concurrency=args.speech_concurrency,
-            src_language=args.speech_language,
-            min_confidence=args.min_confidence,
-            is_keep=args.keep
-        )
+        if args.speech_api == "gsv2":
+            # Google speech-to-text v2
+            if args.http_speech_api:
+                gsv2_api_url = "http://" + \
+                               constants.GOOGLE_SPEECH_V2_API_URL
+            else:
+                gsv2_api_url = "https://" + \
+                               constants.GOOGLE_SPEECH_V2_API_URL
+
+            if args.speech_key:
+                gsv2_api_url = gsv2_api_url.format(
+                    lang=args.speech_language,
+                    key=args.speech_key)
+            else:
+                gsv2_api_url = gsv2_api_url.format(
+                    lang=args.speech_language,
+                    key=constants.GOOGLE_SPEECH_V2_API_KEY)
+
+            if args.api_suffix == ".flac":
+                headers = \
+                    {"Content-Type": "audio/x-flac; rate={rate}".format(rate=args.api_sample_rate)}
+            else:
+                headers = \
+                    {"Content-Type": "audio/aac; rate={rate}".format(rate=args.api_sample_rate)}
+
+            text_list = core.gsv2_to_text(
+                audio_fragments=audio_fragments,
+                api_url=gsv2_api_url,
+                headers=headers,
+                regions=regions,
+                concurrency=args.speech_concurrency,
+                min_confidence=args.min_confidence,
+                is_keep=args.keep
+            )
+
+        elif args.speech_api == "gcsv1":
+            # Google Cloud speech-to-text V1P1Beta1
+            if args.speech_key:
+                headers = \
+                    {"Content-Type": "application/json"}
+                gcsv1_api_url = \
+                    "https://speech.googleapis.com/" \
+                    "v1p1beta1/speech:recognize?key={api_key}".format(
+                        api_key=args.speech_key)
+                print(_("Use the API key "
+                        "given in the option \"-skey\"/\"--speech-key\"."))
+                text_list = core.gcsv1_to_text(
+                    audio_fragments=audio_fragments,
+                    sample_rate=args.api_sample_rate,
+                    regions=regions,
+                    api_url=gcsv1_api_url,
+                    headers=headers,
+                    concurrency=args.speech_concurrency,
+                    src_language=args.speech_language,
+                    min_confidence=args.min_confidence,
+                    is_keep=args.keep
+                )
+            elif args.service_account and os.path.isfile(args.service_account):
+                print(_("Set the GOOGLE_APPLICATION_CREDENTIALS "
+                        "given in the option \"-sa\"/\"--service-account\"."))
+                os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = args.service_account
+                text_list = core.gcsv1_to_text(
+                    audio_fragments=audio_fragments,
+                    sample_rate=args.api_sample_rate,
+                    regions=regions,
+                    concurrency=args.speech_concurrency,
+                    src_language=args.speech_language,
+                    min_confidence=args.min_confidence,
+                    is_keep=args.keep
+                )
+            else:
+                if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
+                    print(_("Use the GOOGLE_APPLICATION_CREDENTIALS "
+                            "in the environment variables."))
+                    text_list = core.gcsv1_to_text(
+                        audio_fragments=audio_fragments,
+                        sample_rate=args.api_sample_rate,
+                        regions=regions,
+                        concurrency=args.speech_concurrency,
+                        src_language=args.speech_language,
+                        min_confidence=args.min_confidence,
+                        is_keep=args.keep
+                    )
+                else:
+                    print(_("No available GOOGLE_APPLICATION_CREDENTIALS. "
+                            "Use \"-sa\"/\"--service-account\" to set one."))
+                    text_list = None
+        else:
+            text_list = None
 
         if not text_list or len(text_list) != len(regions):
             raise exceptions.SpeechToTextException(

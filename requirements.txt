@@ -1,9 +1,11 @@
-googletrans==2.4.0
+setuptools==40.8.0
 wcwidth==0.1.7
-langcodes_py2==1.2.0
-auditok==0.1.5
-pysubs2==0.2.4
 requests==2.21.0
+pysubs2==0.2.4
+auditok==0.1.5
+langcodes_py2==1.2.0
+googletrans==2.4.0
+protobuf==3.11.2
 google_api_python_client==1.7.11
 langcodes==1.4.1
 progressbar2==3.47.0

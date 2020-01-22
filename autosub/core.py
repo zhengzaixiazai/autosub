@@ -16,6 +16,7 @@ import pysubs2
 import auditok
 import googletrans
 import wcwidth
+from google.cloud.speech_v1p1beta1 import enums
 
 # Any changes to the path and your own modules
 from autosub import speech_trans_api
@@ -120,20 +121,18 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
     return audio_fragments
 
 
-def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         audio_fragments,
         api_url,
         regions,
         headers,
-        api_key=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
-        src_language=constants.DEFAULT_SRC_LANGUAGE,
         min_confidence=0.0,
         is_keep=False
 ):
     """
     Give a list of short-term audio fragment files
-    and generate text_list from speech-to-text api.
+    and generate text_list from Google speech-to-text V2 api.
     """
     if not regions:
         return None
@@ -141,23 +140,13 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
     text_list = []
     pool = multiprocessing.Pool(concurrency)
 
-    if api_key:
-        recognizer = speech_trans_api.GoogleSpeechToTextV2(
-            api_url=api_url,
-            api_key=api_key,
-            headers=headers,
-            min_confidence=min_confidence,
-            lang_code=src_language)
-    else:
-        recognizer = speech_trans_api.GoogleSpeechToTextV2(
-            api_url=api_url,
-            api_key=constants.GOOGLE_SPEECH_V2_API_KEY,
-            headers=headers,
-            min_confidence=min_confidence,
-            lang_code=src_language,
-            is_keep=is_keep)
+    recognizer = speech_trans_api.GoogleSpeechV2(
+        api_url=api_url,
+        headers=headers,
+        min_confidence=min_confidence,
+        is_keep=is_keep)
 
-    print(_("\nSending short-term fragments to API and getting result."))
+    print(_("\nSending short-term fragments to Google Speech V2 API and getting result."))
     widgets = [_("Speech-to-Text: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
@@ -167,9 +156,9 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
         for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
             if transcript:
                 text_list.append(transcript)
-                pbar.update(i)
             else:
                 text_list.append("")
+            pbar.update(i)
         pbar.finish()
 
     except (KeyboardInterrupt, AttributeError) as error:
@@ -178,9 +167,146 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
         pool.join()
 
         if error == AttributeError:
-            raise exceptions.SpeechToTextException(
+            print(
                 _("Error: Connection error happened too many times.\nAll works done."))
 
+        return None
+
+    return text_list
+
+
+def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+        audio_fragments,
+        sample_rate,
+        regions,
+        api_url=None,
+        headers=None,
+        concurrency=constants.DEFAULT_CONCURRENCY,
+        src_language=constants.DEFAULT_SRC_LANGUAGE,
+        min_confidence=0.0,
+        is_keep=False
+):
+    """
+    Give a list of short-term audio fragment files
+    and generate text_list from Google cloud speech-to-text V1P1Beta1 api.
+    """
+    if not regions:
+        return None
+
+    text_list = []
+    pool = multiprocessing.Pool(concurrency)
+
+    print(_("\nSending short-term fragments to Google Cloud Speech V1P1Beta1 API"
+            " and getting result."))
+    widgets = [_("Speech-to-Text: "),
+               progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
+
+    try:
+        if api_url:
+            # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
+            if audio_fragments[0].lower().endswith(".flac"):
+                encoding = "FLAC"
+            elif audio_fragments[0].lower().endswith(".mp3"):
+                encoding = "MP3"
+            elif audio_fragments[0].lower().endswith(".wav"):
+                # regard WAV as PCM
+                encoding = "PCM"
+            elif audio_fragments[0].lower().endswith(".ogg"):
+                encoding = "OGG"
+            else:
+                encoding = ""
+
+            config = {
+                "encoding": encoding,
+                "sampleRateHertz": sample_rate,
+                "languageCode": src_language,
+            }
+
+            recognizer = speech_trans_api.GCSV1P1Beta1URL(
+                config=config,
+                api_url=api_url,
+                headers=headers,
+                min_confidence=min_confidence,
+                is_keep=is_keep)
+
+            for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                pbar.update(i)
+
+        else:
+            # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+            if audio_fragments[0].lower().endswith(".flac"):
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.FLAC
+                # encoding = 2
+            elif audio_fragments[0].lower().endswith(".mp3"):
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.MP3
+                # encoding = 8
+            elif audio_fragments[0].lower().endswith(".wav"):
+                # regard WAV as PCM
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.LINEAR16
+                # encoding = 1
+            elif audio_fragments[0].lower().endswith(".ogg"):
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.OGG_OPUS
+                # encoding = 6
+            else:
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
+                # encoding = 0
+
+            # https://pypi.org/project/google-cloud-speech/
+            config = {
+                "language_code": src_language,
+                "sample_rate_hertz": sample_rate,
+                "encoding": encoding,
+            }
+
+            i = 0
+            tasks = []
+            for filename in audio_fragments:
+                # google cloud speech-to-text client can't use multiprocessing.pool
+                # based on class call, otherwise will receive pickling error
+                tasks.append(pool.apply_async(
+                    speech_trans_api.gcsv1p1beta1_service_client,
+                    args=(filename, is_keep, config, min_confidence)))
+
+            for task in tasks:
+                i = i + 1
+                transcript = task.get()
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                pbar.update(i)
+
+        pbar.finish()
+
+    except (KeyboardInterrupt, AttributeError) as error:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+
+        if error == AttributeError:
+            print(
+                _("Error: Connection error happened too many times.\nAll works done."))
+
+        return None
+
+    except exceptions.SpeechToTextException as err_msg:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+        print(_("Receive something unexpected:"))
+        print(err_msg)
         return None
 
     return text_list
@@ -279,7 +405,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                 # If text contains full-wide char,
                 # count its length about 4 times than the ordinary text.
                 # Avoid weird problem when text has full-wide char.
-                # In this case google will count a full-wide char
+                # In this case Google will count a full-wide char
                 # at least 2 times larger than a half-wide char.
                 # It will certainly exceed the limit of the size_per_trans.
                 # Causing a googletrans internal jsondecode error.

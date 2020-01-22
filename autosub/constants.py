@@ -88,7 +88,7 @@ DEFAULT_AUDIO_CVT = \
     "ffmpeg -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
 
 DEFAULT_AUDIO_SPLT = \
-    "ffmpeg -ss {start} -t {dura} -y -i \"{in_}\" -c copy -loglevel error \"{out_}\""
+    "ffmpeg -y -ss {start} -i \"{in_}\" -t {dura} -loglevel error \"{out_}\""
 
 DEFAULT_VIDEO_FPS_CMD = "ffprobe -v 0 -of csv=p=0 -select_streams" \
                         " v:0 -show_entries stream=r_frame_rate \"{in_}\""

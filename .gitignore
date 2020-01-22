@@ -17,3 +17,5 @@ MANIFEST
 /.build_and_dist_win32
 /.release
 *.po~
+Pipfile
+*.lock
