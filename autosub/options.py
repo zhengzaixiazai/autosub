@@ -267,7 +267,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
 
     speech_group.add_argument(
         '-sapi', '--speech-api',
-        metavar=_('api_code'),
+        metavar=_('API_code'),
         default='gsv2',
         help=_("Choose which Speech-to-Text API to use. "
                "Currently supported: "
@@ -424,7 +424,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "It should be the file path of the JSON file "
                "that contains your service account credentials. "
                "If used, override the API key options. "
-               "Ref: https://cloud.google.com/docs/authentication/getting-started"
+               "Ref: https://cloud.google.com/docs/authentication/getting-started "
                "Currently supported: gcsv1 (GOOGLE_APPLICATION_CREDENTIALS) "
                "(arg_num = 1)")
     )
@@ -608,7 +608,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         const=' ',
         nargs='?',
         help=_("List all recommended \"-S\"/\"--speech-language\" "
-               "Google Speech V2 language codes. "
+               "Google Speech-to-Text language codes. "
                "If no arg is given, list all. "
                "Or else will list get a group of \"good match\" "
                "of the arg. Default \"good match\" standard is whose "
@@ -637,7 +637,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         metavar=_('path'),
         help=_("Use py-googletrans to detect a sub file's first line language. "
                "And list a group of matched language in recommended "
-               "\"-S\"/\"--speech-language\" Google Speech V2 language codes. "
+               "\"-S\"/\"--speech-language\" Google Speech-to-Text language codes. "
                "Ref: https://cloud.google.com/speech-to-text/docs/languages "
                "(arg_num = 1) (default: %(default)s)")
     )

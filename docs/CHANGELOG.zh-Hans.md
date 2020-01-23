@@ -30,6 +30,10 @@
 
 ### [未发布]
 
+#### 添加(未发布)
+
+- 添加Google Cloud Speech-to-Text支持。 [issue #10](https://github.com/BingLingGroup/autosub/issues/10)
+
 ### [0.5.3-alpha] - 2019-12-30
 
 #### 改动(0.5.3-alpha)

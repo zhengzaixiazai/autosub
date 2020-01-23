@@ -433,10 +433,10 @@ Language Options:
                         language". (3 >= arg_num >= 1)
   -mns integer, --min-score integer
                         An integer between 0 and 100 to control the good match
-                        group of "-lsc"/"--list-speech-codes" or "-ltc"/"--
-                        list-translation-codes" or the match result in "-bm"/"
-                        --best-match". Result will be a group of "good match"
-                        whose score is above this arg. (arg_num = 1)
+                        group of "-lsc"/"--list-speech-codes" or "-ltc
+                        "/"--list-translation-codes" or the match result in
+                        "-bm"/"--best-match". Result will be a group of "good
+                        match" whose score is above this arg. (arg_num = 1)
 
 Output Options:
   Options to control output.
@@ -452,11 +452,12 @@ Output Options:
                         "srt" instead. In this case, if "-i"/"--input" arg is
                         a subtitles file, use the same extension from the
                         subtitles file. (arg_num = 1) (default: srt)
-  -y, --yes             Avoid any pause and overwriting files. Stop the
-                        program when your args are wrong. (arg_num = 0)
+  -y, --yes             Prevent pauses and allow files to be overwritten. Stop
+                        the program when your args are wrong. (arg_num = 0)
   -of [type [type ...]], --output-files [type [type ...]]
                         Output more files. Available types: regions, src, dst,
-                        bilingual, all. (4 >= arg_num >= 1) (default: ['dst'])
+                        bilingual, all. (4 >= arg_num >= 1) (default:
+                        [u'dst'])
   -fps float, --sub-fps float
                         Valid when your output format is "sub". If input, it
                         will override the fps check on the input file. Ref:
@@ -469,19 +470,27 @@ Output Options:
 Speech Options:
   Options to control speech-to-text. If Speech Options not given, it will only generate the times.
 
-  -gsv2 key, --gspeechv2 key
-                        The Google Speech V2 API key to be used. If not
-                        provided, use free API key instead.(arg_num = 1)
+  -sapi API_code, --speech-api API_code
+                        Choose which Speech-to-Text API to use. Currently
+                        supported: gsv2: Google Speech V2
+                        (https://github.com/gillesdemey/google-speech-v2).
+                        gcsv1: Google Cloud Speech-to-Text V1P1Beta1
+                        (https://cloud.google.com/speech-to-text/docs).
+                        (arg_num = 1) (default: gsv2)
+  -skey key, --speech-key key
+                        The API key for Speech-to-Text API. (arg_num = 1)
+                        Currently supported: gsv2: The API key for gsv2.
+                        (default: Free API key) gcsv1: The API key for gcsv1.
+                        (Can be overridden by "-sa"/"--service-account")
   -mnc float, --min-confidence float
-                        Google Speech V2 API response for text confidence. A
-                        float value between 0 and 1. Confidence bigger means
-                        the result is better. Input this argument will drop
-                        any result below it. Ref:
-                        https://github.com/BingLingGroup/google-
+                        API response for text confidence. A float value
+                        between 0 and 1. Confidence bigger means the result is
+                        better. Input this argument will drop any result below
+                        it. Ref: https://github.com/BingLingGroup/google-
                         speech-v2#response (arg_num = 1) (default: 0.0)
   -sc integer, --speech-concurrency integer
-                        Number of concurrent Google Speech V2 requests to
-                        make. (arg_num = 1) (default: 10)
+                        Number of concurrent Speech-to-Text requests to make.
+                        (arg_num = 1) (default: 10)
 
 py-googletrans Options:
   Options to control translation. Default method to translate. Could be blocked at any time.
@@ -491,17 +500,17 @@ py-googletrans Options:
                         requests. (arg_num = 1) (default: 5)
   -surl [URL [URL ...]], --service-urls [URL [URL ...]]
                         (Experimental)Customize request urls. Ref: https://py-
-                        googletrans.readthedocs.io/en/latest/ (arg_num = 1)
-  -ua User-Agent header, --user-agent User-Agent header
-                        (Experimental)Customize User-Agent header. Same docs
+                        googletrans.readthedocs.io/en/latest/ (arg_num >= 1)
+  -ua User-Agent headers, --user-agent User-Agent headers
+                        (Experimental)Customize User-Agent headers. Same docs
                         above. (arg_num = 1)
 
-Google Speech V2 Options:
+Google Translate V2 Options:
   Options to control translation.(Not been tested) If the API key is given, it will replace the py-googletrans method.
 
   -gtv2 key, --gtransv2 key
                         The Google Translate V2 API key to be used. If not
-                        provided, use free API(py-googletrans) instead.
+                        provided, use free API (py-googletrans) instead.
                         (arg_num = 1)
   -lpt integer, --lines-per-trans integer
                         Number of lines per Google Translate V2 request.
@@ -534,30 +543,38 @@ Other Options:
 
   -h, --help            Show autosub help message and exit. (arg_num = 0)
   -V, --version         Show autosub version and exit. (arg_num = 0)
+  -sa path, --service-account path
+                        Set service account key environment variable. It
+                        should be the file path of the JSON file that contains
+                        your service account credentials. If used, override
+                        the API key options. Ref:
+                        https://cloud.google.com/docs/authentication/getting-
+                        started Currently supported: gcsv1
+                        (GOOGLE_APPLICATION_CREDENTIALS) (arg_num = 1)
 
 Audio Processing Options:
   Options to control audio processing.
 
   -ap [mode [mode ...]], --audio-process [mode [mode ...]]
                         Option to control audio process. If not given the
-                        option, do normal conversion work.
-                        "y": pre-process the input first then start normal
-                        workflow. If succeed, no more conversion before the
-                        speech-to-text procedure. "o": only pre-process the
-                        input audio. ("-k"/"--keep" is true) "s": only split
-                        the input audio. ("-k"/"--keep" is true) "n": FORCED
-                        NO EXTRA CHECK/CONVERSION before the speech-to-text
-                        procedure. Default command to pre-process the audio:
-                        ffmpeg -hide_banner -i "{in_}" -af "asplit[a],aphaseme
-                        ter=video=0,ametadata=select:key=lavfi.aphasemeter.pha
-                        se:value=-0.005:function=less,pan=1c|c0=c0,aresample=a
-                        sync=1:first_pts=0,[a]amix" -ac 1 -f flac "{out_}" |
-                        ffmpeg -hide_banner -i "{in_}" -af
-                        lowpass=3000,highpass=200 "{out_}" | ffmpeg-normalize
-                        -v "{in_}" -ar 44100 -ofmt flac -c:a flac -pr -p -o
-                        "{out_}" (Ref: https://github.com/stevenj/autosub/blob
-                        /master/scripts/subgen.sh https://ffmpeg.org/ffmpeg-
-                        filters.html) (2 >= arg_num >= 1)
+                        option, do normal conversion work. "y": pre-process
+                        the input first then start normal workflow. If
+                        succeed, no more conversion before the speech-to-text
+                        procedure. "o": only pre-process the input audio.
+                        ("-k"/"--keep" is true) "s": only split the input
+                        audio. ("-k"/"--keep" is true) "n": FORCED NO EXTRA
+                        CHECK/CONVERSION before the speech-to-text procedure.
+                        Default command to pre-process the audio: ffmpeg
+                        -hide_banner -i "{in_}" -af "asplit[a],aphasemeter=vid
+                        eo=0,ametadata=select:key=lavfi.aphasemeter.phase:valu
+                        e=-0.005:function=less,pan=1c|c0=c0,aresample=async=1:
+                        first_pts=0,[a]amix" -ac 1 -f flac "{out_}" | ffmpeg
+                        -hide_banner -i "{in_}" -af lowpass=3000,highpass=200
+                        "{out_}" | ffmpeg-normalize -v "{in_}" -ar 44100 -ofmt
+                        flac -c:a flac -pr -p -o "{out_}" (Ref: https://github
+                        .com/stevenj/autosub/blob/master/scripts/subgen.sh
+                        https://ffmpeg.org/ffmpeg-filters.html) (2 >= arg_num
+                        >= 1)
   -k, --keep            Keep audio processing files to the output path.
                         (arg_num = 0)
   -apc [command [command ...]], --audio-process-cmd [command [command ...]]
@@ -573,12 +590,13 @@ Audio Processing Options:
                         conversion command. Need to follow the python
                         references keyword argument. Default command to
                         process the audio: ffmpeg -hide_banner -y -i "{in_}"
-                        -ac {channel} -ar {sample_rate} "{out_}" (arg_num = 1)
+                        -vn -ac {channel} -ar {sample_rate} "{out_}" (arg_num
+                        = 1)
   -asc command, --audio-split-cmd command
                         (Experimental)This arg will override the default audio
                         split command. Same attention above. Default: ffmpeg
-                        -ss {start} -t {dura} -y -i "{in_}" -c copy -loglevel
-                        error "{out_}" (arg_num = 1)
+                        -y -ss {start} -i "{in_}" -t {dura} -loglevel error
+                        "{out_}" (arg_num = 1)
   -asf file_suffix, --api-suffix file_suffix
                         (Experimental)This arg will override the default API
                         audio suffix. (arg_num = 1) (default: .flac)
@@ -608,11 +626,13 @@ Auditok Options:
                         audio activity. Same docs above. (arg_num = 1)
                         (default: 0.3)
   -sml, --strict-min-length
-                        Ref: https://auditok.readthedocs.io/en/latest/core.htm
-                        l#class-summary (arg_num = 0)
+                        Ref:
+                        https://auditok.readthedocs.io/en/latest/core.html
+                        #class-summary (arg_num = 0)
   -dts, --drop-trailing-silence
-                        Ref: https://auditok.readthedocs.io/en/latest/core.htm
-                        l#class-summary (arg_num = 0)
+                        Ref:
+                        https://auditok.readthedocs.io/en/latest/core.html
+                        #class-summary (arg_num = 0)
 
 List Options:
   List all available arguments.
@@ -624,13 +644,13 @@ List Options:
                         format. (arg_num = 0)
   -lsc [lang_code], --list-speech-codes [lang_code]
                         List all recommended "-S"/"--speech-language" Google
-                        Speech V2 language codes. If no arg is given, list
-                        all. Or else will list get a group of "good match" of
-                        the arg. Default "good match" standard is whose match
-                        score above 90(score between 0 and 100). Ref:
-                        https://tools.ietf.org/html/bcp47 https://github.com/L
-                        uminosoInsight/langcodes/blob/master/langcodes/__init_
-                        _.py lang code example: language-script-region-
+                        Speech-to-Text language codes. If no arg is given,
+                        list all. Or else will list get a group of "good
+                        match" of the arg. Default "good match" standard is
+                        whose match score above 90 (score between 0 and 100).
+                        Ref: https://tools.ietf.org/html/bcp47 https://github.
+                        com/LuminosoInsight/langcodes/blob/master/langcodes/__
+                        init__.py lang code example: language-script-region-
                         variant-extension-privateuse (arg_num = 0 or 1)
   -ltc [lang_code], --list-translation-codes [lang_code]
                         List all available "-SRC"/"--src-language" py-
@@ -640,9 +660,10 @@ List Options:
   -dsl path, --detect-sub-language path
                         Use py-googletrans to detect a sub file's first line
                         language. And list a group of matched language in
-                        recommended "-S"/"--speech-language" Google Speech V2
-                        language codes. Ref: https://cloud.google.com/speech-
-                        to-text/docs/languages (arg_num = 1) (default: None)
+                        recommended "-S"/"--speech-language" Google Speech-to-
+                        Text language codes. Ref: https://cloud.google.com
+                        /speech-to-text/docs/languages (arg_num = 1) (default:
+                        None)
 
 Make sure the argument with space is in quotes.
 The default value is used

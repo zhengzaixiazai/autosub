@@ -31,6 +31,10 @@ Click up arrow to go back to TOC.
 
 ### [Unreleased]
 
+#### Added(Unreleased)
+
+- Add Google Cloud Speech-to-Text support. [issue #10](https://github.com/BingLingGroup/autosub/issues/10)
+
 ### [0.5.3-alpha] - 2019-12-30
 
 #### Changed(0.5.3-alpha)

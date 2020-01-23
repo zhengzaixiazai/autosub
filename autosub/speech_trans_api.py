@@ -127,7 +127,7 @@ def gcsv1p1beta1_service_client(
 
         else:
             raise exceptions.SpeechToTextException(
-                result_dict)
+                json.dumps(result_dict, indent=4, ensure_ascii=False))
 
         if 'confidence' in result_dict:
             confidence = \
@@ -207,7 +207,7 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
 
                 else:
                     raise exceptions.SpeechToTextException(
-                        result_dict)
+                        requests_result_json)
 
                 if 'confidence' in result_dict:
                     confidence = \

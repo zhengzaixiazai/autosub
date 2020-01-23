@@ -382,7 +382,7 @@ usage:
 
   -i 路径, --input 路径     用于生成字幕文件的视频/音频/字幕文件。如果输入文件是字幕文件，程序仅会对其进行翻译。（参数个数为1）
   -er 路径, --ext-regions 路径
-                        提供外部语音区域（时间轴）的字幕文件。该字幕文件格式需要是pysubs2所支持的。使用后会替换掉默认的 自动寻
+                        提供外部语音区域（时间轴）的字幕文件。该字幕文件格式需要是pysubs2所支持的。使用后会替换掉默认的自动寻
                         找语音区域（时间轴）的功能。（参数个数为1）
   -sty [路径], --styles [路径]
                         当输出格式为"ass"/"ssa"时有效。为你的字幕文件提供"ass"/"ssa"样式的字幕文件。如果不提供
@@ -417,7 +417,7 @@ usage:
                         一个介于0和100之间的整数用于控制以下两个选项的匹配结果组，"-lsc"/"--list-speech-
                         codes"以及"-ltc"/"--list-translation-codes"或者在"-bm"/"--
                         best-
-                        match"选项中的最佳匹配结果。结果会是一组“好的匹配”，其分数需要超过这个参数的值。（参数个数为1 ）
+                        match"选项中的最佳匹配结果。结果会是一组“好的匹配”，其分数需要超过这个参数的值。（参数个数为1）
 
 输出选项:
   控制输出的选项。
@@ -426,7 +426,7 @@ usage:
   -F 格式, --format 格式    输出字幕的格式。如果没有提供该选项，使用"-o"/"--output"参数中的后缀。如果"-o"/"--
                         output"参数也没有提供扩展名，那么使用"srt"。在这种情况下，如果"-i"/"--
                         input"的参数是一个字幕文件，那么使用和字幕文件相同的扩展名。（参数个数为1）（默认参数为srt）
-  -y, --yes             避免任何运行中的暂停和覆写文件的行为。如果参数有误，会直接停止程序。（参数个数为0）
+  -y, --yes             避免任何暂停和覆写文件的行为。如果参数有误，会直接停止程序。（参数个数为0）
   -of [种类 [种类 ...]], --output-files [种类 [种类 ...]]
                         输出更多的文件。可选种类：regions, src, dst, bilingual, all.（时间轴，源语
                         言字幕，目标语言字幕，双语字幕，所有）（参数个数在4和1之间）（默认参数为['dst']）
@@ -440,16 +440,23 @@ usage:
 语音选项:
   控制语音转文字的选项。
 
-  -gsv2 key, --gspeechv2 key
-                        用于Google Speech V2 API的key。如果没有提供，会使用免费API
-                        key。（参数个数为1）
+  -sapi API代码, --speech-api API代码
+                        选择使用Speech-to-Text API。当前支持：gsv2：Google Speech V2
+                        （https://github.com/gillesdemey/google-speech-v2）。
+                        gcsv1：Google Cloud Speech-to-Text V1P1Beta1
+                        （https://cloud.google.com/speech-to-
+                        text/docs）。（参数个数为1）（默认参数为gsv2）
+  -skey key, --speech-key key
+                        API key for Speech-to-Text API. (arg_num = 1)
+                        Currently supported: gsv2: The API key for gsv2.
+                        (default: Free API key) gcsv1: The API key for gcsv1.
+                        (Can be overridden by "-sa"/"--service-account")
   -mnc float, --min-confidence float
-                        Google Speech V2 API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味
-                        着结果越好。输入这个参数会导致所有低于这个结果的识别结果被删除。参考：https://github.com/
-                        BingLingGroup/google-
-                        speech-v2#response（参数个数为1）（默认参数为0.0）
+                        API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味着结果越好。输入这个参数会导致所有
+                        低于这个结果的识别结果被删除。参考：https://github.com/BingLingGroup/goo
+                        gle-speech-v2#response（参数个数为1）（默认参数为0.0）
   -sc integer, --speech-concurrency integer
-                        用于Google Speech V2 requests请求的并行数量。（参数个数为1）（默认参数为10）
+                        用于Speech-to-Text请求的并行数量。（参数个数为1）（默认参数为10）
 
 py-googletrans选项:
   控制翻译的选项。同时也是默认的翻译方法。可能随时会被谷歌爸爸封。
@@ -458,11 +465,11 @@ py-googletrans选项:
                         （实验性）在两次翻译请求之间睡眠（暂停）的时间。（参数个数为1）（默认参数为5）
   -surl [URL [URL ...]], --service-urls [URL [URL ...]]
                         （实验性）自定义多个请求URL。参考：https://py-
-                        googletrans.readthedocs.io/en/latest/（参数个数为1）
-  -ua User-Agent header, --user-agent User-Agent header
+                        googletrans.readthedocs.io/en/latest/（参数个数大于等于1）
+  -ua User-Agent headers, --user-agent User-Agent headers
                         （实验性）自定义用户代理（User-Agent）头部。同样的参考文档如上。（参数个数为1）
 
-Google Speech V2选项:
+Google Translate V2选项:
   控制翻译的选项。（未被测试过）如果提供了API key，它会取代py-googletrans的翻译方法。
 
   -gtv2 key, --gtransv2 key
@@ -494,12 +501,17 @@ Google Speech V2选项:
 
   -h, --help            显示autosub的帮助信息并退出。（参数个数为0）
   -V, --version         显示autosub的版本信息并退出。（参数个数为0）
+  -sa 路径, --service-account 路径
+                        设置服务账号密钥的环境变量。应该是包含服务帐号密钥的 JSON 文件的文件路径。如果使用了，会覆盖API密钥
+                        选项。参考：https://cloud.google.com/docs/authentication/get
+                        ting-started
+                        当前支持：gcsv1（GOOGLE_APPLICATION_CREDENTIALS）（参数个数为1）
 
 音频处理选项:
   控制音频处理的选项。
 
   -ap [模式 [模式 ...]], --audio-process [模式 [模式 ...]]
-                        控制音频处理的选项。如果没有提供选项，进行正常的格式转换工作。"y"：它会先预处理输入文件，如果成 功了，在语
+                        控制音频处理的选项。如果没有提供选项，进行正常的格式转换工作。"y"：它会先预处理输入文件，如果成功了，在语
                         音转文字之前不会对音频进行额外的处理。"o"：只会预处理输入音频。（"-k"/"--
                         keep"选项自动置为真）"s"：只会分割输入音频。（"-k"/"--keep"选项自动置为真）"n"：在语
                         音转文字的步骤之前，强制去除多余的格式检查或者转换工作。以下是用于处理音频的默认命令：ffmpeg
@@ -514,18 +526,17 @@ Google Speech V2选项:
                         https://ffmpeg.org/ffmpeg-filters.html）（参数个数介于1和2之间）
   -k, --keep            将音频处理中产生的文件放在输出路径中。（参数个数为0）
   -apc [命令 [命令 ...]], --audio-process-cmd [命令 [命令 ...]]
-                        这个参数会取代默认的音频处理命令。每行命令需要放在一个引号内。输入文件名写为{in_}。输出文件名写 为{ou
+                        这个参数会取代默认的音频处理命令。每行命令需要放在一个引号内。输入文件名写为{in_}。输出文件名写为{ou
                         t_}。（参数个数大于1）
   -ac integer, --audio-concurrency integer
                         用于ffmpeg音频切割的进程并行数量。（参数个数为1）（默认参数为10）
   -acc 命令, --audio-conversion-cmd 命令
                         （实验性）这个参数会取代默认的音频转换命令。需要遵循原有的python参考关键词参数写法。以下是用于处理音频
-                        的默认命令：ffmpeg -hide_banner -y -i "{in_}" -ac {channel}
-                        -ar {sample_rate} "{out_}"（默认参数为1）
+                        的默认命令：ffmpeg -hide_banner -y -i "{in_}" -vn -ac
+                        {channel} -ar {sample_rate} "{out_}"（默认参数为1）
   -asc 命令, --audio-split-cmd 命令
-                        （实验性）这个参数会取代默认的音频转换命令。相同的注意如上。默认：ffmpeg -ss {start} -t
-                        {dura} -y -i "{in_}" -c copy -loglevel error
-                        "{out_}"（参数个数为1）
+                        （实验性）这个参数会取代默认的音频转换命令。相同的注意如上。默认：ffmpeg -y -ss {start}
+                        -i "{in_}" -t {dura} -loglevel error "{out_}"（参数个数为1）
   -asf 文件名后缀, --api-suffix 文件名后缀
                         （实验性）这个参数会取代默认的给API使用的音频文件后缀。（默认参数为.flac）
   -asr 采样率, --api-sample-rate 采样率
@@ -545,7 +556,7 @@ Auditok的选项:
   -mxrs 秒, --max-region-size 秒
                         最大音频区域大小。同样的参考文档如上。（参数个数为1）（默认参数为6.0）
   -mxcs 秒, --max-continuous-silence 秒
-                        在一段有效的音频活动区域中可以容忍的最大（连续）安静区域。同样的参考文档如上。（参数个数为1）（ 默认参数为0
+                        在一段有效的音频活动区域中可以容忍的最大（连续）安静区域。同样的参考文档如上。（参数个数为1）（默认参数为0
                         .3）
   -sml, --strict-min-length
                         参考：https://auditok.readthedocs.io/en/latest/core.html#
@@ -561,11 +572,11 @@ Auditok的选项:
                         行转换。如果输出格式是"sub"且输入文件是音频无法获取到视频帧率时，你需要提供fps选项指定帧率。（参数个
                         数为0）
   -lsc [语言代码], --list-speech-codes [语言代码]
-                        列出所有推荐的"-S"/"--speech-language"Google Speech V2语言代码。如果
-                        参数没有给出，列出全部语言代码。默认的“好的匹配”标准是匹配分数超过90分（匹配分数介于0和100之间）。参
-                        考：https://tools.ietf.org/html/bcp47 https://github.com
-                        /LuminosoInsight/langcodes/blob/master/langcodes/__ini
-                        t__.py 语言代码范例：语言文字种类-（扩展语言文字种类）-变体（或方言）-使用区域-
+                        列出所有推荐的"-S"/"--speech-language"Google Speech-to-Text 语
+                        言代码。如果参数没有给出，列出全部语言代码。默认的“好的匹配”标准是匹配分数超过90分（匹配分数介于0和10
+                        0之间）。参考：https://tools.ietf.org/html/bcp47 https://gith
+                        ub.com/LuminosoInsight/langcodes/blob/master/langcodes
+                        /__init__.py 语言代码范例：语言文字种类-（扩展语言文字种类）-变体（或方言）-使用区域-
                         变体（或方言）-扩展-私有（https://www.zhihu.com/question/21980689/
                         answer/93615123）（参数个数为0或1）
   -ltc [语言代码], --list-translation-codes [语言代码]
@@ -573,7 +584,7 @@ Auditok的选项:
                         语言代码。否则会给出一个“好的匹配”的清单。同样的参考文档如上。（参数个数为0或1）
   -dsl 路径, --detect-sub-language 路径
                         使用py-googletrans去检测一个字幕文件的第一行的语言。并列出一个和该语言匹配的推荐Google
-                        Speech V2语言代码清单（"-S"/"--speech-
+                        Speech-to-Text语言代码清单（"-S"/"--speech-
                         language"选项所用到的）。参考：https://cloud.google.com/speech-
                         to-text/docs/languages（参数个数为1）（默认参数 None）
 
