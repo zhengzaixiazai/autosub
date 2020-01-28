@@ -443,8 +443,6 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(\"-k\"/\"--keep\" is true) "
                "\"s\": only split the input audio. "
                "(\"-k\"/\"--keep\" is true) "
-               "\"n\": FORCED NO EXTRA CHECK/CONVERSION "
-               "before the speech-to-text procedure. "
                "Default command to pre-process the audio: "
                "{dft_1} | {dft_2} | {dft_3} "
                "(Ref: "
@@ -467,7 +465,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-apc', '--audio-process-cmd',
         nargs='*', metavar=_('command'),
         help=_("This arg will override the default "
-               "audio process command. "
+               "audio pre-process command. "
                "Every line of the commands need to be in quotes. "
                "Input file name is {in_}. "
                "Output file name is {out_}. "
@@ -488,7 +486,10 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         metavar=_('command'),
         help=_("(Experimental)This arg will override the default "
                "audio conversion command. "
-               "Need to follow the python references keyword argument. "
+               "\"[\", \"]\" are optional arguments "
+               "meaning you can remove them. "
+               "\"{{\", \"}}\" are required arguments "
+               "meaning you can't remove them. "
                "Default command to process the audio: "
                "{dft} "
                "(arg_num = 1)").format(

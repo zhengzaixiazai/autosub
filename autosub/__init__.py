@@ -74,6 +74,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
             ffmpeg_cmd = ffmpeg_cmd + ' '
 
+            cmdline_utils.fix_args(args,
+                                   ffmpeg_cmd=ffmpeg_cmd)
+
             if args.audio_process:
                 args.audio_process = {k.lower() for k in args.audio_process}
                 args.audio_process = \
@@ -115,31 +118,39 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         input_m=input_m,
                         ffmpeg_cmd=ffmpeg_cmd
                     )
+                    args.audio_split_cmd = \
+                        args.audio_split_cmd.replace(
+                            "-vn -ac [channel] -ar [sample_rate] ", "")
                     if not prcs_file:
-                        no_audio_prcs = False
+                        print(_("Audio pre-processing failed."
+                                "\nUse default method"))
                     else:
                         args.input = prcs_file
                         print(_("Audio pre-processing complete."))
-                        no_audio_prcs = True
-                elif 'n' in args.audio_process:
-                    print(_("No extra check/conversion "
-                            "before the speech-to-text procedure."))
-                    no_audio_prcs = True
-                else:
-                    no_audio_prcs = False
 
             else:
-                no_audio_prcs = False
+                args.audio_split_cmd = \
+                    args.audio_split_cmd.replace(
+                        "[channel]",
+                        "{channel}".format(channel=args.api_audio_channel))
+                args.audio_split_cmd = \
+                    args.audio_split_cmd.replace(
+                        "[sample_rate]",
+                        "{sample_rate}".format(sample_rate=args.api_sample_rate))
+
+                if args.api_suffix == ".ogg":
+                    # regard ogg as ogg_opus
+                    args.audio_split_cmd = \
+                        args.audio_split_cmd.replace(
+                            "-vn",
+                            "-vn -c:a libopus")
 
             cmdline_utils.validate_aovp_args(args)
-            cmdline_utils.fix_args(args,
-                                   ffmpeg_cmd=ffmpeg_cmd)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
             cmdline_utils.audio_or_video_prcs(args,
                                               fps=fps,
                                               input_m=input_m,
-                                              styles_list=styles_list,
-                                              no_audio_prcs=no_audio_prcs)
+                                              styles_list=styles_list)
 
         elif validate_result == 1:
             cmdline_utils.validate_sp_args(args)

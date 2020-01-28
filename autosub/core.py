@@ -213,9 +213,9 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 encoding = "MP3"
             elif audio_fragments[0].lower().endswith(".wav"):
                 # regard WAV as PCM
-                encoding = "PCM"
+                encoding = "LINEAR16"
             elif audio_fragments[0].lower().endswith(".ogg"):
-                encoding = "OGG"
+                encoding = "OGG_OPUS"
             else:
                 encoding = ""
 

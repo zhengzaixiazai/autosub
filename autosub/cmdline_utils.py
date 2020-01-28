@@ -763,8 +763,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         args,
         input_m=input,
         fps=30.0,
-        styles_list=None,
-        no_audio_prcs=False):
+        styles_list=None):
     """
     Give args and process an input audio or video file.
     """
@@ -883,34 +882,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         except KeyError:
             pass
 
-        if not no_audio_prcs:
-            audio_for_api_temp = tempfile.NamedTemporaryFile(
-                suffix=args.api_suffix,
-                delete=False)
-            audio_for_api = audio_for_api_temp.name
-            audio_for_api_temp.close()
-            command = args.audio_conversion_cmd.format(
-                in_=args.input,
-                channel=args.api_audio_channel,
-                sample_rate=args.api_sample_rate,
-                out_=audio_for_api
-            )
-            print(_("\nConvert to \"{name}\" "
-                    "for API.").format(
-                        name=audio_for_api))
-            print(command)
-            subprocess.check_output(
-                constants.cmd_conversion(command),
-                stdin=open(os.devnull))
-            if not ffmpeg_utils.ffprobe_check_file(audio_for_api):
-                raise exceptions.AutosubException(
-                    _("Error: Convert source audio to \"{name}\" failed.").format(
-                        name=audio_for_api))
-        else:
-            audio_for_api = args.input
-
         audio_fragments = core.bulk_audio_conversion(
-            source_file=audio_for_api,
+            source_file=args.input,
             output=args.output,
             regions=regions,
             split_cmd=args.audio_split_cmd,
@@ -926,10 +899,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     os.remove(audio_fragment)
             raise exceptions.ConversionException(
                 _("Error: Conversion failed."))
-
-        if not args.keep:
-            os.remove(audio_for_api)
-            print(_("\n\"{name}\" has been deleted.").format(name=audio_for_api))
 
         if args.audio_process and 's' in args.audio_process:
             raise exceptions.AutosubException(
@@ -958,7 +927,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     {"Content-Type": "audio/x-flac; rate={rate}".format(rate=args.api_sample_rate)}
             else:
                 headers = \
-                    {"Content-Type": "audio/aac; rate={rate}".format(rate=args.api_sample_rate)}
+                    {"Content-Type": "audio/ogg; rate={rate}".format(rate=args.api_sample_rate)}
 
             text_list = core.gsv2_to_text(
                 audio_fragments=audio_fragments,

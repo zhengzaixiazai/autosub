@@ -72,7 +72,7 @@ DEFAULT_SUBTITLES_FORMAT = 'srt'
 DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual'}
 DEFAULT_SUB_MODE_SET = {'dst', 'bilingual'}
 DEFAULT_LANG_MODE_SET = {'s', 'src', 'd'}
-DEFAULT_AUDIO_PRCS_MODE_SET = {'o', 's', 'y', 'n'}
+DEFAULT_AUDIO_PRCS_MODE_SET = {'o', 's', 'y'}
 
 DEFAULT_AUDIO_PRCS = [
     "ffmpeg -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\
@@ -88,10 +88,11 @@ DEFAULT_AUDIO_CVT = \
     "ffmpeg -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
 
 DEFAULT_AUDIO_SPLT = \
-    "ffmpeg -y -ss {start} -i \"{in_}\" -t {dura} -loglevel error \"{out_}\""
+    "ffmpeg -y -ss {start} -i \"{in_}\" -t {dura} " \
+    "-vn -ac [channel] -ar [sample_rate] -loglevel error \"{out_}\""
 
-DEFAULT_VIDEO_FPS_CMD = "ffprobe -v 0 -of csv=p=0 -select_streams" \
-                        " v:0 -show_entries stream=r_frame_rate \"{in_}\""
+DEFAULT_VIDEO_FPS_CMD = "ffprobe -v 0 -of csv=p=0 -select_streams " \
+                        "v:0 -show_entries stream=r_frame_rate \"{in_}\""
 
 SPEECH_TO_TEXT_LANGUAGE_CODES = {
     'af-za': 'Afrikaans (South Africa)',
