@@ -93,8 +93,7 @@ def gcsv1p1beta1_service_client(
         filename,
         is_keep,
         config,
-        min_confidence
-):
+        min_confidence):
     """
     Function for performing speech-to-text
     using Google Cloud Speech V1P1Beta1 API for an input FLAC file.
@@ -253,8 +252,7 @@ class GoogleTranslatorV2(object):  # pylint: disable=too-few-public-methods
             result = self.service.translations().list(  # pylint: disable=no-member
                 source=self.src,
                 target=self.dst,
-                q=[trans_str]
-            ).execute()
+                q=[trans_str]).execute()
 
             if 'translations' in result and result['translations'] and \
                     'translatedText' in result['translations'][0]:

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-28 14:53+0800\n"
+"POT-Creation-Date: 2020-01-31 12:02+0800\n"
 "PO-Revision-Date: 2019-07-27 15:24+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,30 +17,30 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.2.3\n"
 
-#: autosub/lang_code_utils.py:111
+#: autosub/lang_code_utils.py:110
 msgid "Now match lang codes."
 msgstr "现在匹配语言代码。"
 
-#: autosub/lang_code_utils.py:114
+#: autosub/lang_code_utils.py:113
 msgid "The value of arg of \"-mns\"/\"--min-score\" isn't legal."
 msgstr "\"-mns\"/\"--min-score\"的参数的值不合法。"
 
-#: autosub/lang_code_utils.py:118
+#: autosub/lang_code_utils.py:117
 msgid "Input:"
 msgstr "输入："
 
-#: autosub/lang_code_utils.py:122
+#: autosub/lang_code_utils.py:121
 msgid "Score above:"
 msgstr "分数高于："
 
-#: autosub/lang_code_utils.py:131
+#: autosub/lang_code_utils.py:129
 msgid "No lang codes been matched."
 msgstr "没有匹配到语言代码。"
 
-#: autosub/lang_code_utils.py:135
+#: autosub/lang_code_utils.py:133
 msgid "Match result"
 msgstr "匹配结果"
 
-#: autosub/lang_code_utils.py:136
+#: autosub/lang_code_utils.py:134
 msgid "Score (0-100)"
 msgstr "分数（0-100）"

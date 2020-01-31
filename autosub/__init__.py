@@ -69,8 +69,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             if not ffmpeg_cmd:
                 raise exceptions.AutosubException(
                     _("Error: Dependency ffmpeg"
-                      " not found on this machine.")
-                )
+                      " not found on this machine."))
 
             ffmpeg_cmd = ffmpeg_cmd + ' '
 
@@ -84,8 +83,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                 if not args.audio_process:
                     raise exceptions.AutosubException(
                         _("Error: The args of \"-ap\"/\"--audio-process\" are wrong."
-                          "\nNo works done.")
-                    )
+                          "\nNo works done."))
                 if 'o' in args.audio_process:
                     args.keep = True
                     prcs_file = ffmpeg_utils.audio_pre_prcs(
@@ -94,17 +92,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         cmds=args.audio_process_cmd,
                         output_name=args.output,
                         input_m=input_m,
-                        ffmpeg_cmd=ffmpeg_cmd
-                    )
+                        ffmpeg_cmd=ffmpeg_cmd)
                     if not prcs_file:
                         raise exceptions.AutosubException(
-                            _("No works done.")
-                        )
+                            _("No works done."))
                     else:
                         args.input = prcs_file
                         raise exceptions.AutosubException(
-                            _("Audio pre-processing complete.\nAll works done.")
-                        )
+                            _("Audio pre-processing complete.\nAll works done."))
 
                 if 's' in args.audio_process:
                     args.keep = True
@@ -116,14 +111,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         cmds=args.audio_process_cmd,
                         output_name=args.output,
                         input_m=input_m,
-                        ffmpeg_cmd=ffmpeg_cmd
-                    )
+                        ffmpeg_cmd=ffmpeg_cmd)
                     args.audio_split_cmd = \
                         args.audio_split_cmd.replace(
                             "-vn -ac [channel] -ar [sample_rate] ", "")
                     if not prcs_file:
                         print(_("Audio pre-processing failed."
-                                "\nUse default method"))
+                                "\nUse default method."))
                     else:
                         args.input = prcs_file
                         print(_("Audio pre-processing complete."))

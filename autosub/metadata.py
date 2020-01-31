@@ -21,8 +21,7 @@ LONG_DESCRIPTION = (
       'by using ffmpeg, '
       'transcribe speech based on Chrome-Web-Speech-api and '
       'translate the subtitles\' text by using py-googletrans. '
-      'It currently not supports the latest Google Cloud APIs.')
-)
+      'It currently not supports the latest Google Cloud APIs.'))
 AUTHOR = 'Anastasis Germanidis'
 AUTHOR_EMAIL = 'agermanidis@gmail.com'
 HOMEPAGE = 'https://github.com/agermanidis/autosub'

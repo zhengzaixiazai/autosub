@@ -34,6 +34,11 @@ Click up arrow to go back to TOC.
 #### Added(Unreleased)
 
 - Add Google Cloud Speech-to-Text support. [issue #10](https://github.com/BingLingGroup/autosub/issues/10)
+- Add more bilingual subtitles formats output support. [issue #72](https://github.com/BingLingGroup/autosub/issues/72)
+
+#### Changed(Unreleased)
+
+- Fix output format limits when input is a subtitles file.
 
 ### [0.5.3-alpha] - 2019-12-30
 

@@ -32,7 +32,12 @@
 
 #### 添加(未发布)
 
-- 添加Google Cloud Speech-to-Text支持。 [issue #10](https://github.com/BingLingGroup/autosub/issues/10)
+- 添加Google Cloud Speech-to-Text支持。[issue #10](https://github.com/BingLingGroup/autosub/issues/10)
+- 添加更多格式的双语字幕输出支持。[issue #72](https://github.com/BingLingGroup/autosub/issues/72)
+
+#### 改动(未发布)
+
+- 修复输入是字幕文件时的输出格式限制。
 
 ### [0.5.3-alpha] - 2019-12-30
 
