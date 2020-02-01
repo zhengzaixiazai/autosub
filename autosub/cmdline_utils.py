@@ -316,62 +316,60 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                     is_dst_matched = True
 
             if not is_src_matched:
-                if not args.gtransv2:
-                    if args.best_match and 'src' in args.best_match:
-                        print(
-                            _("Warning: Source language \"{src}\" not supported. "
-                              "Run with \"-lsc\"/\"--list-translation-codes\" "
-                              "to see all supported languages.").format(src=args.src_language))
-                        best_result = lang_code_utils.match_print(
-                            dsr_lang=args.src_language,
-                            match_list=list(googletrans.constants.LANGUAGES.keys()),
-                            min_score=args.min_score)
-                        if best_result:
-                            print(_("Use \"{lang_code}\" instead.").format(
-                                lang_code=best_result[0]))
-                            args.src_language = best_result[0]
-                        else:
-                            raise exceptions.AutosubException(
-                                _("Match failed. Still using \"{lang_code}\". "
-                                  "Program stopped.").format(
-                                      lang_code=args.src_language))
-
+                if args.best_match and 'src' in args.best_match:
+                    print(
+                        _("Warning: Source language \"{src}\" not supported. "
+                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                          "to see all supported languages.").format(src=args.src_language))
+                    best_result = lang_code_utils.match_print(
+                        dsr_lang=args.src_language,
+                        match_list=list(googletrans.constants.LANGUAGES.keys()),
+                        min_score=args.min_score)
+                    if best_result:
+                        print(_("Use \"{lang_code}\" instead.").format(
+                            lang_code=best_result[0]))
+                        args.src_language = best_result[0]
                     else:
                         raise exceptions.AutosubException(
-                            _("Error: Source language \"{src}\" not supported. "
-                              "Run with \"-lsc\"/\"--list-translation-codes\" "
-                              "to see all supported languages. "
-                              "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                                  src=args.src_language))
+                            _("Match failed. Still using \"{lang_code}\". "
+                              "Program stopped.").format(
+                                lang_code=args.src_language))
+
+                else:
+                    raise exceptions.AutosubException(
+                        _("Error: Source language \"{src}\" not supported. "
+                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                          "to see all supported languages. "
+                          "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
+                            src=args.src_language))
 
             if not is_dst_matched:
-                if not args.gtransv2:
-                    if args.best_match and 'd' in args.best_match:
-                        print(
-                            _("Warning: Destination language \"{dst}\" not supported. "
-                              "Run with \"-lsc\"/\"--list-translation-codes\" "
-                              "to see all supported languages.").format(dst=args.dst_language))
-                        best_result = lang_code_utils.match_print(
-                            dsr_lang=args.dst_language,
-                            match_list=list(googletrans.constants.LANGUAGES.keys()),
-                            min_score=args.min_score)
-                        if best_result:
-                            print(_("Use \"{lang_code}\" instead.").format(
-                                lang_code=best_result[0]))
-                            args.dst_language = best_result[0]
-                        else:
-                            raise exceptions.AutosubException(
-                                _("Match failed. Still using \"{lang_code}\". "
-                                  "Program stopped.").format(
-                                      lang_code=args.dst_language))
-
+                if args.best_match and 'd' in args.best_match:
+                    print(
+                        _("Warning: Destination language \"{dst}\" not supported. "
+                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                          "to see all supported languages.").format(dst=args.dst_language))
+                    best_result = lang_code_utils.match_print(
+                        dsr_lang=args.dst_language,
+                        match_list=list(googletrans.constants.LANGUAGES.keys()),
+                        min_score=args.min_score)
+                    if best_result:
+                        print(_("Use \"{lang_code}\" instead.").format(
+                            lang_code=best_result[0]))
+                        args.dst_language = best_result[0]
                     else:
                         raise exceptions.AutosubException(
-                            _("Error: Destination language \"{dst}\" not supported. "
-                              "Run with \"-lsc\"/\"--list-translation-codes\" "
-                              "to see all supported languages. "
-                              "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                                  dst=args.dst_language))
+                            _("Match failed. Still using \"{lang_code}\". "
+                              "Program stopped.").format(
+                                lang_code=args.dst_language))
+
+                else:
+                    raise exceptions.AutosubException(
+                        _("Error: Destination language \"{dst}\" not supported. "
+                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                          "to see all supported languages. "
+                          "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
+                            dst=args.dst_language))
 
         if args.dst_language == args.speech_language \
                 or args.src_language == args.dst_language:
@@ -425,60 +423,58 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                 is_dst_matched = True
 
         if not is_src_matched:
-            if not args.gtransv2:
-                if args.best_match and 'src' in args.best_match:
-                    print(
-                        _("Warning: Source language \"{src}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
-                          "to see all supported languages.").format(src=args.src_language))
-                    best_result = lang_code_utils.match_print(
-                        dsr_lang=args.src_language,
-                        match_list=list(googletrans.constants.LANGUAGES.keys()),
-                        min_score=args.min_score)
-                    if best_result:
-                        print(_("Use \"{lang_code}\" instead.").format(lang_code=best_result[0]))
-                        args.src_language = best_result[0]
-                    else:
-                        raise exceptions.AutosubException(
-                            _("Match failed. Still using \"{lang_code}\". "
-                              "Program stopped.").format(
-                                  lang_code=args.src_language))
-
+            if args.best_match and 'src' in args.best_match:
+                print(
+                    _("Warning: Source language \"{src}\" not supported. "
+                      "Run with \"-lsc\"/\"--list-translation-codes\" "
+                      "to see all supported languages.").format(src=args.src_language))
+                best_result = lang_code_utils.match_print(
+                    dsr_lang=args.src_language,
+                    match_list=list(googletrans.constants.LANGUAGES.keys()),
+                    min_score=args.min_score)
+                if best_result:
+                    print(_("Use \"{lang_code}\" instead.").format(lang_code=best_result[0]))
+                    args.src_language = best_result[0]
                 else:
                     raise exceptions.AutosubException(
-                        _("Error: Source language \"{src}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
-                          "to see all supported languages. "
-                          "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                              src=args.src_language))
+                        _("Match failed. Still using \"{lang_code}\". "
+                          "Program stopped.").format(
+                            lang_code=args.src_language))
+
+            else:
+                raise exceptions.AutosubException(
+                    _("Error: Source language \"{src}\" not supported. "
+                      "Run with \"-lsc\"/\"--list-translation-codes\" "
+                      "to see all supported languages. "
+                      "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
+                        src=args.src_language))
 
         if not is_dst_matched:
-            if not args.gtransv2:
-                if args.best_match and 'd' in args.best_match:
-                    print(
-                        _("Warning: Destination language \"{dst}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
-                          "to see all supported languages.").format(dst=args.dst_language))
-                    best_result = lang_code_utils.match_print(
-                        dsr_lang=args.dst_language,
-                        match_list=list(googletrans.constants.LANGUAGES.keys()),
-                        min_score=args.min_score)
-                    if best_result:
-                        print(_("Use \"{lang_code}\" instead.").format(lang_code=best_result[0]))
-                        args.dst_language = best_result[0]
-                    else:
-                        raise exceptions.AutosubException(
-                            _("Match failed. Still using \"{lang_code}\". "
-                              "Program stopped.").format(
-                                  lang_code=args.dst_language))
-
+            if args.best_match and 'd' in args.best_match:
+                print(
+                    _("Warning: Destination language \"{dst}\" not supported. "
+                      "Run with \"-lsc\"/\"--list-translation-codes\" "
+                      "to see all supported languages.").format(dst=args.dst_language))
+                best_result = lang_code_utils.match_print(
+                    dsr_lang=args.dst_language,
+                    match_list=list(googletrans.constants.LANGUAGES.keys()),
+                    min_score=args.min_score)
+                if best_result:
+                    print(_("Use \"{lang_code}\" instead.").format(lang_code=best_result[0]))
+                    args.dst_language = best_result[0]
                 else:
                     raise exceptions.AutosubException(
-                        _("Error: Destination language \"{dst}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
-                          "to see all supported languages. "
-                          "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                              dst=args.dst_language))
+                        _("Match failed. Still using \"{lang_code}\". "
+                          "Program stopped.").format(
+                            lang_code=args.dst_language))
+
+            else:
+                raise exceptions.AutosubException(
+                    _("Error: Destination language \"{dst}\" not supported. "
+                      "Run with \"-lsc\"/\"--list-translation-codes\" "
+                      "to see all supported languages. "
+                      "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
+                        dst=args.dst_language))
 
         if args.dst_language == args.src_language:
             raise exceptions.AutosubException(
@@ -584,24 +580,14 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
             text_list.append(event.text)
 
     # text translation
-    if args.gtransv2:
-        # use gtransv2
-        translated_text = core.list_to_gtv2(
-            text_list=text_list,
-            api_key=args.gtransv2,
-            concurrency=args.trans_concurrency,
-            src_language=args.src_language,
-            dst_language=args.dst_language,
-            lines_per_trans=args.lines_per_trans)
-    else:
-        # use googletrans
-        translated_text = core.list_to_googletrans(
-            text_list,
-            src_language=args.src_language,
-            dst_language=args.dst_language,
-            sleep_seconds=args.sleep_seconds,
-            user_agent=args.user_agent,
-            service_urls=args.service_urls)
+    # use googletrans
+    translated_text = core.list_to_googletrans(
+        text_list,
+        src_language=args.src_language,
+        dst_language=args.dst_language,
+        sleep_seconds=args.sleep_seconds,
+        user_agent=args.user_agent,
+        service_urls=args.service_urls)
 
     if not translated_text or len(translated_text) != len(text_list):
         raise exceptions.AutosubException(
@@ -1094,24 +1080,13 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 pass
 
             # text translation
-            if args.gtransv2:
-                # use gtransv2
-                translated_text = core.list_to_gtv2(
-                    text_list=text_list,
-                    api_key=args.gtransv2,
-                    concurrency=args.trans_concurrency,
-                    src_language=args.src_language,
-                    dst_language=args.dst_language,
-                    lines_per_trans=args.lines_per_trans)
-            else:
-                # use googletrans
-                translated_text = core.list_to_googletrans(
-                    text_list,
-                    src_language=args.src_language,
-                    dst_language=args.dst_language,
-                    sleep_seconds=args.sleep_seconds,
-                    user_agent=args.user_agent,
-                    service_urls=args.service_urls)
+            translated_text = core.list_to_googletrans(
+                text_list,
+                src_language=args.src_language,
+                dst_language=args.dst_language,
+                sleep_seconds=args.sleep_seconds,
+                user_agent=args.user_agent,
+                service_urls=args.service_urls)
 
             if not translated_text or len(translated_text) != len(regions):
                 raise exceptions.AutosubException(

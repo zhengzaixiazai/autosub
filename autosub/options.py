@@ -50,9 +50,10 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                  "the number of the arguments is required.\n"
                  "Author: {author}\n"
                  "Email: {email}\n"
-                 "Bug report: https://github.com/agermanidis/autosub\n").format(
+                 "Bug report: {homepage}\n").format(
                      author=metadata.AUTHOR,
-                     email=metadata.AUTHOR_EMAIL),
+                     email=metadata.AUTHOR_EMAIL,
+                     homepage=metadata.HOMEPAGE),
         add_help=False,
         formatter_class=argparse.RawDescriptionHelpFormatter)
 
@@ -74,11 +75,6 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         _('Options to control translation. '
           'Default method to translate. '
           'Could be blocked at any time.'))
-    gtv2_group = parser.add_argument_group(
-        _('Google Translate V2 Options'),
-        _('Options to control translation.(Not been tested) '
-          'If the API key is given, '
-          'it will replace the py-googletrans method.'))
     network_group = parser.add_argument_group(
         _('Network Options'),
         _('Options to control network.'))
@@ -332,30 +328,6 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         help=_("(Experimental)Customize User-Agent headers. "
                "Same docs above. "
                "(arg_num = 1)"))
-
-    gtv2_group.add_argument(
-        '-gtv2', '--gtransv2',
-        metavar='key',
-        help=_("The Google Translate V2 API key to be used. "
-               "If not provided, use free API (py-googletrans) instead. "
-               "(arg_num = 1)"))
-
-    gtv2_group.add_argument(
-        '-lpt', '--lines-per-trans',
-        metavar='integer',
-        type=int,
-        default=constants.DEFAULT_LINES_PER_TRANS,
-        help=_("Number of lines per Google Translate V2 request. "
-               "(arg_num = 1) (default: %(default)s)"))
-
-    gtv2_group.add_argument(
-        '-tc', '--trans-concurrency',
-        metavar='integer',
-        type=int,
-        default=constants.DEFAULT_CONCURRENCY,
-        help=_("Number of concurrent "
-               "Google translate V2 API requests to make. "
-               "(arg_num = 1) (default: %(default)s)"))
 
     network_group.add_argument(
         '-hsa', '--http-speech-api',

@@ -308,62 +308,6 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
     return text_list
 
 
-def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
-        text_list,
-        api_key=None,
-        concurrency=constants.DEFAULT_CONCURRENCY,
-        src_language=constants.DEFAULT_SRC_LANGUAGE,
-        dst_language=constants.DEFAULT_DST_LANGUAGE,
-        lines_per_trans=constants.DEFAULT_LINES_PER_TRANS):
-    """
-    Give a text list, generate translated text list from GoogleTranslatorV2 api.
-    """
-
-    if not text_list:
-        return None
-
-    pool = multiprocessing.Pool(concurrency)
-    google_translate_api_key = api_key
-    translator = \
-        speech_trans_api.GoogleTranslatorV2(api_key=google_translate_api_key,
-                                            src=src_language,
-                                            dst=dst_language)
-
-    print(_("\nTranslating text from \"{0}\" to \"{1}\".").format(
-        src_language,
-        dst_language))
-
-    if len(text_list) > lines_per_trans:
-        trans_list =\
-            [text_list[i:i + lines_per_trans] for i in range(0, len(text_list), lines_per_trans)]
-    else:
-        trans_list = [text_list]
-
-    widgets = [_("Translation: "),
-               progressbar.Percentage(), ' ',
-               progressbar.Bar(), ' ',
-               progressbar.ETA()]
-    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(trans_list)).start()
-
-    try:
-        translated_text = []
-        for i, transcript in enumerate(pool.imap(translator, trans_list)):
-            if transcript:
-                translated_text.append(transcript)
-            else:
-                translated_text.append([""] * len(trans_list[i]))
-            pbar.update(i)
-        pbar.finish()
-    except KeyboardInterrupt:
-        pbar.finish()
-        pool.terminate()
-        pool.join()
-        print(_("Cancelling transcription."))
-        return 1
-
-    return translated_text
-
-
 def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments, too-many-branches, too-many-statements
         text_list,
         src_language=constants.DEFAULT_SRC_LANGUAGE,

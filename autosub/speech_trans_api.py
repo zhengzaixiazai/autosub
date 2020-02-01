@@ -15,7 +15,6 @@ except ImportError:
 
 # Import third-party modules
 import requests
-from googleapiclient.discovery import build
 from google.cloud import speech_v1p1beta1
 from google.protobuf.json_format import MessageToDict
 
@@ -229,36 +228,3 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
             return None
 
         return None
-
-
-class GoogleTranslatorV2(object):  # pylint: disable=too-few-public-methods
-    """
-    Class for GoogleTranslatorV2 translating text from one language to another.
-    """
-    def __init__(self, api_key, src, dst):
-        self.api_key = api_key
-        self.service = build('translate', 'v2',
-                             developerKey=self.api_key)
-        self.src = src
-        self.dst = dst
-
-    def __call__(self, trans_list):
-        try:
-            if not trans_list:
-                return None
-
-            trans_str = '\n'.join(trans_list)
-
-            result = self.service.translations().list(  # pylint: disable=no-member
-                source=self.src,
-                target=self.dst,
-                q=[trans_str]).execute()
-
-            if 'translations' in result and result['translations'] and \
-                    'translatedText' in result['translations'][0]:
-                return '\n'.split(result['translations'][0]['translatedText'])
-
-            return None
-
-        except KeyboardInterrupt:
-            return None

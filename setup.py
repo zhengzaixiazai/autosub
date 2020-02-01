@@ -33,7 +33,6 @@ setup(
     },
     package_data={str('autosub'): [str('data/locale/zh_CN/LC_MESSAGES/*mo')]},
     install_requires=[
-        'google-api-python-client>=1.7.11',
         'requests>=2.3.0',
         'pysubs2>=0.2.4',
         'progressbar2>=3.34.3',
