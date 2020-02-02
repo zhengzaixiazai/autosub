@@ -448,10 +448,7 @@ def list_to_sub_str(
     Give an input timed text list, format it to a string.
     """
 
-    if subtitles_file_format == 'srt' \
-            or subtitles_file_format == 'tmp'\
-            or subtitles_file_format == 'ass'\
-            or subtitles_file_format == 'ssa':
+    if subtitles_file_format in ('srt', 'tmp', 'ass', 'ssa'):
         pysubs2_obj = pysubs2.SSAFile()
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
@@ -534,10 +531,7 @@ def ssafile_to_sub_str(
     Give an input SSAFile, format it to a string.
     """
 
-    if subtitles_file_format == 'srt' \
-            or subtitles_file_format == 'tmp'\
-            or subtitles_file_format == 'ass'\
-            or subtitles_file_format == 'ssa':
+    if subtitles_file_format in ('srt', 'tmp', 'ass', 'ssa'):
         formatted_subtitles = ssafile.to_string(
             format_=subtitles_file_format)
 

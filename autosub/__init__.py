@@ -96,10 +96,10 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                     if not prcs_file:
                         raise exceptions.AutosubException(
                             _("No works done."))
-                    else:
-                        args.input = prcs_file
-                        raise exceptions.AutosubException(
-                            _("Audio pre-processing complete.\nAll works done."))
+
+                    args.input = prcs_file
+                    raise exceptions.AutosubException(
+                        _("Audio pre-processing complete.\nAll works done."))
 
                 if 's' in args.audio_process:
                     args.keep = True

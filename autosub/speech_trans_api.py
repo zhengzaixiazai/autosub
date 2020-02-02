@@ -71,12 +71,11 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                                     return result
                                 return None
 
-                            else:
-                                # can't find confidence in json
-                                # means it's 100% confident
-                                result = line[:1].upper() + line[1:]
-                                result = result.replace('’', '\'')
-                                return result
+                            # can't find confidence in json
+                            # means it's 100% confident
+                            result = line[:1].upper() + line[1:]
+                            result = result.replace('’', '\'')
+                            return result
 
                     except (JSONDecodeError, ValueError, IndexError):
                         # no result
@@ -136,13 +135,13 @@ def gcsv1p1beta1_service_client(
                 result = result.replace('’', '\'')
                 return result
             return None
-        else:
-            # can't find confidence in json
-            # means it's 100% confident
-            result_dict = result_dict['transcript']
-            result = result_dict[:1].upper() + result_dict[1:]
-            result = result.replace('’', '\'')
-            return result
+
+        # can't find confidence in json
+        # means it's 100% confident
+        result_dict = result_dict['transcript']
+        result = result_dict[:1].upper() + result_dict[1:]
+        result = result.replace('’', '\'')
+        return result
 
     except KeyboardInterrupt:
         return None
@@ -216,13 +215,13 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
                         result = result.replace('’', '\'')
                         return result
                     return None
-                else:
-                    # can't find confidence in json
-                    # means it's 100% confident
-                    result_dict = result_dict['transcript']
-                    result = result_dict[:1].upper() + result_dict[1:]
-                    result = result.replace('’', '\'')
-                    return result
+
+                # can't find confidence in json
+                # means it's 100% confident
+                result_dict = result_dict['transcript']
+                result = result_dict[:1].upper() + result_dict[1:]
+                result = result.replace('’', '\'')
+                return result
 
         except KeyboardInterrupt:
             return None

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-01 11:58+0800\n"
+"POT-Creation-Date: 2020-02-02 11:17+0800\n"
 "PO-Revision-Date: 2020-01-31 12:12+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -139,7 +139,8 @@ msgstr ""
 "\"选项运行来查看所有支持的语言。"
 
 #: autosub/cmdline_utils.py:274
-msgid "Use langcodes-py2 to standardize the result."
+#, fuzzy
+msgid "Use langcodes to standardize the result."
 msgstr "使用langcodes-py2来标准化结果。"
 
 #: autosub/cmdline_utils.py:276 autosub/cmdline_utils.py:329

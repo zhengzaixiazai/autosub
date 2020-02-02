@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-31 16:04+0800\n"
+"POT-Creation-Date: 2020-02-02 11:17+0800\n"
 "PO-Revision-Date: 2020-01-31 12:11+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -62,7 +62,7 @@ msgstr ""
 msgid "Receive something unexpected:"
 msgstr "收到未预期数据："
 
-#: autosub/core.py:332 autosub/core.py:382
+#: autosub/core.py:326
 msgid ""
 "\n"
 "Translating text from \"{0}\" to \"{1}\"."
@@ -70,31 +70,30 @@ msgstr ""
 "\n"
 "从\"{0}\"翻译为\"{1}\"。"
 
-#: autosub/core.py:342 autosub/core.py:432
+#: autosub/core.py:376
 msgid "Translation: "
 msgstr "翻译中： "
 
-#: autosub/core.py:361
-#, fuzzy
-msgid "Cancelling transcription."
-msgstr "取消翻译。"
-
-#: autosub/core.py:493
+#: autosub/core.py:437
 msgid "Cancelling translation."
 msgstr "取消翻译。"
 
-#: autosub/core.py:569 autosub/core.py:631
+#: autosub/core.py:510 autosub/core.py:569
 msgid "Format \"{fmt}\" not supported. Using \"{default_fmt}\" instead."
 msgstr "不支持格式\"{fmt}\"。改用\"{default_fmt}\"。"
 
-#: autosub/core.py:704
+#: autosub/core.py:642
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/core.py:707
+#: autosub/core.py:645
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
+
+#, fuzzy
+#~ msgid "Cancelling transcription."
+#~ msgstr "取消翻译。"
 
 #~ msgid ""
 #~ "\n"

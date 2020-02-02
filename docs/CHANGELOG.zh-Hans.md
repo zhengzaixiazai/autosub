@@ -9,6 +9,9 @@
 ## 目录
 
 - [未发布](#未发布)
+- [0.5.4-alpha - 2020-01-31](#054-alpha---2020-01-31)
+  - [添加](#添加054-alpha)
+  - [改动](#改动054-alpha)
 - [0.5.3-alpha - 2019-12-30](#053-alpha---2019-12-30)
   - [改动](#改动053-alpha)
 - [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
@@ -30,14 +33,17 @@
 
 ### [未发布]
 
-#### 添加(未发布)
+### [0.5.4-alpha] - 2020-01-31
 
-- 添加Google Cloud Speech-to-Text支持。[issue #10](https://github.com/BingLingGroup/autosub/issues/10)
+#### 添加(0.5.4-alpha)
+
+- 添加Google Cloud Speech-to-Text基础支持。[issue #10](https://github.com/BingLingGroup/autosub/issues/10)
 - 添加更多格式的双语字幕输出支持。[issue #72](https://github.com/BingLingGroup/autosub/issues/72)
 
-#### 改动(未发布)
+#### 改动(0.5.4-alpha)
 
 - 修复输入是字幕文件时的输出格式限制。
+- 删除gtransv2支持。
 
 ### [0.5.3-alpha] - 2019-12-30
 
@@ -158,7 +164,8 @@
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
-[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...HEAD
+[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...HEAD
+[0.5.4-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...0.5.4-alpha
 [0.5.3-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...0.5.3-alpha
 [0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha
 [0.5.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.0-alpha...0.5.1-alpha

@@ -112,7 +112,8 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
             constants.cmd_conversion(command),
             stdin=open(os.devnull))
         num_list = map(int, re.findall(r'\d+', input_str.decode(sys.stdout.encoding)))
-        if len(list(num_list)) == 2:
+        num_list = list(num_list)
+        if len(num_list) == 2:
             fps = float(num_list[0]) / float(num_list[1])
         else:
             raise ValueError

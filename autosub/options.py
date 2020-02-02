@@ -152,7 +152,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-SRC', '--src-language',
         metavar=_('lang_code'),
         help=_("Lang code/Lang tag for translation source language. "
-               "If not given, use langcodes-py2 to get a best matching "
+               "If not given, use langcodes to get a best matching "
                "of the \"-S\"/\"--speech-language\". "
                "If using py-googletrans as the method to translate, "
                "WRONG INPUT STOP RUNNING. "
@@ -169,7 +169,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-bm', '--best-match',
         metavar=_('mode'),
         nargs="*",
-        help=_("Allow langcodes-py2 to get a best matching lang code "
+        help=_("Allow langcodes to get a best matching lang code "
                "when your input is wrong. "
                "Only functional for py-googletrans and Google Speech V2. "
                "Available modes: "

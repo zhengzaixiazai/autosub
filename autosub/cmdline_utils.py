@@ -136,26 +136,26 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             if len(args.styles_name) > 2:
                 raise exceptions.AutosubException(
                     _("Error: Too many \"-sn\"/\"--styles-name\" arguments."))
+
+            style_obj = pysubs2.SSAFile.load(args.styles)
+            ass_styles = style_obj.styles.get(args.styles_name[0])
+            if ass_styles:
+                styles_dict = {args.styles_name[0]: ass_styles}
+                if len(args.styles_name) == 2:
+                    ass_styles = style_obj.styles.get(args.styles_name[1])
+                    if ass_styles:
+                        styles_dict[args.styles_name[1]] = ass_styles
+                    else:
+                        raise exceptions.AutosubException(
+                            _("Error: \"-sn\"/\"--styles-name\" "
+                              "arguments aren't in \"{path}\".").format(path=args.styles))
+                for item in styles_dict.items():
+                    styles_list.append(item[0])
+                    styles_list.append(item[1])
             else:
-                style_obj = pysubs2.SSAFile.load(args.styles)
-                ass_styles = style_obj.styles.get(args.styles_name[0])
-                if ass_styles:
-                    styles_dict = {args.styles_name[0]: ass_styles}
-                    if len(args.styles_name) == 2:
-                        ass_styles = style_obj.styles.get(args.styles_name[1])
-                        if ass_styles:
-                            styles_dict[args.styles_name[1]] = ass_styles
-                        else:
-                            raise exceptions.AutosubException(
-                                _("Error: \"-sn\"/\"--styles-name\" "
-                                  "arguments aren't in \"{path}\".").format(path=args.styles))
-                    for item in styles_dict.items():
-                        styles_list.append(item[0])
-                        styles_list.append(item[1])
-                else:
-                    raise exceptions.AutosubException(
-                        _("Error: \"-sn\"/\"--styles-name\" "
-                          "arguments aren't in \"{path}\".").format(path=args.styles))
+                raise exceptions.AutosubException(
+                    _("Error: \"-sn\"/\"--styles-name\" "
+                      "arguments aren't in \"{path}\".").format(path=args.styles))
 
     if args.ext_regions and not os.path.isfile(args.ext_regions):
         raise exceptions.AutosubException(
@@ -271,7 +271,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
                         min_score=args.min_score)
                     if best_result:
-                        print(_("Use langcodes-py2 to standardize the result."))
+                        print(_("Use langcodes to standardize the result."))
                         args.speech_language = langcodes.standardize_tag(best_result[0])
                         print(_("Use \"{lang_code}\" instead.").format(
                             lang_code=args.speech_language))
@@ -333,7 +333,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         raise exceptions.AutosubException(
                             _("Match failed. Still using \"{lang_code}\". "
                               "Program stopped.").format(
-                                lang_code=args.src_language))
+                                  lang_code=args.src_language))
 
                 else:
                     raise exceptions.AutosubException(
@@ -341,7 +341,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                           "Run with \"-lsc\"/\"--list-translation-codes\" "
                           "to see all supported languages. "
                           "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                            src=args.src_language))
+                              src=args.src_language))
 
             if not is_dst_matched:
                 if args.best_match and 'd' in args.best_match:
@@ -361,7 +361,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         raise exceptions.AutosubException(
                             _("Match failed. Still using \"{lang_code}\". "
                               "Program stopped.").format(
-                                lang_code=args.dst_language))
+                                  lang_code=args.dst_language))
 
                 else:
                     raise exceptions.AutosubException(
@@ -369,7 +369,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                           "Run with \"-lsc\"/\"--list-translation-codes\" "
                           "to see all supported languages. "
                           "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                            dst=args.dst_language))
+                              dst=args.dst_language))
 
         if args.dst_language == args.speech_language \
                 or args.src_language == args.dst_language:
@@ -397,8 +397,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
         if not args.ext_regions:
             raise exceptions.AutosubException(
                 _("Error: External speech regions file not provided."))
-        else:
-            args.styles = args.ext_regions
+
+        args.styles = args.ext_regions
 
 
 def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return-statements, too-many-statements
@@ -439,7 +439,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                     raise exceptions.AutosubException(
                         _("Match failed. Still using \"{lang_code}\". "
                           "Program stopped.").format(
-                            lang_code=args.src_language))
+                              lang_code=args.src_language))
 
             else:
                 raise exceptions.AutosubException(
@@ -447,7 +447,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                       "Run with \"-lsc\"/\"--list-translation-codes\" "
                       "to see all supported languages. "
                       "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                        src=args.src_language))
+                          src=args.src_language))
 
         if not is_dst_matched:
             if args.best_match and 'd' in args.best_match:
@@ -466,7 +466,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                     raise exceptions.AutosubException(
                         _("Match failed. Still using \"{lang_code}\". "
                           "Program stopped.").format(
-                            lang_code=args.dst_language))
+                              lang_code=args.dst_language))
 
             else:
                 raise exceptions.AutosubException(
@@ -474,7 +474,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                       "Run with \"-lsc\"/\"--list-translation-codes\" "
                       "to see all supported languages. "
                       "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
-                        dst=args.dst_language))
+                          dst=args.dst_language))
 
         if args.dst_language == args.src_language:
             raise exceptions.AutosubException(
@@ -490,8 +490,8 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
         if not args.ext_regions:
             raise exceptions.AutosubException(
                 _("Error: External speech regions file not provided."))
-        else:
-            args.styles = args.ext_regions
+
+        args.styles = args.ext_regions
 
 
 def fix_args(args,
@@ -544,7 +544,7 @@ def get_timed_text(
         timed_text = [(region, text) for region, text in zip(regions, text_list) if text]
     else:
         # keep empty regions
-        timed_text = [(region, text) for region, text in zip(regions, text_list)]
+        timed_text = list(zip(regions, text_list))
 
     return timed_text
 
