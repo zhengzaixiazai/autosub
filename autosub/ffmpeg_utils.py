@@ -96,14 +96,12 @@ class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
         except subprocess.CalledProcessError:
             raise exceptions.AutosubException(
                 _("Error: ffmpeg can't split your file. "
-                  "Check your audio processing options.")
-            )
+                  "Check your audio processing options."))
 
 
 def ffprobe_get_fps(  # pylint: disable=superfluous-parens
         video_file,
-        input_m=input
-):
+        input_m=input):
     """
     Return video_file's fps.
     """
@@ -114,7 +112,8 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
             constants.cmd_conversion(command),
             stdin=open(os.devnull))
         num_list = map(int, re.findall(r'\d+', input_str.decode(sys.stdout.encoding)))
-        if len(list(num_list)) == 2:
+        num_list = list(num_list)
+        if len(num_list) == 2:
             fps = float(num_list[0]) / float(num_list[1])
         else:
             raise ValueError
@@ -208,8 +207,7 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
         cmds,
         output_name=None,
         input_m=input,
-        ffmpeg_cmd="ffmpeg"
-):
+        ffmpeg_cmd="ffmpeg"):
     """
     Pre-process audio file.
     """

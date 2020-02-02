@@ -6,16 +6,6 @@ import os
 import sys
 import subprocess
 
-locale_codes = [
-    "__init__",
-    "cmdline_utils",
-    "core",
-    "metadata",
-    "options",
-    "ffmpeg_utils",
-    "lang_code_utils"
-]
-
 name = "autosub"
 
 
@@ -46,7 +36,13 @@ if __name__ == "__main__":
     if not os.path.exists(locale_dir):
         os.makedirs(locale_dir)
 
-    locale_codes = sorted(locale_codes)
+    locale_codes = []
+
+    for item in os.listdir(name):
+        filename = os.path.splitext(item)
+        if filename[-1] == ".py":
+            locale_codes.append(filename[0])
+
     for python_code in locale_codes:
         code = "{name}/{py}.py".format(
             name=name,

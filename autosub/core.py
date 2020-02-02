@@ -16,12 +16,14 @@ import pysubs2
 import auditok
 import googletrans
 import wcwidth
+from google.cloud.speech_v1p1beta1 import enums
 
 # Any changes to the path and your own modules
 from autosub import speech_trans_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
+from autosub import exceptions
 
 CORE_TEXT = gettext.translation(domain=__name__,
                                 localedir=constants.LOCALE_PATH,
@@ -41,8 +43,7 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
         min_region_size=constants.MIN_REGION_SIZE,
         max_region_size=constants.MAX_REGION_SIZE,
         max_continuous_silence=constants.DEFAULT_CONTINUOUS_SILENCE,
-        mode=auditok.StreamTokenizer.STRICT_MIN_LENGTH
-):
+        mode=auditok.StreamTokenizer.STRICT_MIN_LENGTH):
     """
     Give an input audio/video file, generate proper speech regions.
     """
@@ -78,8 +79,7 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
         suffix,
         concurrency=constants.DEFAULT_CONCURRENCY,
         output=None,
-        is_keep=False
-):
+        is_keep=False):
     """
     Give an input audio/video file and
     generate short-term audio fragments.
@@ -119,43 +119,31 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
     return audio_fragments
 
 
-def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         audio_fragments,
         api_url,
         regions,
-        api_key=None,
+        headers,
         concurrency=constants.DEFAULT_CONCURRENCY,
-        src_language=constants.DEFAULT_SRC_LANGUAGE,
         min_confidence=0.0,
-        audio_rate=44100,
-        is_keep=False
-):
+        is_keep=False):
     """
     Give a list of short-term audio fragment files
-    and generate text_list from speech-to-text api.
+    and generate text_list from Google speech-to-text V2 api.
     """
     if not regions:
         return None
 
     text_list = []
     pool = multiprocessing.Pool(concurrency)
-    if api_key:
-        recognizer = speech_trans_api.GoogleSpeechToTextV2(
-            api_url=api_url,
-            api_key=api_key,
-            min_confidence=min_confidence,
-            lang_code=src_language,
-            rate=audio_rate)
-    else:
-        recognizer = speech_trans_api.GoogleSpeechToTextV2(
-            api_url=api_url,
-            api_key=constants.GOOGLE_SPEECH_V2_API_KEY,
-            min_confidence=min_confidence,
-            lang_code=src_language,
-            rate=audio_rate,
-            is_keep=is_keep)
 
-    print(_("\nSending short-term fragments to API and getting result."))
+    recognizer = speech_trans_api.GoogleSpeechV2(
+        api_url=api_url,
+        headers=headers,
+        min_confidence=min_confidence,
+        is_keep=is_keep)
+
+    print(_("\nSending short-term fragments to Google Speech V2 API and getting result."))
     widgets = [_("Speech-to-Text: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
@@ -165,75 +153,159 @@ def audio_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
         for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
             if transcript:
                 text_list.append(transcript)
-                pbar.update(i)
             else:
                 text_list.append("")
+            pbar.update(i)
         pbar.finish()
 
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, AttributeError) as error:
         pbar.finish()
         pool.terminate()
         pool.join()
+
+        if error == AttributeError:
+            print(
+                _("Error: Connection error happened too many times.\nAll works done."))
+
         return None
 
     return text_list
 
 
-def list_to_gtv2(  # pylint: disable=too-many-locals,too-many-arguments
-        text_list,
-        api_key=None,
+def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+        audio_fragments,
+        sample_rate,
+        regions,
+        api_url=None,
+        headers=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
-        dst_language=constants.DEFAULT_DST_LANGUAGE,
-        lines_per_trans=constants.DEFAULT_LINES_PER_TRANS
-):
+        min_confidence=0.0,
+        is_keep=False):
     """
-    Give a text list, generate translated text list from GoogleTranslatorV2 api.
+    Give a list of short-term audio fragment files
+    and generate text_list from Google cloud speech-to-text V1P1Beta1 api.
     """
-
-    if not text_list:
+    if not regions:
         return None
 
+    text_list = []
     pool = multiprocessing.Pool(concurrency)
-    google_translate_api_key = api_key
-    translator = \
-        speech_trans_api.GoogleTranslatorV2(api_key=google_translate_api_key,
-                                            src=src_language,
-                                            dst=dst_language)
 
-    print(_("\nTranslating text from \"{0}\" to \"{1}\".").format(
-        src_language,
-        dst_language))
-
-    if len(text_list) > lines_per_trans:
-        trans_list =\
-            [text_list[i:i + lines_per_trans] for i in range(0, len(text_list), lines_per_trans)]
-    else:
-        trans_list = [text_list]
-
-    widgets = [_("Translation: "),
+    print(_("\nSending short-term fragments to Google Cloud Speech V1P1Beta1 API"
+            " and getting result."))
+    widgets = [_("Speech-to-Text: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
-    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(trans_list)).start()
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
 
     try:
-        translated_text = []
-        for i, transcript in enumerate(pool.imap(translator, trans_list)):
-            if transcript:
-                translated_text.append(transcript)
+        if api_url:
+            # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
+            if audio_fragments[0].lower().endswith(".flac"):
+                encoding = "FLAC"
+            elif audio_fragments[0].lower().endswith(".mp3"):
+                encoding = "MP3"
+            elif audio_fragments[0].lower().endswith(".wav"):
+                # regard WAV as PCM
+                encoding = "LINEAR16"
+            elif audio_fragments[0].lower().endswith(".ogg"):
+                encoding = "OGG_OPUS"
             else:
-                translated_text.append([""] * len(trans_list[i]))
-            pbar.update(i)
+                encoding = ""
+
+            config = {
+                "encoding": encoding,
+                "sampleRateHertz": sample_rate,
+                "languageCode": src_language,
+            }
+
+            recognizer = speech_trans_api.GCSV1P1Beta1URL(
+                config=config,
+                api_url=api_url,
+                headers=headers,
+                min_confidence=min_confidence,
+                is_keep=is_keep)
+
+            for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                pbar.update(i)
+
+        else:
+            # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+            if audio_fragments[0].lower().endswith(".flac"):
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.FLAC
+                # encoding = 2
+            elif audio_fragments[0].lower().endswith(".mp3"):
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.MP3
+                # encoding = 8
+            elif audio_fragments[0].lower().endswith(".wav"):
+                # regard WAV as PCM
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.LINEAR16
+                # encoding = 1
+            elif audio_fragments[0].lower().endswith(".ogg"):
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.OGG_OPUS
+                # encoding = 6
+            else:
+                encoding = \
+                    enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
+                # encoding = 0
+
+            # https://pypi.org/project/google-cloud-speech/
+            config = {
+                "encoding": encoding,
+                "sample_rate_hertz": sample_rate,
+                "language_code": src_language,
+            }
+
+            i = 0
+            tasks = []
+            for filename in audio_fragments:
+                # google cloud speech-to-text client can't use multiprocessing.pool
+                # based on class call, otherwise will receive pickling error
+                tasks.append(pool.apply_async(
+                    speech_trans_api.gcsv1p1beta1_service_client,
+                    args=(filename, is_keep, config, min_confidence)))
+
+            for task in tasks:
+                i = i + 1
+                transcript = task.get()
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                pbar.update(i)
+
         pbar.finish()
-    except KeyboardInterrupt:
+
+    except (KeyboardInterrupt, AttributeError) as error:
         pbar.finish()
         pool.terminate()
         pool.join()
-        print(_("Cancelling transcription."))
-        return 1
 
-    return translated_text
+        if error == AttributeError:
+            print(
+                _("Error: Connection error happened too many times.\nAll works done."))
+
+        return None
+
+    except exceptions.SpeechToTextException as err_msg:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+        print(_("Receive something unexpected:"))
+        print(err_msg)
+        return None
+
+    return text_list
 
 
 def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments, too-many-branches, too-many-statements
@@ -243,8 +315,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
         size_per_trans=constants.DEFAULT_SIZE_PER_TRANS,
         sleep_seconds=constants.DEFAULT_SLEEP_SECONDS,
         user_agent=None,
-        service_urls=None
-):
+        service_urls=None):
     """
     Give a text list, generate translated text list from GoogleTranslatorV2 api.
     """
@@ -272,7 +343,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                 # If text contains full-wide char,
                 # count its length about 4 times than the ordinary text.
                 # Avoid weird problem when text has full-wide char.
-                # In this case google will count a full-wide char
+                # In this case Google will count a full-wide char
                 # at least 2 times larger than a half-wide char.
                 # It will certainly exceed the limit of the size_per_trans.
                 # Causing a googletrans internal jsondecode error.
@@ -363,41 +434,36 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
 
     except KeyboardInterrupt:
         pbar.finish()
-        print(_("Cancelling transcription."))
+        print(_("Cancelling translation."))
         return 1
 
     return translated_text
 
 
-def list_to_sub_str(  # pylint: disable=too-many-arguments
+def list_to_sub_str(
         timed_text,
         fps=30.0,
-        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
-):
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT):
     """
     Give an input timed text list, format it to a string.
     """
 
-    if subtitles_file_format == 'srt' \
-            or subtitles_file_format == 'tmp'\
-            or subtitles_file_format == 'ass'\
-            or subtitles_file_format == 'ssa':
+    if subtitles_file_format in ('srt', 'tmp', 'ass', 'ssa'):
         pysubs2_obj = pysubs2.SSAFile()
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
             text_list=timed_text,
-            style_name=None
-        )
+            style_name=None)
         formatted_subtitles = pysubs2_obj.to_string(
             format_=subtitles_file_format)
 
     elif subtitles_file_format == 'vtt':
-        formatted_subtitles = sub_utils.vtt_formatter(
+        formatted_subtitles = sub_utils.list_to_vtt_str(
             subtitles=timed_text)
 
     elif subtitles_file_format == 'json':
-        formatted_subtitles = sub_utils.json_formatter(
+        formatted_subtitles = sub_utils.list_to_json_str(
             subtitles=timed_text)
 
     elif subtitles_file_format == 'ass.json':
@@ -406,13 +472,12 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
             text_list=timed_text,
-            style_name=None
-        )
+            style_name=None)
         formatted_subtitles = pysubs2_obj.to_string(
             format_='json')
 
     elif subtitles_file_format == 'txt':
-        formatted_subtitles = sub_utils.txt_formatter(
+        formatted_subtitles = sub_utils.list_to_txt_str(
             subtitles=timed_text)
 
     elif subtitles_file_format == 'sub':
@@ -421,8 +486,7 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
             text_list=timed_text,
-            style_name=None
-        )
+            style_name=None)
         formatted_subtitles = pysubs2_obj.to_string(
             format_='microdvd',
             fps=fps)
@@ -436,8 +500,7 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
             text_list=timed_text,
-            style_name=None
-        )
+            style_name=None)
         formatted_subtitles = pysubs2_obj.to_string(
             format_='mpl2',
             fps=fps)
@@ -453,86 +516,122 @@ def list_to_sub_str(  # pylint: disable=too-many-arguments
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
             text_list=timed_text,
-            style_name=None
-        )
+            style_name=None)
         formatted_subtitles = pysubs2_obj.to_string(
             format_=constants.DEFAULT_SUBTITLES_FORMAT)
 
     return formatted_subtitles
 
 
-def list_to_ass_str(  # pylint: disable=too-many-arguments
-        text_list,
-        styles_list,
-        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT
-):
+def ssafile_to_sub_str(
+        ssafile,
+        fps=30.0,
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT):
     """
-    Give an input timed text list, format it to an ass string.
+    Give an input SSAFile, format it to a string.
     """
 
-    if subtitles_file_format == 'ass' \
-            or subtitles_file_format == 'ssa'\
-            or subtitles_file_format == 'ass.json':
-        pysubs2_obj = pysubs2.SSAFile()
-        pysubs2_obj.styles = \
-            {styles_list[i]: styles_list[i + 1] for i in range(0, len(styles_list), 2)}
-        if not isinstance(text_list[0], list):
-            # text_list is [((start, end), text), ...]
-            # text_list provides regions
-            sub_utils.pysubs2_ssa_event_add(
-                src_ssafile=None,
-                dst_ssafile=pysubs2_obj,
-                text_list=text_list,
-                style_name=styles_list[0])
-        else:
-            # text_list is [[src_list], [dst_list]]
-            # src_list provides regions
-            sub_utils.pysubs2_ssa_event_add(
-                src_ssafile=None,
-                dst_ssafile=pysubs2_obj,
-                text_list=text_list[0],
-                style_name=styles_list[0])
-            if len(styles_list) == 1:
-                sub_utils.pysubs2_ssa_event_add(
-                    src_ssafile=None,
-                    dst_ssafile=pysubs2_obj,
-                    text_list=text_list[1],
-                    style_name=styles_list[0])
-            else:
-                sub_utils.pysubs2_ssa_event_add(
-                    src_ssafile=None,
-                    dst_ssafile=pysubs2_obj,
-                    text_list=text_list[1],
-                    style_name=styles_list[2])
+    if subtitles_file_format in ('srt', 'tmp', 'ass', 'ssa'):
+        formatted_subtitles = ssafile.to_string(
+            format_=subtitles_file_format)
 
-        if subtitles_file_format != 'ass.json':
-            formatted_subtitles = pysubs2_obj.to_string(format_=subtitles_file_format)
-        else:
-            formatted_subtitles = pysubs2_obj.to_string(format_='json')
+    elif subtitles_file_format == 'vtt':
+        formatted_subtitles = sub_utils.assfile_to_vtt_str(
+            subtitles=ssafile)
+
+    elif subtitles_file_format == 'json':
+        formatted_subtitles = sub_utils.assfile_to_json_str(
+            subtitles=ssafile)
+
+    elif subtitles_file_format == 'ass.json':
+        formatted_subtitles = ssafile.to_string(
+            format_='json')
+
+    elif subtitles_file_format == 'txt':
+        formatted_subtitles = sub_utils.assfile_to_txt_str(
+            subtitles=ssafile)
+
+    elif subtitles_file_format == 'sub':
+        formatted_subtitles = ssafile.to_string(
+            format_='microdvd',
+            fps=fps)
+        # sub format need fps
+        # ref https://pysubs2.readthedocs.io/en/latest
+        # /api-reference.html#supported-input-output-formats
+
+    elif subtitles_file_format == 'mpl2.txt':
+        formatted_subtitles = ssafile.to_string(
+            format_='mpl2',
+            fps=fps)
+
     else:
         # fallback process
         print(_("Format \"{fmt}\" not supported. "
                 "Using \"{default_fmt}\" instead.").format(
                     fmt=subtitles_file_format,
                     default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
-        pysubs2_obj = pysubs2.SSAFile()
+        formatted_subtitles = ssafile.to_string(
+            format_=constants.DEFAULT_SUBTITLES_FORMAT)
+
+    return formatted_subtitles
+
+
+def list_to_ass_str(
+        text_list,
+        styles_list,
+        subtitles_file_format=constants.DEFAULT_SUBTITLES_FORMAT,
+        same_event_type=0):
+    """
+    Give an input timed text list, format it to an ass string.
+    """
+    pysubs2_obj = pysubs2.SSAFile()
+    pysubs2_obj.styles = \
+        {styles_list[i]: styles_list[i + 1] for i in range(0, len(styles_list), 2)}
+    if not isinstance(text_list[0], list):
+        # text_list is [((start, end), text), ...]
+        # text_list provides regions
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
             text_list=text_list,
-            style_name=None
-        )
-        formatted_subtitles = pysubs2_obj.to_string(
-            format_=constants.DEFAULT_SUBTITLES_FORMAT)
+            style_name=styles_list[0])
+    else:
+        # text_list is [[src_list], [dst_list]]
+        # src_list provides regions
+        sub_utils.pysubs2_ssa_event_add(
+            src_ssafile=None,
+            dst_ssafile=pysubs2_obj,
+            text_list=text_list[0],
+            style_name=styles_list[0])
+        src_obj = pysubs2_obj
+        pysubs2_obj = pysubs2.SSAFile()
+        if len(styles_list) == 1:
+            sub_utils.pysubs2_ssa_event_add(
+                src_ssafile=src_obj,
+                dst_ssafile=pysubs2_obj,
+                text_list=text_list[1],
+                style_name=styles_list[0],
+                same_event_type=same_event_type)
+        else:
+            sub_utils.pysubs2_ssa_event_add(
+                src_ssafile=src_obj,
+                dst_ssafile=pysubs2_obj,
+                text_list=text_list[1],
+                style_name=styles_list[2],
+                same_event_type=same_event_type)
 
-    return formatted_subtitles, subtitles_file_format
+    if subtitles_file_format != 'ass.json':
+        formatted_subtitles = pysubs2_obj.to_string(format_=subtitles_file_format)
+    else:
+        formatted_subtitles = pysubs2_obj.to_string(format_='json')
+
+    return formatted_subtitles
 
 
 def str_to_file(
         str_,
         output,
-        input_m=input
-):
+        input_m=input):
     """
     Give a string and write it to file
     """

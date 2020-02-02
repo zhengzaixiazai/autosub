@@ -81,8 +81,7 @@ def better_match(desired_language,
 def wjust(
         str_just,
         length,
-        is_left=True
-):
+        is_left=True):
     """
     Use wcwidth to just string.
     """
@@ -125,8 +124,7 @@ def match_print(
     match_scores = better_match(
         desired_language=dsr_lang,
         supported_languages=match_list,
-        min_score=min_score
-    )[0]
+        min_score=min_score)[0]
     if match_scores[0][0] == 'und':
         print(_("No lang codes been matched."))
         return None

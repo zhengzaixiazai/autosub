@@ -63,16 +63,15 @@ MAX_EXT_REGION_SIZE = 10
 # when using external speech region control
 
 DEFAULT_DST_LANGUAGE = 'en-US'
-DEFAULT_LINES_PER_TRANS = 15
 DEFAULT_SIZE_PER_TRANS = 4000
 DEFAULT_SLEEP_SECONDS = 5
 
 DEFAULT_SUBTITLES_FORMAT = 'srt'
 
-DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual'}
-DEFAULT_SUB_MODE_SET = {'dst', 'bilingual'}
+DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual', 'dst-lf-src', 'src-lf-dst'}
+DEFAULT_SUB_MODE_SET = {'dst', 'bilingual', 'dst-lf-src', 'src-lf-dst'}
 DEFAULT_LANG_MODE_SET = {'s', 'src', 'd'}
-DEFAULT_AUDIO_PRCS_MODE_SET = {'o', 's', 'y', 'n'}
+DEFAULT_AUDIO_PRCS_MODE_SET = {'o', 's', 'y'}
 
 DEFAULT_AUDIO_PRCS = [
     "ffmpeg -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\
@@ -88,10 +87,11 @@ DEFAULT_AUDIO_CVT = \
     "ffmpeg -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
 
 DEFAULT_AUDIO_SPLT = \
-    "ffmpeg -ss {start} -t {dura} -y -i \"{in_}\" -c copy -loglevel error \"{out_}\""
+    "ffmpeg -y -ss {start} -i \"{in_}\" -t {dura} " \
+    "-vn -ac [channel] -ar [sample_rate] -loglevel error \"{out_}\""
 
-DEFAULT_VIDEO_FPS_CMD = "ffprobe -v 0 -of csv=p=0 -select_streams" \
-                        " v:0 -show_entries stream=r_frame_rate \"{in_}\""
+DEFAULT_VIDEO_FPS_CMD = "ffprobe -v 0 -of csv=p=0 -select_streams " \
+                        "v:0 -show_entries stream=r_frame_rate \"{in_}\""
 
 SPEECH_TO_TEXT_LANGUAGE_CODES = {
     'af-za': 'Afrikaans (South Africa)',
@@ -350,8 +350,7 @@ INPUT_FORMAT = {
 
 
 def cmd_conversion(
-        command
-):
+        command):
     """
     Give a command and return a cross-platform command
     """

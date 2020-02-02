@@ -53,9 +53,9 @@
 
 ### 介绍
 
-Autosub是一个字幕自动生成工具。它能使用Auditok来自动检测语音区域，通过ffmpeg根据语音区域来切割音频，通过[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)([Chrome-Web-Speech-api](https://github.com/agermanidis/autosub/issues/1))将语音转为文字，以及通过py-googletrans将字幕文本翻译。目前暂时不支持最新的Google Cloud API。
+Autosub是一个字幕自动生成工具。它能使用Auditok来自动检测语音区域，通过ffmpeg根据语音区域来切割音频，通过多个API将语音转为文字，以及通过py-googletrans将字幕文本翻译。
 
-上方提到的一些新功能仅在autosub-0.5.0a(0.5.0-alpha)后提供。PyPI或者原仓库中的代码并没有这些功能。
+上方提到的一些新功能仅在最新的alpha分支中提供。PyPI或者原仓库中的代码并没有这些功能。
 
 ### 证书
 
@@ -191,15 +191,44 @@ PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法�
 
 一个视频/音频/字幕文件。
 
-如果是一个视频或者音频文件，使用ffmpeg来将格式转换为[API支持的格式](https://github.com/gillesdemey/google-speech-v2#data)。当前提供给[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)的默认格式是24bit/44100Hz/单声道flac。API只接受单声道文件，而非那个仓库里所说的那样。
+如果是一个视频或者音频文件，使用ffmpeg来将格式转换为[API支持的格式](https://github.com/gillesdemey/google-speech-v2#data)。任何ffmpeg支持输入的格式皆可，但是输出或者处理后给API的格式是受API和autosub代码的限制的。
 
-你也可以使用自带的音频预处理功能。默认的[音频预处理指令](https://github.com/agermanidis/autosub/issues/40)同时依赖于ffmpeg和ffmpeg-normalize。这些命令包含三个子命令。[第一个](https://trac.ffmpeg.org/wiki/AudioChannelManipulation)是用来把双声道的音频转换为单声道的。[第二个](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg)是通过人声的频率范围来过滤噪音的。第三个则是正常化音频的音量来确保它的音量不是太大或者太小。如果你对默认指令的效果不满意，你也可以通过输入`-apc`选项来自行修改。
+当前支持的格式：
+
+[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)
+
+- 24bit/44100Hz/单声道 FLAC（默认参数）
+- 其他格式像OGG_OPUS是API不支持的。（我尝试过修改请求头或者修改为json请求都不行）或者像PCM这种有着比FLAC单位采样更少位宽但更大存储消耗的格式。虽然API支持，但我觉得没必要支持就没改代码去支持。
+
+[Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding) [v1p1beta1](https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig#AudioEncoding)
+
+- 支持
+  - 24bit/44100Hz/单声道 FLAC（默认参数）
+- 支持但不是默认参数 （详见[语音转文字/翻译API请求](#语音转文字翻译api请求)）
+  - 8000Hz|12000Hz|16000Hz|24000Hz|48000Hz/单声道 OGG_OPUS
+  - MP3
+  - 16bit/单声道 PCM
+
+你也可以使用自带的音频预处理功能。默认的[音频预处理指令](https://github.com/agermanidis/autosub/issues/40)同时依赖于ffmpeg和ffmpeg-normalize。这些命令包含三个子命令。[第一个](https://trac.ffmpeg.org/wiki/AudioChannelManipulation)是用来把双声道的音频转换为单声道的。[第二个](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg)是通过人声的频率范围来过滤噪音的。第三个则是正常化音频的音量来确保它的音量不是太大或者太小。如果你对默认指令的效果不满意，你也可以通过输入`-apc`选项来自行修改。当然，它仍然只支持24bit/44100Hz/单声道 FLAC格式。
 
 如果输入是字幕文件，同时你提供的参数适合，程序仅会将其通过py-googletrans来翻译。
 
 #### 分割
 
-因为语音转文字API只支持10到15秒这样的[短片段音频](https://github.com/gillesdemey/google-speech-v2#caveats)，我们需要将音频文件分割为若干包含语音的小片段。Autosub使用Auditok来检测语音区域。
+音频长度限制:
+
+[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)
+
+- 不超过[10到15秒](https://github.com/gillesdemey/google-speech-v2#caveats)。
+- 在autosub里面，按照[10秒](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61)来限制。
+
+[Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding)
+
+- 不超过[1分钟](https://cloud.google.com/speech-to-text/docs/sync-recognize)。
+- 在autosub里面，同样按照[10秒](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61)来限制。
+- 现在只支持同步语言识别意味着只支持短语音识别。
+
+Autosub使用Auditok来检测语音区域。通过语音区域来分割并转换视频/音频为许多短语音片段。每个区域对应一个片段一个API请求。所有这些片段都是直接从输入转换的，避免任何多余的损失。
 
 或者使用外部文件提供的时间码来作为语音区域输入，支持pysubs2支持的文件格式，如`.ass`或者`.srt`。这样你就可以使用外部工具先制作时间轴然后让程序使用并得到精确度更高的识别结果。
 
@@ -223,7 +252,7 @@ PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法�
 
 为了得到某个字幕文件第一行的语言，你可以使用`-dsl`选项去检测。
 
-- 现在，如果autosub使用[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)作为语音转文字的方法，它会允许发送不在`--list-speech-codes`清单中的语言代码，意味着在这种情况下程序不会终止运行。
+- 现在，autosub会允许发送不在`--list-speech-codes`清单中的语言代码，意味着在这种情况下程序不会终止运行。
 
 - 尽管你可以输入任何你想输入的语言代码，需要指出的是如果你使用了不在清单上的语言代码但是API接受了，[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)可能会按照你的IP地址机型个性化识别，而这是不受你控制的。这是一个已知的问题，我已经在原仓库申请了[拉取请求](https://github.com/agermanidis/autosub/pull/136)。
 
@@ -259,7 +288,10 @@ DEFAULT_MODE_SET = {
     'regions',
     'src',
     'dst',
-    'bilingual'}
+    'bilingual',
+    'dst-lf-src',
+    'src-lf-dst'
+}
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
@@ -334,16 +366,45 @@ autosub -i 输入文件 -k ...(其他选项)
 
 语音音频片段转为语音语言字幕。
 
-仅得到语音语言字幕。
+使用默认的[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)仅转录得到语音语言字幕。
 
 ```
 autosub -i 输入文件 -S 语言代码
 ```
 
-得到语音语言字幕只是处理过程中的一部分。
+使用默认的[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)得到语音语言字幕只是处理过程中的一部分。
 
 ```
 autosub -i 输入文件 -S 语言代码 -of src ...(其他选项)
+```
+
+使用Google Cloud Speech-to-Text API服务账号（GOOGLE_APPLICATION_CREDENTIALS环境变量已经设置好了）来转录字幕。
+
+```
+autosub -i 输入文件 -sapi gcsv1 -S 语言代码 ...(其他选项)
+```
+
+使用Google Cloud Speech-to-Text API服务账号（GOOGLE_APPLICATION_CREDENTIALS环境变量由选项`-sa`设置）来转录字幕。
+
+```
+autosub -i 输入文件 -sapi gcsv1 -S 语言代码 -sa 服务账号凭据文件路径 ...(其他选项)
+```
+
+使用Google Cloud Speech-to-Text API密钥来转录字幕。
+
+```
+autosub -i 输入文件 -sapi gcsv1 -S 语言代码 -skey API密钥 ...(其他选项)
+```
+
+在Google Cloud Speech-to-Text API中使用48000Hz OGG_OPUS格式。转换指令在[此代码]((https://github.com/BingLingGroup/autosub/blob/alpha/autosub/__init__.py#L135-L140))中会被自动被替换。
+
+```
+autosub -i 输入文件 -sapi gcsv1 -asf .ogg -asr 48000 ...(其他选项)
+```
+
+在Google Cloud Speech-to-Text API中使用MP3格式。(不推荐这样用，因为OGG_OPUS比MP3更好)
+```
+autosub -i 输入文件 -sapi gcsv1 -asf .mp3 ...(其他选项)
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
@@ -364,6 +425,12 @@ autosub -i 输入文件 -S 语言代码 (-SRC 语言代码) -D 语言代码
 autosub -i 输入文件 -SRC 语言代码 -D 语言代码
 ```
 
+使用"translate.google.cn"翻译字幕，"translate.google.cn"可被某地直连。
+
+```
+autosub -i 输入文件 -surl "translate.google.cn" ...(其他选项)
+```
+
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 #### 选项
@@ -382,7 +449,7 @@ usage:
 
   -i 路径, --input 路径     用于生成字幕文件的视频/音频/字幕文件。如果输入文件是字幕文件，程序仅会对其进行翻译。（参数个数为1）
   -er 路径, --ext-regions 路径
-                        提供外部语音区域（时间轴）的字幕文件。该字幕文件格式需要是pysubs2所支持的。使用后会替换掉默认的 自动寻
+                        提供外部语音区域（时间轴）的字幕文件。该字幕文件格式需要是pysubs2所支持的。使用后会替换掉默认的自动寻
                         找语音区域（时间轴）的功能。（参数个数为1）
   -sty [路径], --styles [路径]
                         当输出格式为"ass"/"ssa"时有效。为你的字幕文件提供"ass"/"ssa"样式的字幕文件。如果不提供
@@ -426,30 +493,39 @@ usage:
   -F 格式, --format 格式    输出字幕的格式。如果没有提供该选项，使用"-o"/"--output"参数中的后缀。如果"-o"/"--
                         output"参数也没有提供扩展名，那么使用"srt"。在这种情况下，如果"-i"/"--
                         input"的参数是一个字幕文件，那么使用和字幕文件相同的扩展名。（参数个数为1）（默认参数为srt）
-  -y, --yes             避免任何运行中的暂停和覆写文件的行为。如果参数有误，会直接停止程序。（参数个数为0）
+  -y, --yes             避免任何暂停和覆写文件的行为。如果参数有误，会直接停止程序。（参数个数为0）
   -of [种类 [种类 ...]], --output-files [种类 [种类 ...]]
-                        输出更多的文件。可选种类：regions, src, dst, bilingual, all.（时间轴，源语
-                        言字幕，目标语言字幕，双语字幕，所有）（参数个数在4和1之间）（默认参数为['dst']）
+                        输出更多的文件。可选种类：regions, src, dst, bilingual, dst-lf-src,
+                        src-lf-dst, all.（时间轴，源语言字幕，目标语言字幕，双语字幕，dst-lf-
+                        src,，src-lf-dst，所有）dst-lf-
+                        src：目标语言和源语言在同一字幕行中，且目标语言先于源语言。src-lf-dst：源语言和目标语言在同一字
+                        幕行中，且源语言先于目标语言。（参数个数在6和1之间）（默认参数为['dst']）
   -fps float, --sub-fps float
                         当输出格式为"sub"时有效。如果提供了该参数，它会取代原有的对输入文件的帧率检查。参考：https://p
                         ysubs2.readthedocs.io/en/latest/api-
                         reference.html#supported-input-output-formats（参数个数为1）
-  -der, --drop-empty-regions
-                        删除所有没有文本的空轴。（参数个数为0）
 
 语音选项:
   控制语音转文字的选项。
 
-  -gsv2 key, --gspeechv2 key
-                        用于Google Speech V2 API的key。如果没有提供，会使用免费API
-                        key。（参数个数为1）
+  -sapi API代码, --speech-api API代码
+                        选择使用Speech-to-Text API。当前支持：gsv2：Google Speech V2
+                        （https://github.com/gillesdemey/google-speech-v2）。
+                        gcsv1：Google Cloud Speech-to-Text V1P1Beta1
+                        （https://cloud.google.com/speech-to-
+                        text/docs）。（参数个数为1）（默认参数为gsv2）
+  -skey key, --speech-key key
+                        Speech-to-Text API的密钥。（参数个数为1）当前支持：gsv2：gsv2的API密钥。（默认
+                        参数为免费API密钥）gcsv1：gcsv1的API密钥。（如果使用了，可以覆盖 "-sa"/"--
+                        service-account"提供的服务账号凭据）
   -mnc float, --min-confidence float
-                        Google Speech V2 API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味
-                        着结果越好。输入这个参数会导致所有低于这个结果的识别结果被删除。参考：https://github.com/
-                        BingLingGroup/google-
-                        speech-v2#response（参数个数为1）（默认参数为0.0）
+                        API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味着结果越好。输入这个参数会 导致所有
+                        低于这个结果的识别结果被删除。参考：https://github.com/BingLingGroup/goo
+                        gle-speech-v2#response（参数个数为1）（默认参数为0.0）
+  -der, --drop-empty-regions
+                        删除所有没有语音识别结果的空轴。（参数个数为0）
   -sc integer, --speech-concurrency integer
-                        用于Google Speech V2 requests请求的并行数量。（参数个数为1）（默认参数为10）
+                        用于Speech-to-Text请求的并行数量。（参数个数为1）（默认参数为10）
 
 py-googletrans选项:
   控制翻译的选项。同时也是默认的翻译方法。可能随时会被谷歌爸爸封。
@@ -458,20 +534,9 @@ py-googletrans选项:
                         （实验性）在两次翻译请求之间睡眠（暂停）的时间。（参数个数为1）（默认参数为5）
   -surl [URL [URL ...]], --service-urls [URL [URL ...]]
                         （实验性）自定义多个请求URL。参考：https://py-
-                        googletrans.readthedocs.io/en/latest/（参数个数为1）
-  -ua User-Agent header, --user-agent User-Agent header
+                        googletrans.readthedocs.io/en/latest/（参数个数大于等于1）
+  -ua User-Agent headers, --user-agent User-Agent headers
                         （实验性）自定义用户代理（User-Agent）头部。同样的参考文档如上。（参数个数为1）
-
-Google Speech V2选项:
-  控制翻译的选项。（未被测试过）如果提供了API key，它会取代py-googletrans的翻译方法。
-
-  -gtv2 key, --gtransv2 key
-                        用于Google Translate V2的API key。如果没有提供，则使用免费的API也就是py-
-                        googletrans。（参数个数为1）
-  -lpt integer, --lines-per-trans integer
-                        Google Translate V2请求的每行行数。（参数个数为1）（默认参数为15）
-  -tc integer, --trans-concurrency integer
-                        Google translate V2 API请求的并行数量。（参数个数为1）（默认参数为10）
 
 网络选项:
   控制网络的选项。
@@ -494,6 +559,11 @@ Google Speech V2选项:
 
   -h, --help            显示autosub的帮助信息并退出。（参数个数为0）
   -V, --version         显示autosub的版本信息并退出。（参数个数为0）
+  -sa 路径, --service-account 路径
+                        设置服务账号密钥的环境变量。应该是包含服务帐号凭据的JSON文件的文件路径。如果使用了，会被API密钥 选项覆
+                        盖。参考：https://cloud.google.com/docs/authentication/gett
+                        ing-started
+                        当前支持：gcsv1（GOOGLE_APPLICATION_CREDENTIALS）（参数个数为1）
 
 音频处理选项:
   控制音频处理的选项。
@@ -501,31 +571,32 @@ Google Speech V2选项:
   -ap [模式 [模式 ...]], --audio-process [模式 [模式 ...]]
                         控制音频处理的选项。如果没有提供选项，进行正常的格式转换工作。"y"：它会先预处理输入文件，如果成 功了，在语
                         音转文字之前不会对音频进行额外的处理。"o"：只会预处理输入音频。（"-k"/"--
-                        keep"选项自动置为真）"s"：只会分割输入音频。（"-k"/"--keep"选项自动置为真）"n"：在语
-                        音转文字的步骤之前，强制去除多余的格式检查或者转换工作。以下是用于处理音频的默认命令：ffmpeg
-                        -hide_banner -i "{in_}" -af "asplit[a],aphasemeter=vid
-                        eo=0,ametadata=select:key=lavfi.aphasemeter.phase:valu
-                        e=-0.005:function=less,pan=1c|c0=c0,aresample=async=1:
-                        first_pts=0,[a]amix" -ac 1 -f flac "{out_}" | ffmpeg
-                        -hide_banner -i "{in_}" -af lowpass=3000,highpass=200
-                        "{out_}" | ffmpeg-normalize -v "{in_}" -ar 44100 -ofmt
-                        flac -c:a flac -pr -p -o "{out_}"（参考：https://github.co
-                        m/stevenj/autosub/blob/master/scripts/subgen.sh
+                        keep"选项自动置为真）"s"：只会分割输入音频。（"-k"/"--
+                        keep"选项自动置为真）以下是用于处理音频的默认命令：ffmpeg -hide_banner -i
+                        "{in_}" -af "asplit[a],aphasemeter=video=0,ametadata=s
+                        elect:key=lavfi.aphasemeter.phase:value=-0.005:functio
+                        n=less,pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]a
+                        mix" -ac 1 -f flac "{out_}" | ffmpeg -hide_banner -i
+                        "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
+                        ffmpeg-normalize -v "{in_}" -ar 44100 -ofmt flac -c:a
+                        flac -pr -p -o "{out_}"（参考：https://github.com/stevenj/
+                        autosub/blob/master/scripts/subgen.sh
                         https://ffmpeg.org/ffmpeg-filters.html）（参数个数介于1和2之间）
   -k, --keep            将音频处理中产生的文件放在输出路径中。（参数个数为0）
   -apc [命令 [命令 ...]], --audio-process-cmd [命令 [命令 ...]]
-                        这个参数会取代默认的音频处理命令。每行命令需要放在一个引号内。输入文件名写为{in_}。输出文件名写 为{ou
-                        t_}。（参数个数大于1）
+                        这个参数会取代默认的音频预处理命令。每行命令需要放在一个引号内。输入文件名写为{in_}。输出文件名 写为{o
+                        ut_}。（参数个数大于1）
   -ac integer, --audio-concurrency integer
                         用于ffmpeg音频切割的进程并行数量。（参数个数为1）（默认参数为10）
   -acc 命令, --audio-conversion-cmd 命令
-                        （实验性）这个参数会取代默认的音频转换命令。需要遵循原有的python参考关键词参数写法。以下是用于处理音频
-                        的默认命令：ffmpeg -hide_banner -y -i "{in_}" -ac {channel}
-                        -ar {sample_rate} "{out_}"（默认参数为1）
+                        （实验性）这个参数会取代默认的音频转换命令。"[", "]" 是可选参数，可以移除。"{",
+                        "}"是必选参数，不可移除。以下是用于处理音频的默认命令：ffmpeg -hide_banner -y -i
+                        "{in_}" -vn -ac {channel} -ar {sample_rate}
+                        "{out_}"（默认参数为1）
   -asc 命令, --audio-split-cmd 命令
-                        （实验性）这个参数会取代默认的音频转换命令。相同的注意如上。默认：ffmpeg -ss {start} -t
-                        {dura} -y -i "{in_}" -c copy -loglevel error
-                        "{out_}"（参数个数为1）
+                        （实验性）这个参数会取代默认的音频转换命令。相同的注意如上。默认：ffmpeg -y -ss {start}
+                        -i "{in_}" -t {dura} -vn -ac [channel] -ar
+                        [sample_rate] -loglevel error "{out_}"（参数个数为1）
   -asf 文件名后缀, --api-suffix 文件名后缀
                         （实验性）这个参数会取代默认的给API使用的音频文件后缀。（默认参数为.flac）
   -asr 采样率, --api-sample-rate 采样率
@@ -561,11 +632,11 @@ Auditok的选项:
                         行转换。如果输出格式是"sub"且输入文件是音频无法获取到视频帧率时，你需要提供fps选项指定帧率。（参数个
                         数为0）
   -lsc [语言代码], --list-speech-codes [语言代码]
-                        列出所有推荐的"-S"/"--speech-language"Google Speech V2语言代码。如果
-                        参数没有给出，列出全部语言代码。默认的“好的匹配”标准是匹配分数超过90分（匹配分数介于0和100之间）。参
-                        考：https://tools.ietf.org/html/bcp47 https://github.com
-                        /LuminosoInsight/langcodes/blob/master/langcodes/__ini
-                        t__.py 语言代码范例：语言文字种类-（扩展语言文字种类）-变体（或方言）-使用区域-
+                        列出所有推荐的"-S"/"--speech-language"Google Speech-to-Text 语
+                        言代码。如果参数没有给出，列出全部语言代码。默认的“好的匹配”标准是匹配分数超过90分（匹配分数介于0和10
+                        0之间）。参考：https://tools.ietf.org/html/bcp47 https://gith
+                        ub.com/LuminosoInsight/langcodes/blob/master/langcodes
+                        /__init__.py 语言代码范例：语言文字种类-（扩展语言文字种类）-变体（或方言）-使用区域-
                         变体（或方言）-扩展-私有（https://www.zhihu.com/question/21980689/
                         answer/93615123）（参数个数为0或1）
   -ltc [语言代码], --list-translation-codes [语言代码]
@@ -573,7 +644,7 @@ Auditok的选项:
                         语言代码。否则会给出一个“好的匹配”的清单。同样的参考文档如上。（参数个数为0或1）
   -dsl 路径, --detect-sub-language 路径
                         使用py-googletrans去检测一个字幕文件的第一行的语言。并列出一个和该语言匹配的推荐Google
-                        Speech V2语言代码清单（"-S"/"--speech-
+                        Speech-to-Text语言代码清单（"-S"/"--speech-
                         language"选项所用到的）。参考：https://cloud.google.com/speech-
                         to-text/docs/languages（参数个数为1）（默认参数 None）
 
@@ -582,8 +653,8 @@ Auditok的选项:
 如果选项没有在命令行中提供时会使用的参数。
 "参数个数"指的是如果提供了选项，
 该选项所需要的参数个数。
-作者: Anastasis Germanidis
-Email: agermanidis@gmail.com
+作者: Bing Ling
+Email: binglinggroup@outlook.com
 问题反馈: https://github.com/agermanidis/autosub
 ```
 
@@ -646,16 +717,30 @@ for /f "delims=^" %%i in ('dir /b %in_format%') do (
 
 我只写了在windows上构建独立运行程序的脚本，一个用于[Nuitka](../scripts/nuitka_build.bat)一个用于[pyinstaller](../scripts/pyinstaller_build.bat)。
 
-Nuitka的构建有点麻烦。以下是我尝试成功的两种环境。
+0.5.4a以后的版本不支持Nuitka构建，因为0.5.4a导入了google.cloud包，里面包含的`pkg_resources.get_distribution`并不被Nuitka支持，详见[Nuitka issue #146](https://github.com/Nuitka/Nuitka/issues/146)。你可以手动移除和google.cloud包有关的代码并进行构建。我会考虑在以后的版本中移除这部分代码以支持Nuitka构建。
+
+Nuitka的构建有点麻烦。以下是我成功尝试的环境。
 
 1. [Nuitka readme](https://github.com/Nuitka/Nuitka#id6)推荐的Anaconda环境。
    - Python 3.5版本
    - mingw-w64的包[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc) (只要你是用Anaconda命令行启动的，就不需要单独设置环境变量)
 2. 设置环境变量`CC`的值为相应C编译器可执行文件的目录（包括其名称）来使用其他C的编译器，而不是[m2w64-gcc](https://anaconda.org/msys2/m2w64-gcc)。譬如，你想让Nuitka使用你存储上安装的[MingW-W64-builds](http://mingw-w64.org/doku.php/download/mingw-builds)。在这种情况下，依然推荐使用Python 3.5。
+3. Nuikta版本0.6.6是我尝试的最新的稳定版本。其他更新的版本如0.6.7不支持windows图标输入。
 
 其他的C编译器或者Python环境可能在编译时失败，原因不明。对于那些操作系统语言不是`en_US`，请在构建前先设置成`en_US`。否则你会遇到这个[已知问题](https://github.com/Nuitka/Nuitka/issues/193)。
 
-Pyinstaller的构建就比较稳定。只要配置文件写好了就没遇到问题。
+Pyinstaller的构建则是，你需要手动挂钩gcloud模组。[来源](https://stackoverflow.com/questions/40076795/pyinstaller-file-fails-to-execute-script-distributionnotfound)。
+
+> . So you need to create a hook file for that names
+>
+> Python_Path\Lib\site-packages\PyInstaller\hooks\hook-gcloud.py
+>
+> File contents:
+
+```Python
+from PyInstaller.utils.hooks import copy_metadata
+datas = copy_metadata('gcloud')
+```
 
 [create_release.py](../scripts/create_release.py)是用来创建两个发布包的。如果你想创建一个“完全”独立运行的发布包像我制作的那样，你需要创建一个`binaries`文件夹，里面包含ffmpeg和ffmpeg-normalize的可执行文件。我使用的`ffmpeg.exe`和`ffprobe.exe`都来自[Zeranoe的ffmpeg windows构建](https://ffmpeg.zeranoe.com/builds/)。`ffmpeg-normalize.exe` 使用[如上](#在Windows上安装)所说的相同的方式进行构建。
 

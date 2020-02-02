@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## TOC
 
 - [Unreleased](#unreleased)
+- [0.5.4-alpha - 2020-01-31](#054-alpha---2020-01-31)
+  - [Added](#added054-alpha)
+  - [Changed](#changed054-alpha)
 - [0.5.3-alpha - 2019-12-30](#053-alpha---2019-12-30)
   - [Changed](#changed053-alpha)
 - [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
@@ -29,7 +32,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Click up arrow to go back to TOC.
 
-### [Unreleased]
+### Unreleased
+
+### [0.5.4-alpha] - 2020-01-31
+
+#### Added(0.5.4-alpha)
+
+- Add basic Google Cloud Speech-to-Text support. [issue #10](https://github.com/BingLingGroup/autosub/issues/10)
+- Add more bilingual subtitles formats output support. [issue #72](https://github.com/BingLingGroup/autosub/issues/72)
+
+#### Changed(0.5.4-alpha)
+
+- Fix output format limits when input is a subtitles file.
+- Remove gtransv2 support.
 
 ### [0.5.3-alpha] - 2019-12-30
 
@@ -156,7 +171,8 @@ Click up arrow to go back to TOC.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
-[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...HEAD
+[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...HEAD
+[0.5.4-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...0.5.4-alpha
 [0.5.3-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...0.5.3-alpha
 [0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha
 [0.5.1-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.0-alpha...0.5.1-alpha

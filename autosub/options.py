@@ -50,12 +50,12 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                  "the number of the arguments is required.\n"
                  "Author: {author}\n"
                  "Email: {email}\n"
-                 "Bug report: https://github.com/agermanidis/autosub\n").format(
+                 "Bug report: {homepage}\n").format(
                      author=metadata.AUTHOR,
-                     email=metadata.AUTHOR_EMAIL),
+                     email=metadata.AUTHOR_EMAIL,
+                     homepage=metadata.HOMEPAGE),
         add_help=False,
-        formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+        formatter_class=argparse.RawDescriptionHelpFormatter)
 
     input_group = parser.add_argument_group(
         _('Input Options'),
@@ -75,11 +75,6 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         _('Options to control translation. '
           'Default method to translate. '
           'Could be blocked at any time.'))
-    gsv2_group = parser.add_argument_group(
-        _('Google Speech V2 Options'),
-        _('Options to control translation.(Not been tested) '
-          'If the API key is given, '
-          'it will replace the py-googletrans method.'))
     network_group = parser.add_argument_group(
         _('Network Options'),
         _('Options to control network.'))
@@ -104,8 +99,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "that needs to generate subtitles. "
                "When it is a subtitles file, "
                "the program will only translate it. "
-               "(arg_num = 1)")
-    )
+               "(arg_num = 1)"))
 
     input_group.add_argument(
         '-er', '--ext-regions',
@@ -114,8 +108,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "which provides external speech regions, "
                "which is one of the formats that pysubs2 supports "
                "and overrides the default method to find speech regions. "
-               "(arg_num = 1)")
-    )
+               "(arg_num = 1)"))
 
     input_group.add_argument(
         '-sty', '--styles',
@@ -128,8 +121,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "it will use the styles from the : "
                "\"-esr\"/\"--external-speech-regions\". "
                "More info on \"-sn\"/\"--styles-name\". "
-               "(arg_num = 0 or 1)")
-    )
+               "(arg_num = 0 or 1)"))
 
     input_group.add_argument(
         '-sn', '--styles-name',
@@ -143,8 +135,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "specific style from the arg of \"-sty\"/\"--styles\". "
                "If the arg_num is 2, src language events use the first. "
                "Dst language events use the second. "
-               "(arg_num = 1 or 2)")
-    )
+               "(arg_num = 1 or 2)"))
 
     lang_group.add_argument(
         '-S', '--speech-language',
@@ -155,33 +146,30 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "WRONG INPUT WON'T STOP RUNNING. "
                "But use it at your own risk. "
                "Ref: https://cloud.google.com/speech-to-text/docs/languages"
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     lang_group.add_argument(
         '-SRC', '--src-language',
         metavar=_('lang_code'),
         help=_("Lang code/Lang tag for translation source language. "
-               "If not given, use langcodes-py2 to get a best matching "
+               "If not given, use langcodes to get a best matching "
                "of the \"-S\"/\"--speech-language\". "
                "If using py-googletrans as the method to translate, "
                "WRONG INPUT STOP RUNNING. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     lang_group.add_argument(
         '-D', '--dst-language',
         metavar=_('lang_code'),
         help=_("Lang code/Lang tag for translation destination language. "
                "Same attention in the \"-SRC\"/\"--src-language\". "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     lang_group.add_argument(
         '-bm', '--best-match',
         metavar=_('mode'),
         nargs="*",
-        help=_("Allow langcodes-py2 to get a best matching lang code "
+        help=_("Allow langcodes to get a best matching lang code "
                "when your input is wrong. "
                "Only functional for py-googletrans and Google Speech V2. "
                "Available modes: "
@@ -189,8 +177,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "\"s\" for \"-S\"/\"--speech-language\". "
                "\"src\" for \"-SRC\"/\"--src-language\". "
                "\"d\" for \"-D\"/\"--dst-language\". "
-               "(3 >= arg_num >= 1)")
-    )
+               "(3 >= arg_num >= 1)"))
 
     lang_group.add_argument(
         '-mns', '--min-score',
@@ -203,16 +190,14 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "or the match result in \"-bm\"/\"--best-match\". "
                "Result will be a group of \"good match\" "
                "whose score is above this arg. "
-               "(arg_num = 1)")
-    )
+               "(arg_num = 1)"))
 
     output_group.add_argument(
         '-o', '--output',
         metavar=_('path'),
         help=_("The output path for subtitles file. "
                "(default: the \"input\" path combined "
-               "with the proper name tails) (arg_num = 1)")
-    )
+               "with the proper name tails) (arg_num = 1)"))
 
     output_group.add_argument(
         '-F', '--format',
@@ -225,15 +210,13 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "In this case, if \"-i\"/\"--input\" arg is a subtitles file, "
                "use the same extension from the subtitles file. "
                "(arg_num = 1) (default: {dft})").format(
-                   dft=constants.DEFAULT_SUBTITLES_FORMAT)
-    )
+                   dft=constants.DEFAULT_SUBTITLES_FORMAT))
 
     output_group.add_argument(
         '-y', '--yes',
         action='store_true',
-        help=_("Avoid any pause and overwriting files. "
-               "Stop the program when your args are wrong. (arg_num = 0)")
-    )
+        help=_("Prevent pauses and allow files to be overwritten. "
+               "Stop the program when your args are wrong. (arg_num = 0)"))
 
     output_group.add_argument(
         '-of', '--output-files',
@@ -242,9 +225,12 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=["dst", ],
         help=_("Output more files. "
                "Available types: "
-               "regions, src, dst, bilingual, all. "
-               "(4 >= arg_num >= 1) (default: %(default)s)")
-    )
+               "regions, src, dst, bilingual, dst-lf-src, src-lf-dst, all. "
+               "dst-lf-src: dst language and src language in the same event. "
+               "And dst is ahead of src. "
+               "src-lf-dst: src language and dst language in the same event. "
+               "And src is ahead of dst. "
+               "(6 >= arg_num >= 1) (default: %(default)s)"))
 
     output_group.add_argument(
         '-fps', '--sub-fps',
@@ -255,45 +241,69 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "on the input file. "
                "Ref: https://pysubs2.readthedocs.io/en/latest/api-reference.html"
                "#supported-input-output-formats "
-               "(arg_num = 1)")
-    )
-
-    output_group.add_argument(
-        '-der', '--drop-empty-regions',
-        action='store_true',
-        help=_("Drop any regions without text. "
-               "(arg_num = 0)")
-    )
+               "(arg_num = 1)"))
 
     speech_group.add_argument(
-        '-gsv2', '--gspeechv2',
+        '-sapi', '--speech-api',
+        metavar=_('API_code'),
+        default='gsv2',
+        help=_("Choose which Speech-to-Text API to use. "
+               "Currently support: "
+               "gsv2: Google Speech V2 (https://github.com/gillesdemey/google-speech-v2). "
+               "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
+               "(https://cloud.google.com/speech-to-text/docs). "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    speech_group.add_argument(
+        '-skey', '--speech-key',
         metavar='key',
-        help=_("The Google Speech V2 API key to be used. "
-               "If not provided, use free API key instead."
-               "(arg_num = 1)")
-    )
+        help=_("The API key for Speech-to-Text API. (arg_num = 1) "
+               "Currently support: "
+               "gsv2: The API key for gsv2. (default: Free API key) "
+               "gcsv1: The API key for gcsv1. "
+               "(If used, override the credentials "
+               "given by\"-sa\"/\"--service-account\")"))
+
+    # speech_group.add_argument(
+    #     '-sconf', '--speech-config',
+    #     nargs='?', metavar=_('path'),
+    #     const='config.json',
+    #     help=_("Use speech recognition config to send request. "
+    #            "Override these options below: "
+    #            "\"-S\", \"-asr\", \"-aac\". "
+    #            "Currently support: "
+    #            "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
+    #            "(https://cloud.google.com/speech-to-text/docs"
+    #            "/reference/rest/v1p1beta1/RecognitionConfig). "
+    #            "If arg_num is 0, use const path. "
+    #            "(arg_num = 0 or 1) (const: %(const)s)")
+    # )
 
     speech_group.add_argument(
         '-mnc', '--min-confidence',
         metavar='float',
         type=float,
         default=0.0,
-        help=_("Google Speech V2 API response for text confidence. "
+        help=_("API response for text confidence. "
                "A float value between 0 and 1. "
                "Confidence bigger means the result is better. "
                "Input this argument will drop any result below it. "
                "Ref: https://github.com/BingLingGroup/google-speech-v2#response "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
+
+    speech_group.add_argument(
+        '-der', '--drop-empty-regions',
+        action='store_true',
+        help=_("Drop any regions without speech recognition result. "
+               "(arg_num = 0)"))
 
     speech_group.add_argument(
         '-sc', '--speech-concurrency',
         metavar='integer',
         type=int,
         default=constants.DEFAULT_CONCURRENCY,
-        help=_("Number of concurrent Google Speech V2 requests to make. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+        help=_("Number of concurrent Speech-to-Text requests to make. "
+               "(arg_num = 1) (default: %(default)s)"))
 
     pygt_group.add_argument(
         '-slp', '--sleep-seconds',
@@ -302,8 +312,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=constants.DEFAULT_SLEEP_SECONDS,
         help=_("(Experimental)Seconds to sleep "
                "between two translation requests. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     pygt_group.add_argument(
         '-surl', '--service-urls',
@@ -311,51 +320,21 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         nargs='*',
         help=_("(Experimental)Customize request urls. "
                "Ref: https://py-googletrans.readthedocs.io/en/latest/ "
-               "(arg_num >= 1)")
-    )
+               "(arg_num >= 1)"))
 
     pygt_group.add_argument(
         '-ua', '--user-agent',
-        metavar='User-Agent header',
-        help=_("(Experimental)Customize User-Agent header. "
+        metavar='User-Agent headers',
+        help=_("(Experimental)Customize User-Agent headers. "
                "Same docs above. "
-               "(arg_num = 1)")
-    )
-
-    gsv2_group.add_argument(
-        '-gtv2', '--gtransv2',
-        metavar='key',
-        help=_("The Google Translate V2 API key to be used. "
-               "If not provided, use free API(py-googletrans) instead. "
-               "(arg_num = 1)")
-    )
-
-    gsv2_group.add_argument(
-        '-lpt', '--lines-per-trans',
-        metavar='integer',
-        type=int,
-        default=constants.DEFAULT_LINES_PER_TRANS,
-        help=_("Number of lines per Google Translate V2 request. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
-
-    gsv2_group.add_argument(
-        '-tc', '--trans-concurrency',
-        metavar='integer',
-        type=int,
-        default=constants.DEFAULT_CONCURRENCY,
-        help=_("Number of concurrent "
-               "Google translate V2 API requests to make. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1)"))
 
     network_group.add_argument(
         '-hsa', '--http-speech-api',
         action='store_true',
         help=_("Change the Google Speech V2 API "
                "URL into the http one. "
-               "(arg_num = 0)")
-    )
+               "(arg_num = 0)"))
 
     network_group.add_argument(
         '-hsp', '--https-proxy',
@@ -363,8 +342,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         const='https://127.0.0.1:1080',
         help=_("Add https proxy by setting environment variables. "
                "If arg_num is 0, use const proxy url. "
-               "(arg_num = 0 or 1) (const: %(const)s)")
-    )
+               "(arg_num = 0 or 1) (const: %(const)s)"))
 
     network_group.add_argument(
         '-hp', '--http-proxy',
@@ -372,28 +350,24 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         const='http://127.0.0.1:1080',
         help=_("Add http proxy by setting environment variables. "
                "If arg_num is 0, use const proxy url. "
-               "(arg_num = 0 or 1) (const: %(const)s)")
-    )
+               "(arg_num = 0 or 1) (const: %(const)s)"))
 
     network_group.add_argument(
         '-pu', '--proxy-username',
         metavar=_('username'),
         help=_("Set proxy username. "
-               "(arg_num = 1)")
-    )
+               "(arg_num = 1)"))
 
     network_group.add_argument(
         '-pp', '--proxy-password',
         metavar=_('password'),
         help=_("Set proxy password. "
-               "(arg_num = 1)")
-    )
+               "(arg_num = 1)"))
 
     options_group.add_argument(
         '-h', '--help',
         action='help',
-        help=_("Show %(prog)s help message and exit. (arg_num = 0)")
-    )
+        help=_("Show %(prog)s help message and exit. (arg_num = 0)"))
 
     options_group.add_argument(
         '-V', '--version',
@@ -401,8 +375,18 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         version='%(prog)s ' + metadata.VERSION
         + ' by ' + metadata.AUTHOR + ' <'
         + metadata.AUTHOR_EMAIL + '>',
-        help=_("Show %(prog)s version and exit. (arg_num = 0)")
-    )
+        help=_("Show %(prog)s version and exit. (arg_num = 0)"))
+
+    options_group.add_argument(
+        '-sa', '--service-account',
+        metavar=_('path'),
+        help=_("Set service account key environment variable. "
+               "It should be the file path of the JSON file "
+               "that contains your service account credentials. "
+               "Can be overridden by the API key. "
+               "Ref: https://cloud.google.com/docs/authentication/getting-started "
+               "Currently support: gcsv1 (GOOGLE_APPLICATION_CREDENTIALS) "
+               "(arg_num = 1)"))
 
     audio_prcs_group.add_argument(
         '-ap', '--audio-process',
@@ -418,8 +402,6 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(\"-k\"/\"--keep\" is true) "
                "\"s\": only split the input audio. "
                "(\"-k\"/\"--keep\" is true) "
-               "\"n\": FORCED NO EXTRA CHECK/CONVERSION "
-               "before the speech-to-text procedure. "
                "Default command to pre-process the audio: "
                "{dft_1} | {dft_2} | {dft_3} "
                "(Ref: "
@@ -428,26 +410,23 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(2 >= arg_num >= 1)").format(
                    dft_1=constants.DEFAULT_AUDIO_PRCS[0],
                    dft_2=constants.DEFAULT_AUDIO_PRCS[1],
-                   dft_3=constants.DEFAULT_AUDIO_PRCS[2])
-    )
+                   dft_3=constants.DEFAULT_AUDIO_PRCS[2]))
 
     audio_prcs_group.add_argument(
         '-k', '--keep',
         action='store_true',
         help=_("Keep audio processing files to the output path. "
-               "(arg_num = 0)")
-    )
+               "(arg_num = 0)"))
 
     audio_prcs_group.add_argument(
         '-apc', '--audio-process-cmd',
         nargs='*', metavar=_('command'),
         help=_("This arg will override the default "
-               "audio process command. "
+               "audio pre-process command. "
                "Every line of the commands need to be in quotes. "
                "Input file name is {in_}. "
                "Output file name is {out_}. "
-               "(arg_num >= 1)")
-    )
+               "(arg_num >= 1)"))
 
     audio_prcs_group.add_argument(
         '-ac', '--audio-concurrency',
@@ -455,20 +434,21 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         type=int,
         default=constants.DEFAULT_CONCURRENCY,
         help=_("Number of concurrent ffmpeg audio split process to make. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-acc', '--audio-conversion-cmd',
         metavar=_('command'),
         help=_("(Experimental)This arg will override the default "
                "audio conversion command. "
-               "Need to follow the python references keyword argument. "
+               "\"[\", \"]\" are optional arguments "
+               "meaning you can remove them. "
+               "\"{{\", \"}}\" are required arguments "
+               "meaning you can't remove them. "
                "Default command to process the audio: "
                "{dft} "
                "(arg_num = 1)").format(
-                   dft=constants.DEFAULT_AUDIO_CVT)
-    )
+                   dft=constants.DEFAULT_AUDIO_CVT))
 
     audio_prcs_group.add_argument(
         '-asc', '--audio-split-cmd',
@@ -478,8 +458,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "Same attention above. "
                "Default: {dft} "
                "(arg_num = 1)").format(
-                   dft=constants.DEFAULT_AUDIO_SPLT)
-    )
+                   dft=constants.DEFAULT_AUDIO_SPLT))
 
     audio_prcs_group.add_argument(
         '-asf', '--api-suffix',
@@ -487,8 +466,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default='.flac',
         help=_("(Experimental)This arg will override the default "
                "API audio suffix. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-asr', '--api-sample-rate',
@@ -497,8 +475,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=44100,
         help=_("(Experimental)This arg will override the default "
                "API audio sample rate(Hz). "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-aac', '--api-audio-channel',
@@ -507,8 +484,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=1,
         help=_("(Experimental)This arg will override the default "
                "API audio channel. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     auditok_group.add_argument(
         '-et', '--energy-threshold',
@@ -518,8 +494,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         help=_("The energy level which determines the region to be detected. "
                "Ref: https://auditok.readthedocs.io/en/latest/apitutorial.html"
                "#examples-using-real-audio-data "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     auditok_group.add_argument(
         '-mnrs', '--min-region-size',
@@ -528,8 +503,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=constants.MIN_REGION_SIZE,
         help=_("Minimum region size. "
                "Same docs above. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     auditok_group.add_argument(
         '-mxrs', '--max-region-size',
@@ -538,8 +512,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=constants.MAX_REGION_SIZE,
         help=_("Maximum region size. "
                "Same docs above. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     auditok_group.add_argument(
         '-mxcs', '--max-continuous-silence',
@@ -548,22 +521,19 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=constants.DEFAULT_CONTINUOUS_SILENCE,
         help=_("Maximum length of a tolerated silence within a valid audio activity. "
                "Same docs above. "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     auditok_group.add_argument(
         '-sml', '--strict-min-length',
         action='store_true',
         help=_("Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
-               "(arg_num = 0)")
-    )
+               "(arg_num = 0)"))
 
     auditok_group.add_argument(
         '-dts', '--drop-trailing-silence',
         action='store_true',
         help=_("Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
-               "(arg_num = 0)")
-    )
+               "(arg_num = 0)"))
 
     list_group.add_argument(
         '-lf', '--list-formats',
@@ -574,8 +544,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "You need to offer fps option "
                "when input is an audio file "
                "and output is \"sub\" format. "
-               "(arg_num = 0)")
-    )
+               "(arg_num = 0)"))
 
     list_group.add_argument(
         '-lsc', '--list-speech-codes',
@@ -583,16 +552,15 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         const=' ',
         nargs='?',
         help=_("List all recommended \"-S\"/\"--speech-language\" "
-               "Google Speech V2 language codes. "
+               "Google Speech-to-Text language codes. "
                "If no arg is given, list all. "
-               "Or else will list get a group of \"good match\" "
+               "Or else will list a group of \"good match\" "
                "of the arg. Default \"good match\" standard is whose "
-               "match score above 90(score between 0 and 100). "
+               "match score above 90 (score between 0 and 100). "
                "Ref: https://tools.ietf.org/html/bcp47 "
                "https://github.com/LuminosoInsight/langcodes/blob/master/langcodes/__init__.py "
                "lang code example: language-script-region-variant-extension-privateuse "
-               "(arg_num = 0 or 1)")
-    )
+               "(arg_num = 0 or 1)"))
 
     list_group.add_argument(
         '-ltc', '--list-translation-codes',
@@ -601,20 +569,18 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         nargs='?',
         help=_("List all available \"-SRC\"/\"--src-language\" "
                "py-googletrans translation language codes. "
-               "Or else will list get a group of \"good match\" "
+               "Or else will list a group of \"good match\" "
                "of the arg. "
                "Same docs above. "
-               "(arg_num = 0 or 1)")
-    )
+               "(arg_num = 0 or 1)"))
 
     list_group.add_argument(
         '-dsl', '--detect-sub-language',
         metavar=_('path'),
         help=_("Use py-googletrans to detect a sub file's first line language. "
                "And list a group of matched language in recommended "
-               "\"-S\"/\"--speech-language\" Google Speech V2 language codes. "
+               "\"-S\"/\"--speech-language\" Google Speech-to-Text language codes. "
                "Ref: https://cloud.google.com/speech-to-text/docs/languages "
-               "(arg_num = 1) (default: %(default)s)")
-    )
+               "(arg_num = 1) (default: %(default)s)"))
 
     return parser.parse_args()

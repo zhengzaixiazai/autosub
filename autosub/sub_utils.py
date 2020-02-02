@@ -18,8 +18,7 @@ from autosub import constants
 def sub_to_speech_regions(
         audio_wav,
         sub_file,
-        ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000
-):
+        ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000):
     """
     Give an input audio_wav file and subtitles file and generate proper speech regions.
     """
@@ -58,14 +57,14 @@ def sub_to_speech_regions(
     return regions
 
 
-def pysubs2_ssa_event_add(
+def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statements
         src_ssafile,
         dst_ssafile,
         text_list,
         style_name,
-):
+        same_event_type=0,):
     """
-    Serialize a list of subtitles according to the SRT format.
+    Serialize a list of subtitles using pysubs2.
     """
     if not style_name:
         style_name = 'Default'
@@ -96,14 +95,72 @@ def pysubs2_ssa_event_add(
             # text_list is [text, text, ...]
             i = 0
             length = len(text_list)
-            while i < length:
-                event = pysubs2.SSAEvent()
-                event.start = src_ssafile.events[i].start
-                event.end = src_ssafile.events[i].end
-                event.text = text_list[i]
-                event.style = style_name
-                dst_ssafile.events.append(event)
-                i = i + 1
+            if same_event_type == 0:
+                #  append text_list to new events
+                while i < length:
+                    event = pysubs2.SSAEvent()
+                    event.start = src_ssafile.events[i].start
+                    event.end = src_ssafile.events[i].end
+                    event.text = text_list[i]
+                    event.style = style_name
+                    dst_ssafile.events.append(event)
+                    i = i + 1
+            elif same_event_type == 1:
+                # add text_list to src_ssafile
+                # before the existing text in event
+                if src_ssafile.events[0].style == style_name:
+                    # same style
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.text = \
+                            text_list[i] + "\\N" + src_ssafile.events[i].text
+                        event.style = style_name
+                        dst_ssafile.events.append(event)
+                        i = i + 1
+                else:
+                    # different style
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.text = \
+                            text_list[i] + \
+                            "\\N{{\\r{style_name}}}".format(
+                                style_name=src_ssafile.events[i].style) + \
+                            src_ssafile.events[i].text
+                        event.style = style_name
+                        dst_ssafile.events.append(event)
+                        i = i + 1
+            elif same_event_type == 2:
+                # add text_list to src_ssafile
+                # after the existing text in event
+                if src_ssafile.events[0].style == style_name:
+                    # same style
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.text = \
+                            src_ssafile.events[i].text + "\\N" + text_list[i]
+                        event.style = style_name
+                        dst_ssafile.events.append(event)
+                        i = i + 1
+                else:
+                    # different style
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.text = \
+                            src_ssafile.events[i].text + \
+                            "\\N{{\\r{style_name}}}".format(
+                                style_name=style_name) + \
+                            text_list[i]
+                        event.style = style_name
+                        dst_ssafile.events.append(event)
+                        i = i + 1
     else:
         # src_ssafile provides regions only
         i = 0
@@ -117,7 +174,7 @@ def pysubs2_ssa_event_add(
             i = i + 1
 
 
-def vtt_formatter(subtitles):
+def list_to_vtt_str(subtitles):
     """
     Serialize a list of subtitles according to the VTT format.
     """
@@ -126,8 +183,7 @@ def vtt_formatter(subtitles):
         src_ssafile=None,
         dst_ssafile=pysubs2_obj,
         text_list=subtitles,
-        style_name=None
-    )
+        style_name=None)
     formatted_subtitles = pysubs2_obj.to_string(
         format_='srt')
     i = 0
@@ -143,7 +199,26 @@ def vtt_formatter(subtitles):
     return formatted_subtitles
 
 
-def json_formatter(subtitles):
+def assfile_to_vtt_str(subtitles):
+    """
+    Serialize ASSFile according to the VTT format.
+    """
+    formatted_subtitles = subtitles.to_string(
+        format_='srt')
+    i = 0
+    lines = formatted_subtitles.split('\n')
+    new_lines = []
+    for line in lines:
+        if i % 4 == 1:
+            line = line.replace(',', '.')
+        new_lines.append(line)
+        i = i + 1
+    formatted_subtitles = '\n'.join(new_lines)
+    formatted_subtitles = 'WEBVTT\n\n' + formatted_subtitles
+    return formatted_subtitles
+
+
+def list_to_json_str(subtitles):
     """
     Serialize a list of subtitles as a JSON blob.
     """
@@ -173,7 +248,23 @@ def json_formatter(subtitles):
     return json.dumps(subtitle_dicts, indent=4, ensure_ascii=False)
 
 
-def txt_formatter(subtitles):
+def assfile_to_json_str(subtitles):
+    """
+    Serialize ASSFile as a JSON blob.
+    """
+    subtitle_dicts = [
+        {
+            'start': event.start / 1000.0,
+            'end': event.end / 1000.0,
+            'content': event.text
+        }
+        for event
+        in subtitles.events
+    ]
+    return json.dumps(subtitle_dicts, indent=4, ensure_ascii=False)
+
+
+def list_to_txt_str(subtitles):
     """
     Serialize a list of subtitles as a newline-delimited string.
     """
@@ -191,3 +282,10 @@ def txt_formatter(subtitles):
             end=end / 1000.0)
         result = result + '\n' + line
     return result
+
+
+def assfile_to_txt_str(subtitles):
+    """
+    Serialize ASSFile as a newline-delimited string.
+    """
+    return '\n'.join(event.text for event in subtitles.events)
