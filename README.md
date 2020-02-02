@@ -200,7 +200,7 @@ Supported formats below:
 - 24bit/44100Hz/mono FLAC(default)
 - Other format like OGG_OPUS isn't supported by API. (I've tried modifying requests headers or json requests and it just didn't work) Or format like PCM has less bits per sample but more storage usage than FLAC. Although the API support it but I think it's unnecessary to modify codes to support it.
 
-[Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding)
+[Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding) [v1p1beta1](https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig#AudioEncoding)
 
 - Supported
   - 24bit/44100Hz/mono FLAC(default)
@@ -288,7 +288,10 @@ DEFAULT_MODE_SET = {
     'regions',
     'src',
     'dst',
-    'bilingual'}
+    'bilingual',
+    'dst-lf-src',
+    'src-lf-dst'
+}
 ```
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
@@ -393,6 +396,17 @@ Use Google Cloud Speech-to-Text API key to transcribe.
 autosub -i input_file -sapi gcsv1 -S lang_code -skey API_key ...(other options)
 ```
 
+Use 48000Hz OGG_OPUS in Google Cloud Speech-to-Text API. The conversion commands will be automatically modified by these [codes](https://github.com/BingLingGroup/autosub/blob/alpha/autosub/__init__.py#L135-L140).
+
+```
+autosub -i input_file -sapi gcsv1 -asf .ogg -asr 48000 ...(other options)
+```
+
+Use MP3 in Google Cloud Speech-to-Text API.(Not recommended because OGG_OPUS is better than MP3)
+```
+autosub -i input_file -sapi gcsv1 -asf .mp3 ...(other options)
+```
+
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ##### Translate Subtitles
@@ -409,6 +423,12 @@ Translate subtitles from a subtitles file.
 
 ```
 autosub -i input_file -SRC lang_code -D lang_code
+```
+
+Translate subtitles by "translate.google.cn" which can be directly accessed from somewhere.
+
+```
+autosub -i input_file -surl "translate.google.cn" ...(other options)
 ```
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>

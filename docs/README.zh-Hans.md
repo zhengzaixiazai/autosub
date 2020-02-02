@@ -200,7 +200,7 @@ PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法�
 - 24bit/44100Hz/单声道 FLAC（默认参数）
 - 其他格式像OGG_OPUS是API不支持的。（我尝试过修改请求头或者修改为json请求都不行）或者像PCM这种有着比FLAC单位采样更少位宽但更大存储消耗的格式。虽然API支持，但我觉得没必要支持就没改代码去支持。
 
-[Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding)
+[Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding) [v1p1beta1](https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig#AudioEncoding)
 
 - 支持
   - 24bit/44100Hz/单声道 FLAC（默认参数）
@@ -288,7 +288,10 @@ DEFAULT_MODE_SET = {
     'regions',
     'src',
     'dst',
-    'bilingual'}
+    'bilingual',
+    'dst-lf-src',
+    'src-lf-dst'
+}
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
@@ -393,6 +396,17 @@ autosub -i 输入文件 -sapi gcsv1 -S 语言代码 -sa 服务账号凭据文件
 autosub -i 输入文件 -sapi gcsv1 -S 语言代码 -skey API密钥 ...(其他选项)
 ```
 
+在Google Cloud Speech-to-Text API中使用48000Hz OGG_OPUS格式。转换指令在[此代码]((https://github.com/BingLingGroup/autosub/blob/alpha/autosub/__init__.py#L135-L140))中会被自动被替换。
+
+```
+autosub -i 输入文件 -sapi gcsv1 -asf .ogg -asr 48000 ...(其他选项)
+```
+
+在Google Cloud Speech-to-Text API中使用MP3格式。(不推荐这样用，因为OGG_OPUS比MP3更好)
+```
+autosub -i 输入文件 -sapi gcsv1 -asf .mp3 ...(其他选项)
+```
+
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ##### 翻译字幕
@@ -409,6 +423,12 @@ autosub -i 输入文件 -S 语言代码 (-SRC 语言代码) -D 语言代码
 
 ```
 autosub -i 输入文件 -SRC 语言代码 -D 语言代码
+```
+
+使用"translate.google.cn"翻译字幕，"translate.google.cn"可被某地直连。
+
+```
+autosub -i 输入文件 -surl "translate.google.cn" ...(其他选项)
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
