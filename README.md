@@ -727,7 +727,7 @@ when the option is not given at the command line.
 "(arg_num)" means if the option is given,
 the number of the arguments is required.
 Author: Bing Ling
-Email: agermanidis@gmail.com
+Email: binglinggroup@outlook.com
 Bug report: https://github.com/BingLingGroup/autosub
 ```
 
@@ -790,7 +790,7 @@ Bugs and suggestions can be reported at [issues](https://github.com/BingLingGrou
 
 I only write the scripts for building standalone executable files on windows, [Nuitka script](scripts/nuitka_build.bat) and [pyinstaller script](scripts/pyinstaller_build.bat).
 
-The version after 0.5.4a doesn't support Nuitka build since 0.5.4a import google.cloud package and it contains `pkg_resources.get_distribution` which is not supported by Nuitka due to this [Nuitka issue #146](https://github.com/Nuitka/Nuitka/issues/146). You can manually remove the codes include the google.cloud package and build it. I will consider remove the codes to support Nuitka build in the future version.
+The version after 0.5.4a doesn't support Nuitka build since 0.5.4a import google.cloud package and it contains `pkg_resources.get_distribution` which is not supported by Nuitka due to this [Nuitka issue #146](https://github.com/Nuitka/Nuitka/issues/146). You can manually remove the codes include the google.cloud package and build it. I will consider removing the codes to support Nuitka build in the future version.
 
 Nuitka build is pretty tricky. These environments I tried and worked.
 

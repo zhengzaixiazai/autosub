@@ -554,7 +554,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         help=_("List all recommended \"-S\"/\"--speech-language\" "
                "Google Speech-to-Text language codes. "
                "If no arg is given, list all. "
-               "Or else will list get a group of \"good match\" "
+               "Or else will list a group of \"good match\" "
                "of the arg. Default \"good match\" standard is whose "
                "match score above 90 (score between 0 and 100). "
                "Ref: https://tools.ietf.org/html/bcp47 "
@@ -569,7 +569,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         nargs='?',
         help=_("List all available \"-SRC\"/\"--src-language\" "
                "py-googletrans translation language codes. "
-               "Or else will list get a group of \"good match\" "
+               "Or else will list a group of \"good match\" "
                "of the arg. "
                "Same docs above. "
                "(arg_num = 0 or 1)"))

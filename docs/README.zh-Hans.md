@@ -654,7 +654,7 @@ Auditok的选项:
 "参数个数"指的是如果提供了选项，
 该选项所需要的参数个数。
 作者: Bing Ling
-Email: agermanidis@gmail.com
+Email: binglinggroup@outlook.com
 问题反馈: https://github.com/agermanidis/autosub
 ```
 

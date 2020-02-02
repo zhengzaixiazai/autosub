@@ -252,7 +252,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
     Check that the commandline arguments passed to autosub are valid
     for audio or video processing.
     """
-    if args.sleep_seconds < 0 or args.lines_per_trans < 0:
+    if args.sleep_seconds < 0:
         raise exceptions.AutosubException(
             _("Error: \"-slp\"/\"--sleep-seconds\" arg is illegal."))
 
