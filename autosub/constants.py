@@ -9,6 +9,7 @@ import os
 import sys
 import shlex
 import locale
+import multiprocessing
 
 # Import third-party modules
 
@@ -52,7 +53,12 @@ else:
 GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
 GOOGLE_SPEECH_V2_API_URL = \
     "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"
-DEFAULT_CONCURRENCY = 10
+
+if multiprocessing.cpu_count() > 3:
+    DEFAULT_CONCURRENCY = multiprocessing.cpu_count() >> 1
+else:
+    DEFAULT_CONCURRENCY = 2
+
 DEFAULT_SRC_LANGUAGE = 'en-US'
 DEFAULT_ENERGY_THRESHOLD = 45
 MAX_REGION_SIZE = 6.0

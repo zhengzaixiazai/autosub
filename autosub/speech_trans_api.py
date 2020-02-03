@@ -7,6 +7,7 @@ Defines speech and translation api used by autosub.
 from __future__ import absolute_import, unicode_literals
 import os
 import base64
+import gc
 import json
 try:
     from json.decoder import JSONDecodeError

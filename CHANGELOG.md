@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## TOC
 
 - [Unreleased](#unreleased)
+  - 
 - [0.5.4-alpha - 2020-01-31](#054-alpha---2020-01-31)
   - [Added](#added054-alpha)
   - [Changed](#changed054-alpha)
@@ -34,6 +35,10 @@ Click up arrow to go back to TOC.
 
 ### Unreleased
 
+#### Changed(Unreleased)
+
+- Fix high memory/RAM usage partially by terminating child processes, lowering default multiprocessing counts and using `gc.collect(0)`. [issue #67](https://github.com/BingLingGroup/autosub/issues/67), [issue #74](https://github.com/BingLingGroup/autosub/issues/74)
+
 ### [0.5.4-alpha] - 2020-01-31
 
 #### Added(0.5.4-alpha)
@@ -46,6 +51,8 @@ Click up arrow to go back to TOC.
 - Fix output format limits when input is a subtitles file.
 - Remove gtransv2 support.
 
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
 ### [0.5.3-alpha] - 2019-12-30
 
 #### Changed(0.5.3-alpha)
@@ -53,6 +60,8 @@ Click up arrow to go back to TOC.
 - Fix excessive transcoding time issue. [pull request #66](https://github.com/BingLingGroup/autosub/pull/66)
 - Fix Auditok option issues. [issue #70](https://github.com/BingLingGroup/autosub/issues/70)
 - Fix output option issue. [issue #73](https://github.com/BingLingGroup/autosub/issues/73)
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.2-alpha] - 2019-11-05
 

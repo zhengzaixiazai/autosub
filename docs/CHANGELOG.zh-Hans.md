@@ -33,6 +33,10 @@
 
 ### [未发布]
 
+#### 改动(未发布)
+
+- 修复部分高内存占用，通过终结子进程，减少默认多进程数量，使用`gc.collect(0)`。[issue #67](https://github.com/BingLingGroup/autosub/issues/67)，[issue #74](https://github.com/BingLingGroup/autosub/issues/74)
+
 ### [0.5.4-alpha] - 2020-01-31
 
 #### 添加(0.5.4-alpha)
@@ -45,6 +49,8 @@
 - 修复输入是字幕文件时的输出格式限制。
 - 删除gtransv2支持。
 
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
+
 ### [0.5.3-alpha] - 2019-12-30
 
 #### 改动(0.5.3-alpha)
@@ -52,6 +58,8 @@
 - 修复ffmpeg参数导致的过长转码时间问题。[pull request #66](https://github.com/BingLingGroup/autosub/pull/66)
 - 修复Auditok选项问题。[issue #70](https://github.com/BingLingGroup/autosub/issues/70)
 - 修复输出选项问题。[issue #73](https://github.com/BingLingGroup/autosub/issues/73)
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.2-alpha] - 2019-11-05
 

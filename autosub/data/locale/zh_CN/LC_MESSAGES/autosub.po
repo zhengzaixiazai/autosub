@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-31 12:09+0800\n"
+"POT-Creation-Date: 2020-02-03 16:38+0800\n"
 "PO-Revision-Date: 2020-01-31 12:09+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,7 +17,7 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.2.4\n"
 
-#: autosub/__init__.py:54 autosub/__init__.py:167
+#: autosub/__init__.py:54 autosub/__init__.py:164
 msgid ""
 "\n"
 "All works done."
@@ -29,7 +29,7 @@ msgstr ""
 msgid "Error: Dependency ffmpeg not found on this machine."
 msgstr "错误：依赖ffmpeg未在这台电脑上找到。"
 
-#: autosub/__init__.py:85
+#: autosub/__init__.py:82
 msgid ""
 "Error: The args of \"-ap\"/\"--audio-process\" are wrong.\n"
 "No works done."
@@ -37,11 +37,11 @@ msgstr ""
 "错误：\"-ap\"/\"--audio-process\"的参数有误。\n"
 "啥都没做。"
 
-#: autosub/__init__.py:98
+#: autosub/__init__.py:95
 msgid "No works done."
 msgstr "啥都没做。"
 
-#: autosub/__init__.py:102
+#: autosub/__init__.py:99
 msgid ""
 "Audio pre-processing complete.\n"
 "All works done."
@@ -49,7 +49,7 @@ msgstr ""
 "音频预处理已完成。\n"
 "做完了。"
 
-#: autosub/__init__.py:119
+#: autosub/__init__.py:116
 msgid ""
 "Audio pre-processing failed.\n"
 "Use default method."
@@ -57,11 +57,11 @@ msgstr ""
 "音频预处理失败。\n"
 "使用默认方法。"
 
-#: autosub/__init__.py:123
+#: autosub/__init__.py:120
 msgid "Audio pre-processing complete."
 msgstr "音频预处理已完成。"
 
-#: autosub/__init__.py:158
+#: autosub/__init__.py:155
 msgid ""
 "\n"
 "KeyboardInterrupt. Works stopped."
@@ -69,7 +69,7 @@ msgstr ""
 "\n"
 "键盘中断。操作终止。"
 
-#: autosub/__init__.py:161
+#: autosub/__init__.py:158
 msgid ""
 "\n"
 "Error: pysubs2.exceptions. Check your file format."

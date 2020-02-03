@@ -11,6 +11,7 @@ import gettext
 import os
 import subprocess
 import tempfile
+import gc
 
 # Import third-party modules
 import auditok
@@ -865,7 +866,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             channel=1,
             sample_rate=48000,
             out_=audio_wav)
-        print(_("\nConvert source audio to \"{name}\" "
+        print(_("\nConvert source file to \"{name}\" "
                 "to get audio length and detect audio regions.").format(
                     name=audio_wav))
         print(command)
@@ -875,8 +876,10 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
         if not ffmpeg_utils.ffprobe_check_file(audio_wav):
             raise exceptions.AutosubException(
-                _("Error: Convert source audio to \"{name}\" failed.").format(
+                _("Error: Convert source file to \"{name}\" failed.").format(
                     name=audio_wav))
+
+        print(_("Detecting speech regions using Auditok."))
 
         regions = core.auditok_gen_speech_regions(
             audio_wav=audio_wav,
@@ -886,6 +889,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             max_continuous_silence=args.max_continuous_silence,
             mode=mode)
         os.remove(audio_wav)
+        gc.collect(0)
+
         print(_("\n\"{name}\" has been deleted.").format(name=audio_wav))
 
     if not regions:
@@ -935,6 +940,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             suffix=args.api_suffix,
             concurrency=args.audio_concurrency,
             is_keep=args.keep)
+        gc.collect(0)
 
         if not audio_fragments or \
                 len(audio_fragments) != len(regions):
@@ -981,6 +987,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 concurrency=args.speech_concurrency,
                 min_confidence=args.min_confidence,
                 is_keep=args.keep)
+            gc.collect(0)
 
         elif args.speech_api == "gcsv1":
             # Google Cloud speech-to-text V1P1Beta1
@@ -1034,6 +1041,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         else:
             text_list = None
 
+        gc.collect(0)
         if not text_list or len(text_list) != len(regions):
             raise exceptions.SpeechToTextException(
                 _("Error: Speech-to-text failed.\nAll works done."))

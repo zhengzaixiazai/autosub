@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-02 11:17+0800\n"
-"PO-Revision-Date: 2019-07-28 15:09+0800\n"
+"POT-Creation-Date: 2020-02-03 16:38+0800\n"
+"PO-Revision-Date: 2020-02-03 16:39+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: zh_CN\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: autosub/ffmpeg_utils.py:98
 msgid ""
@@ -39,22 +39,26 @@ msgstr "输入你视频的帧率。任何非法的值会被当作\".srt\"格式�
 msgid "Use \".srt\" instead."
 msgstr "改用\".srt\"格式。"
 
-#: autosub/ffmpeg_utils.py:219
+#: autosub/ffmpeg_utils.py:145
+msgid "Use ffprobe to check conversion result."
+msgstr "使用ffprobe来检查转换结果。"
+
+#: autosub/ffmpeg_utils.py:221
 msgid ""
 "Warning: Dependency ffmpeg-normalize not found on this machine. Try default "
 "method."
 msgstr ""
 "警告：依赖ffmpeg-normalize未在这台电脑上找到。尝试默认的方法去转换格式。"
 
-#: autosub/ffmpeg_utils.py:231
+#: autosub/ffmpeg_utils.py:233
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/ffmpeg_utils.py:234
+#: autosub/ffmpeg_utils.py:236
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 
-#: autosub/ffmpeg_utils.py:252 autosub/ffmpeg_utils.py:285
+#: autosub/ffmpeg_utils.py:254 autosub/ffmpeg_utils.py:287
 msgid "Audio pre-processing failed. Try default method."
 msgstr "音频预处理失败。尝试默认的方法去转换格式。"

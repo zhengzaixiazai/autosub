@@ -142,6 +142,7 @@ def ffprobe_check_file(filename):
     Give an audio or video file
     and check whether it is not empty by get its bitrate.
     """
+    print(_("Use ffprobe to check conversion result."))
     command = "ffprobe {in_} -show_format -pretty -loglevel quiet".format(in_=filename)
     print(command)
     ffprobe_bytes = subprocess.check_output(
@@ -149,6 +150,7 @@ def ffprobe_check_file(filename):
         stdin=open(os.devnull),
         shell=False)
     ffprobe_str = ffprobe_bytes.decode(sys.stdout.encoding)
+    print(ffprobe_str)
     bitrate_idx = ffprobe_str.find('bit_rate')
     if bitrate_idx < 0 or \
             ffprobe_str[bitrate_idx + 9:bitrate_idx + 10].lower() == 'n':

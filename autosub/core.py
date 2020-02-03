@@ -9,6 +9,7 @@ import os
 import multiprocessing
 import time
 import gettext
+import gc
 
 # Import third-party modules
 import progressbar
@@ -66,6 +67,7 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
     for token in tokens:
         # get start and end times
         regions.append((token[1] * 10, token[2] * 10))
+
     asource.close()
     # reference
     # auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data
@@ -108,14 +110,16 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
         for i, flac_region in enumerate(pool.imap(converter, regions)):
             audio_fragments.append(flac_region)
             pbar.update(i)
+            gc.collect(0)
         pbar.finish()
+        pool.terminate()
+        pool.join()
 
     except KeyboardInterrupt:
         pbar.finish()
         pool.terminate()
         pool.join()
         return None
-
     return audio_fragments
 
 
@@ -155,8 +159,11 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
                 text_list.append(transcript)
             else:
                 text_list.append("")
+            gc.collect(0)
             pbar.update(i)
         pbar.finish()
+        pool.terminate()
+        pool.join()
 
     except (KeyboardInterrupt, AttributeError) as error:
         pbar.finish()
@@ -274,6 +281,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 tasks.append(pool.apply_async(
                     speech_trans_api.gcsv1p1beta1_service_client,
                     args=(filename, is_keep, config, min_confidence)))
+                gc.collect(0)
 
             for task in tasks:
                 i = i + 1
@@ -285,6 +293,8 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 pbar.update(i)
 
         pbar.finish()
+        pool.terminate()
+        pool.join()
 
     except (KeyboardInterrupt, AttributeError) as error:
         pbar.finish()
@@ -508,7 +518,7 @@ def list_to_sub_str(
     else:
         # fallback process
         print(_("Format \"{fmt}\" not supported. "
-                "Using \"{default_fmt}\" instead.").format(
+                "Use \"{default_fmt}\" instead.").format(
                     fmt=subtitles_file_format,
                     default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
         pysubs2_obj = pysubs2.SSAFile()
@@ -567,7 +577,7 @@ def ssafile_to_sub_str(
     else:
         # fallback process
         print(_("Format \"{fmt}\" not supported. "
-                "Using \"{default_fmt}\" instead.").format(
+                "Use \"{default_fmt}\" instead.").format(
                     fmt=subtitles_file_format,
                     default_fmt=constants.DEFAULT_SUBTITLES_FORMAT))
         formatted_subtitles = ssafile.to_string(

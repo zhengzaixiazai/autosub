@@ -65,16 +65,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         validate_result = cmdline_utils.validate_io(args, styles_list)
 
         if validate_result == 0:
-            ffmpeg_cmd = ffmpeg_utils.get_cmd("ffmpeg")
+            ffmpeg_cmd = "{} ".format(ffmpeg_utils.get_cmd("ffmpeg"))
             if not ffmpeg_cmd:
                 raise exceptions.AutosubException(
                     _("Error: Dependency ffmpeg"
                       " not found on this machine."))
 
-            ffmpeg_cmd = ffmpeg_cmd + ' '
-
-            cmdline_utils.fix_args(args,
-                                   ffmpeg_cmd=ffmpeg_cmd)
+            cmdline_utils.fix_args(args, ffmpeg_cmd=ffmpeg_cmd)
 
             if args.audio_process:
                 args.audio_process = {k.lower() for k in args.audio_process}
