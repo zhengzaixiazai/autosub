@@ -38,6 +38,7 @@ Click up arrow to go back to TOC.
 #### Changed(Unreleased)
 
 - Fix high memory/RAM usage partially by terminating child processes, lowering default multiprocessing counts and using `gc.collect(0)`. [issue #67](https://github.com/BingLingGroup/autosub/issues/67), [issue #74](https://github.com/BingLingGroup/autosub/issues/74)
+- Fix dependency finding issue. [issue #82](https://github.com/BingLingGroup/autosub/issues/82)
 
 ### [0.5.4-alpha] - 2020-01-31
 

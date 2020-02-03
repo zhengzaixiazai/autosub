@@ -495,8 +495,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
         args.styles = args.ext_regions
 
 
-def fix_args(args,
-             ffmpeg_cmd):
+def fix_args(args):
     """
     Check that the commandline arguments value passed to autosub are proper.
     """
@@ -521,16 +520,6 @@ def fix_args(args,
                   "Now reset to {dmxcs}.").format(mxcs=args.max_continuous_silence,
                                                   dmxcs=constants.DEFAULT_CONTINUOUS_SILENCE))
             args.max_continuous_silence = constants.DEFAULT_CONTINUOUS_SILENCE
-
-    if not args.audio_conversion_cmd:
-        args.audio_conversion_cmd = \
-            constants.DEFAULT_AUDIO_CVT[:7].replace(
-                'ffmpeg ', ffmpeg_cmd) + constants.DEFAULT_AUDIO_CVT[7:]
-
-    if not args.audio_split_cmd:
-        args.audio_split_cmd = \
-            constants.DEFAULT_AUDIO_SPLT[:7].replace(
-                'ffmpeg ', ffmpeg_cmd) + constants.DEFAULT_AUDIO_SPLT[7:]
 
 
 def get_timed_text(

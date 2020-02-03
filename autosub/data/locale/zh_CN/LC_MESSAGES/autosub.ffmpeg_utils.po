@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-03 16:38+0800\n"
-"PO-Revision-Date: 2020-02-03 16:39+0800\n"
+"POT-Creation-Date: 2020-02-03 21:36+0800\n"
+"PO-Revision-Date: 2020-02-03 21:37+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -24,10 +24,10 @@ msgstr "错误：ffmpeg无法分割你的文件。检查一下你的音频处理
 
 #: autosub/ffmpeg_utils.py:122
 msgid ""
-"ffprobe(ffmpeg) can't get video fps.\n"
+"ffprobe can't get video fps.\n"
 "It is necessary when output is \".sub\"."
 msgstr ""
-"ffprobe（ffmpeg）无法获取到视频的帧率。\n"
+"ffprobe无法获取到视频的帧率。\n"
 "当输出格式是\".sub\"时，需要获取帧率。"
 
 #: autosub/ffmpeg_utils.py:125
@@ -40,25 +40,29 @@ msgid "Use \".srt\" instead."
 msgstr "改用\".srt\"格式。"
 
 #: autosub/ffmpeg_utils.py:145
-msgid "Use ffprobe to check conversion result."
-msgstr "使用ffprobe来检查转换结果。"
+msgid ""
+"\n"
+"Use ffprobe to check conversion result."
+msgstr ""
+"\n"
+"使用ffprobe来检查转换结果。"
 
-#: autosub/ffmpeg_utils.py:221
+#: autosub/ffmpeg_utils.py:174
 msgid ""
 "Warning: Dependency ffmpeg-normalize not found on this machine. Try default "
 "method."
 msgstr ""
 "警告：依赖ffmpeg-normalize未在这台电脑上找到。尝试默认的方法去转换格式。"
 
-#: autosub/ffmpeg_utils.py:233
+#: autosub/ffmpeg_utils.py:186
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/ffmpeg_utils.py:236
+#: autosub/ffmpeg_utils.py:189
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 
-#: autosub/ffmpeg_utils.py:254 autosub/ffmpeg_utils.py:287
+#: autosub/ffmpeg_utils.py:206 autosub/ffmpeg_utils.py:238
 msgid "Audio pre-processing failed. Try default method."
 msgstr "音频预处理失败。尝试默认的方法去转换格式。"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-03 16:38+0800\n"
+"POT-Creation-Date: 2020-02-03 21:26+0800\n"
 "PO-Revision-Date: 2020-02-03 16:38+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -239,7 +239,7 @@ msgstr "错误：源语言和目的语言一致。"
 msgid "Error: Source language not provided."
 msgstr "错误：源语言未提供。"
 
-#: autosub/cmdline_utils.py:506
+#: autosub/cmdline_utils.py:505
 msgid ""
 "Your minimum region size {mrs0} is smaller than {mrs}.\n"
 "Now reset to {mrs}."
@@ -247,7 +247,7 @@ msgstr ""
 "你输入的语音区域{mrs0}比{mrs}还小。\n"
 "现在重置为{mrs}。"
 
-#: autosub/cmdline_utils.py:513
+#: autosub/cmdline_utils.py:512
 msgid ""
 "Your maximum region size {mrs0} is larger than {mrs}.\n"
 "Now reset to {mrs}."
@@ -255,7 +255,7 @@ msgstr ""
 "你输入的语音区域{mrs0}比{mrs}还大。\n"
 "现在重置为{mrs}。"
 
-#: autosub/cmdline_utils.py:520
+#: autosub/cmdline_utils.py:519
 msgid ""
 "Your maximum continuous silence {mxcs} is smaller than 0.\n"
 "Now reset to {dmxcs}."
@@ -263,7 +263,7 @@ msgstr ""
 "你输入的最大连续安静区域{mxcs}比0还小。\n"
 "现在重置为{dmxcs}。"
 
-#: autosub/cmdline_utils.py:563 autosub/cmdline_utils.py:828
+#: autosub/cmdline_utils.py:552 autosub/cmdline_utils.py:817
 msgid ""
 "\n"
 "No works done. Check your \"-of\"/\"--output-files\" option."
@@ -271,18 +271,18 @@ msgstr ""
 "\n"
 "啥都没做。检查你的\"-of\"/\"--output-files\"选项。"
 
-#: autosub/cmdline_utils.py:595 autosub/cmdline_utils.py:1101
+#: autosub/cmdline_utils.py:584 autosub/cmdline_utils.py:1090
 msgid "Error: Translation failed."
 msgstr "错误：翻译失败。"
 
-#: autosub/cmdline_utils.py:639 autosub/cmdline_utils.py:1140
+#: autosub/cmdline_utils.py:628 autosub/cmdline_utils.py:1129
 msgid "Bilingual subtitles file created at \"{}\"."
 msgstr "双语字幕创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:643 autosub/cmdline_utils.py:695
-#: autosub/cmdline_utils.py:747 autosub/cmdline_utils.py:930
-#: autosub/cmdline_utils.py:1085 autosub/cmdline_utils.py:1144
-#: autosub/cmdline_utils.py:1192 autosub/cmdline_utils.py:1240
+#: autosub/cmdline_utils.py:632 autosub/cmdline_utils.py:684
+#: autosub/cmdline_utils.py:736 autosub/cmdline_utils.py:919
+#: autosub/cmdline_utils.py:1074 autosub/cmdline_utils.py:1133
+#: autosub/cmdline_utils.py:1181 autosub/cmdline_utils.py:1229
 msgid ""
 "\n"
 "All works done."
@@ -290,23 +290,23 @@ msgstr ""
 "\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:691 autosub/cmdline_utils.py:1188
+#: autosub/cmdline_utils.py:680 autosub/cmdline_utils.py:1177
 msgid "\"dst-lf-src\" subtitles file created at \"{}\"."
 msgstr "\"dst-lf-src\"字幕创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:743 autosub/cmdline_utils.py:1236
+#: autosub/cmdline_utils.py:732 autosub/cmdline_utils.py:1225
 msgid "\"src-lf-dst\" subtitles file created at \"{}\"."
 msgstr "\"src-lf-dst\"字幕创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:786 autosub/cmdline_utils.py:1281
+#: autosub/cmdline_utils.py:775 autosub/cmdline_utils.py:1270
 msgid "Destination language subtitles file created at \"{}\"."
 msgstr "目的语言字幕文件创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:833
+#: autosub/cmdline_utils.py:822
 msgid "Use external speech regions."
 msgstr "使用外部时间轴。"
 
-#: autosub/cmdline_utils.py:869
+#: autosub/cmdline_utils.py:858
 msgid ""
 "\n"
 "Convert source file to \"{name}\" to get audio length and detect audio "
@@ -315,15 +315,15 @@ msgstr ""
 "\n"
 "将源文件转换为\"{name}\"来检测语音区域。"
 
-#: autosub/cmdline_utils.py:879
+#: autosub/cmdline_utils.py:868
 msgid "Error: Convert source file to \"{name}\" failed."
 msgstr "错误：转换源文件至\"{name}\"失败。"
 
-#: autosub/cmdline_utils.py:882
+#: autosub/cmdline_utils.py:871
 msgid "Detecting speech regions using Auditok."
 msgstr "使用Auditok检测语音区域。"
 
-#: autosub/cmdline_utils.py:894
+#: autosub/cmdline_utils.py:883
 msgid ""
 "\n"
 "\"{name}\" has been deleted."
@@ -331,19 +331,19 @@ msgstr ""
 "\n"
 "\"{name}\"已被删除。"
 
-#: autosub/cmdline_utils.py:898
+#: autosub/cmdline_utils.py:887
 msgid "Error: Can't get speech regions."
 msgstr "错误：无法得到语音区域。"
 
-#: autosub/cmdline_utils.py:927 autosub/cmdline_utils.py:1348
+#: autosub/cmdline_utils.py:916 autosub/cmdline_utils.py:1337
 msgid "Times file created at \"{}\"."
 msgstr "时间轴文件创建在了\"{}\"."
 
-#: autosub/cmdline_utils.py:951
+#: autosub/cmdline_utils.py:940
 msgid "Error: Conversion failed."
 msgstr "错误：转换失败。"
 
-#: autosub/cmdline_utils.py:955
+#: autosub/cmdline_utils.py:944
 msgid ""
 "Audio processing complete.\n"
 "All works done."
@@ -351,22 +351,22 @@ msgstr ""
 "音频处理完毕。\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:1001
+#: autosub/cmdline_utils.py:990
 msgid "Use the API key given in the option \"-skey\"/\"--speech-key\"."
 msgstr "使用选项\"-skey\"/\"--speech-key\"提供的API密钥。"
 
-#: autosub/cmdline_utils.py:1014
+#: autosub/cmdline_utils.py:1003
 msgid ""
 "Set the GOOGLE_APPLICATION_CREDENTIALS given in the option \"-sa\"/\"--"
 "service-account\"."
 msgstr ""
 "设置选项\"-sa\"/\"--service-account\"提供的GOOGLE_APPLICATION_CREDENTIALS。"
 
-#: autosub/cmdline_utils.py:1027
+#: autosub/cmdline_utils.py:1016
 msgid "Use the GOOGLE_APPLICATION_CREDENTIALS in the environment variables."
 msgstr "使用环境变量中的GOOGLE_APPLICATION_CREDENTIALS。"
 
-#: autosub/cmdline_utils.py:1038
+#: autosub/cmdline_utils.py:1027
 msgid ""
 "No available GOOGLE_APPLICATION_CREDENTIALS. Use \"-sa\"/\"--service-account"
 "\" to set one."
@@ -374,7 +374,7 @@ msgstr ""
 "没有可用的GOOGLE_APPLICATION_CREDENTIALS。使用选项\"-sa\"/\"--service-account"
 "\"来设置一个。"
 
-#: autosub/cmdline_utils.py:1047
+#: autosub/cmdline_utils.py:1036
 msgid ""
 "Error: Speech-to-text failed.\n"
 "All works done."
@@ -382,11 +382,11 @@ msgstr ""
 "错误：语音转文字失败。\n"
 "做完了。"
 
-#: autosub/cmdline_utils.py:1081 autosub/cmdline_utils.py:1318
+#: autosub/cmdline_utils.py:1070 autosub/cmdline_utils.py:1307
 msgid "Speech language subtitles file created at \"{}\"."
 msgstr "语音字幕文件创建在了\"{}\"。"
 
-#: autosub/cmdline_utils.py:1290
+#: autosub/cmdline_utils.py:1279
 msgid ""
 "Override \"-of\"/\"--output-files\" due to your args too few.\n"
 "Output source subtitles file only."
@@ -394,7 +394,7 @@ msgstr ""
 "因为你其他参数输入得太少了，忽略\"-of\"/\"--output-files\"参数。\n"
 "只输出源语言字幕文件。"
 
-#: autosub/cmdline_utils.py:1323
+#: autosub/cmdline_utils.py:1312
 msgid ""
 "Override \"-of\"/\"--output-files\" due to your args too few.\n"
 "Output regions subtitles file only."

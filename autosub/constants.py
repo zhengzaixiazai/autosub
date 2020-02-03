@@ -15,7 +15,7 @@ import multiprocessing
 
 # Any changes to the path and your own modules
 
-SUPPORT_LOCALE = {
+SUPPORTED_LOCALE = {
     "en_US",
     "zh_CN"
 }
@@ -43,7 +43,7 @@ if os.path.isfile(EXT_LOCALE):
     with open(EXT_LOCALE, "r") as in_file:
         LINE = in_file.readline()
         LINE_LIST = LINE.split()
-        if LINE_LIST[0] in SUPPORT_LOCALE:
+        if LINE_LIST[0] in SUPPORTED_LOCALE:
             CURRENT_LOCALE = LINE_LIST[0]
         else:
             CURRENT_LOCALE = locale.getdefaultlocale()[0]
@@ -78,26 +78,6 @@ DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual', 'dst-lf-src', 'src-lf-
 DEFAULT_SUB_MODE_SET = {'dst', 'bilingual', 'dst-lf-src', 'src-lf-dst'}
 DEFAULT_LANG_MODE_SET = {'s', 'src', 'd'}
 DEFAULT_AUDIO_PRCS_MODE_SET = {'o', 's', 'y'}
-
-DEFAULT_AUDIO_PRCS = [
-    "ffmpeg -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\
-ametadata=select:key=\
-lavfi.aphasemeter.phase:value=-0.005:function=less,\
-pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]amix\" \
--ac 1 -f flac \"{out_}\"",
-    "ffmpeg -hide_banner -i \"{in_}\" -af lowpass=3000,highpass=200 \"{out_}\"",
-    "ffmpeg-normalize -v \"{in_}\" -ar 44100 -ofmt flac -c:a flac -pr -p -o \"{out_}\""
-]
-
-DEFAULT_AUDIO_CVT = \
-    "ffmpeg -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
-
-DEFAULT_AUDIO_SPLT = \
-    "ffmpeg -y -ss {start} -i \"{in_}\" -t {dura} " \
-    "-vn -ac [channel] -ar [sample_rate] -loglevel error \"{out_}\""
-
-DEFAULT_VIDEO_FPS_CMD = "ffprobe -v 0 -of csv=p=0 -select_streams " \
-                        "v:0 -show_entries stream=r_frame_rate \"{in_}\""
 
 SPEECH_TO_TEXT_LANGUAGE_CODES = {
     'af-za': 'Afrikaans (South Africa)',
@@ -355,8 +335,7 @@ INPUT_FORMAT = {
 }
 
 
-def cmd_conversion(
-        command):
+def cmd_conversion(command):
     """
     Give a command and return a cross-platform command
     """
@@ -365,3 +344,76 @@ def cmd_conversion(
     else:
         cmd_args = shlex.split(command)
     return cmd_args
+
+
+def is_exe(file_path):
+    """
+    Checks whether a file is executable.
+    """
+    return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
+
+
+def which_exe(program_path):
+    """
+    Return the path for a given executable.
+    """
+    program_dir = os.path.split(program_path)[0]
+    if program_dir:
+        # if program directory exists
+        if is_exe(program_path):
+            return program_path
+    else:
+        # else find the program path
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            program = os.path.join(path, program_path)
+            if is_exe(program):
+                return program
+        # if program located at app's directory
+        program_name = os.path.join(APP_PATH, os.path.basename(program_path))
+        if is_exe(program_name):
+            return program_name
+        # if program located at current directory
+        program_name = os.path.join(os.getcwd(), os.path.basename(program_path))
+        if is_exe(program_name):
+            return program_name
+    return None
+
+
+def get_cmd(program_name):
+    """
+    Return the executable name. "" returned when no executable exists.
+    """
+    if which_exe(program_name):
+        return program_name
+    if which_exe(program_name + ".exe"):
+        return program_name + ".exe"
+    return ""
+
+
+FFMPEG_CMD = get_cmd("ffmpeg")
+FFPROBE_CMD = get_cmd("ffprobe")
+FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
+
+
+DEFAULT_AUDIO_PRCS = [
+    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\
+ametadata=select:key=\
+lavfi.aphasemeter.phase:value=-0.005:function=less,\
+pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]amix\" \
+-ac 1 -f flac \"{out_}\"",
+    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af lowpass=3000,highpass=200 \"{out_}\"",
+    FFMPEG_NORMALIZE_CMD + " -v \"{in_}\" -ar 44100 -ofmt flac -c:a flac -pr -p -o \"{out_}\""
+]
+
+DEFAULT_AUDIO_CVT = \
+    FFMPEG_CMD + " -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
+
+DEFAULT_AUDIO_SPLT = \
+    FFMPEG_CMD + " -y -ss {start} -i \"{in_}\" -t {dura} " \
+    "-vn -ac [channel] -ar [sample_rate] -loglevel error \"{out_}\""
+
+DEFAULT_VIDEO_FPS_CMD = FFPROBE_CMD + " -v 0 -of csv=p=0 -select_streams " \
+                        "v:0 -show_entries stream=r_frame_rate \"{in_}\""
+
+DEFAULT_CHECK_CMD = FFPROBE_CMD + " {in_} -show_format -pretty -loglevel quiet"

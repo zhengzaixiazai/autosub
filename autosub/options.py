@@ -439,26 +439,23 @@ def get_cmd_args():  # pylint: disable=too-many-statements
     audio_prcs_group.add_argument(
         '-acc', '--audio-conversion-cmd',
         metavar=_('command'),
+        default=constants.DEFAULT_AUDIO_CVT,
         help=_("(Experimental)This arg will override the default "
                "audio conversion command. "
                "\"[\", \"]\" are optional arguments "
                "meaning you can remove them. "
                "\"{{\", \"}}\" are required arguments "
                "meaning you can't remove them. "
-               "Default command to process the audio: "
-               "{dft} "
-               "(arg_num = 1)").format(
-                   dft=constants.DEFAULT_AUDIO_CVT))
+               "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-asc', '--audio-split-cmd',
         metavar=_('command'),
+        default=constants.DEFAULT_AUDIO_SPLT,
         help=_("(Experimental)This arg will override the default "
                "audio split command. "
                "Same attention above. "
-               "Default: {dft} "
-               "(arg_num = 1)").format(
-                   dft=constants.DEFAULT_AUDIO_SPLT))
+               "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-asf', '--api-suffix',

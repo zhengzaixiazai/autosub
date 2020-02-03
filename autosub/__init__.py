@@ -65,13 +65,16 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         validate_result = cmdline_utils.validate_io(args, styles_list)
 
         if validate_result == 0:
-            ffmpeg_cmd = "{} ".format(ffmpeg_utils.get_cmd("ffmpeg"))
-            if not ffmpeg_cmd:
+            if not constants.FFMPEG_CMD:
                 raise exceptions.AutosubException(
                     _("Error: Dependency ffmpeg"
                       " not found on this machine."))
+            if not constants.FFPROBE_CMD:
+                raise exceptions.AutosubException(
+                    _("Error: Dependency ffprobe"
+                      " not found on this machine."))
 
-            cmdline_utils.fix_args(args, ffmpeg_cmd=ffmpeg_cmd)
+            cmdline_utils.fix_args(args)
 
             if args.audio_process:
                 args.audio_process = {k.lower() for k in args.audio_process}
@@ -88,8 +91,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         is_keep=args.keep,
                         cmds=args.audio_process_cmd,
                         output_name=args.output,
-                        input_m=input_m,
-                        ffmpeg_cmd=ffmpeg_cmd)
+                        input_m=input_m)
                     if not prcs_file:
                         raise exceptions.AutosubException(
                             _("No works done."))
@@ -107,8 +109,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         is_keep=args.keep,
                         cmds=args.audio_process_cmd,
                         output_name=args.output,
-                        input_m=input_m,
-                        ffmpeg_cmd=ffmpeg_cmd)
+                        input_m=input_m)
                     args.audio_split_cmd = \
                         args.audio_split_cmd.replace(
                             "-vn -ac [channel] -ar [sample_rate] ", "")
