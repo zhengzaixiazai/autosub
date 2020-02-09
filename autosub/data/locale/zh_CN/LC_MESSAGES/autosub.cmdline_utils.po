@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-03 21:26+0800\n"
-"PO-Revision-Date: 2020-02-03 16:38+0800\n"
+"POT-Creation-Date: 2020-02-04 11:19+0800\n"
+"PO-Revision-Date: 2020-02-04 11:32+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -320,7 +320,7 @@ msgid "Error: Convert source file to \"{name}\" failed."
 msgstr "错误：转换源文件至\"{name}\"失败。"
 
 #: autosub/cmdline_utils.py:871
-msgid "Detecting speech regions using Auditok."
+msgid "Use Auditok to detect speech regions."
 msgstr "使用Auditok检测语音区域。"
 
 #: autosub/cmdline_utils.py:883
@@ -401,6 +401,9 @@ msgid ""
 msgstr ""
 "因为你其他参数输入得太少了，忽略\"-of\"/\"--output-files\"参数。\n"
 "只输出时间轴文件。"
+
+#~ msgid "Detecting speech regions using Auditok."
+#~ msgstr "使用Auditok检测语音区域。"
 
 #~ msgid "Check conversion result."
 #~ msgstr "检查转换结果。"

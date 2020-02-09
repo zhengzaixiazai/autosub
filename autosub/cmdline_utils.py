@@ -868,7 +868,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 _("Error: Convert source file to \"{name}\" failed.").format(
                     name=audio_wav))
 
-        print(_("Detecting speech regions using Auditok."))
+        print(_("Use Auditok to detect speech regions."))
 
         regions = core.auditok_gen_speech_regions(
             audio_wav=audio_wav,

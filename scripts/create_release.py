@@ -21,25 +21,43 @@ def copytree(src,
              dst,
              symlinks=False,
              ignore=None,
-             ext=None):
-    if not ext:
+             exts=None,
+             is_recursive=False):
+    if not exts:
         for item in os.listdir(src):
             s = os.path.join(src, item)
             d = os.path.join(dst, item)
             if os.path.isdir(s):
-                shutil.copytree(s, d, symlinks, ignore)
+                if is_recursive:
+                    shutil.copytree(s, d, symlinks, ignore)
+                else:
+                    os.makedirs(os.path.join(dst, s))
             else:
                 shutil.copy2(s, d)
 
     else:
-        for item in os.listdir(src):
-            s = os.path.join(src, item)
-            if os.path.isfile(s):
-                for ext_item in ext:
-                    if not item.endswith(ext_item):
-                        continue
-                    d = os.path.join(dst, item)
-                    shutil.copy2(s, d)
+        path_stack = [src, ]
+        while len(path_stack) > 0:
+            path = path_stack.pop()
+            if os.path.isdir(path):
+                for item in os.listdir(path):
+                    abs_path = os.path.join(path, item)
+                    if os.path.isdir(item):
+                        if is_recursive:
+                            path_stack.append(abs_path)
+                        else:
+                            continue
+                    else:
+                        path_stack.append(abs_path)
+            else:
+                rel_path = os.path.relpath(path, src)
+                for ext in exts:
+                    if path.endswith(ext):
+                        dst_path = os.path.join(dst, rel_path)
+                        rel_dir = os.path.dirname(dst_path)
+                        if not os.path.isdir(rel_dir):
+                            os.makedirs(rel_dir)
+                        shutil.copy2(path, dst_path)
 
 
 if __name__ == "__main__":
@@ -83,21 +101,21 @@ if __name__ == "__main__":
     #     print(out.decode(sys.stdout.encoding))
     # if err:
     #     print(err.decode(sys.stdout.encoding))
-    copytree(src=here, dst=target, ext=[".md", ".txt"])
+    copytree(src=here, dst=target, exts=[".md", ".txt"])
     target_docs = os.path.join(target, "docs")
     os.makedirs(target_docs)
-    copytree(src="docs", dst=target_docs)
+    copytree(src="docs", dst=target_docs, is_recursive=True)
     shutil.copy2("LICENSE", target)
-    copytree(src=target, dst=target_pyi)
+    copytree(src=target, dst=target_pyi, is_recursive=True)
     shutil.copy2(".build_and_dist/pyinstaller.build/{}.exe".format(release_name), target_pyi)
-    copytree(src="scripts/release_files_pyi", dst=target_pyi)
-    copytree(src="scripts/release_files", dst=target)
+    copytree(src="scripts/release_files_pyi", dst=target_pyi, is_recursive=True)
+    copytree(src="scripts/release_files", dst=target, is_recursive=True)
 
     os.makedirs(target_data)
     os.makedirs(target_data_pyi)
-    copytree(src="{}/data".format(package_name), dst=target_data)
-    copytree(src="{}/data".format(package_name), dst=target_data_pyi)
-    copytree(src=".build_and_dist/{}.dist".format(release_name), dst=target_nuitka)
+    copytree(src="{}/data".format(package_name), dst=target_data, exts=[".mo"], is_recursive=True)
+    copytree(src="{}/data".format(package_name), dst=target_data_pyi, exts=[".mo"], is_recursive=True)
+    copytree(src=".build_and_dist/{}.dist".format(release_name), dst=target_nuitka, is_recursive=True)
 
     exe_dir = "binaries"
     if os.path.isdir(exe_dir):
