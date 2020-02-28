@@ -13,10 +13,6 @@ import subprocess
 import tempfile
 import gc
 import json
-try:
-    from json.decoder import JSONDecodeError
-except ImportError:
-    JSONDecodeError = ValueError
 
 # Import third-party modules
 import auditok
@@ -262,7 +258,7 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
         with open(args.speech_config, 'rb') as config_file:
             try:
                 config_dict = json.load(config_file)
-            except (JSONDecodeError, ValueError):
+            except ValueError:
                 raise exceptions.AutosubException(
                     _("Error: Can't decode config file \"{filename}\".").format(
                         filename=args.speech_config))

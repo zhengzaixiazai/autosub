@@ -8,10 +8,6 @@ from __future__ import absolute_import, unicode_literals
 import os
 import base64
 import json
-try:
-    from json.decoder import JSONDecodeError
-except ImportError:
-    JSONDecodeError = ValueError
 
 # Import third-party modules
 import requests
@@ -77,7 +73,7 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                             result = result.replace('’', '\'')
                             return result
 
-                    except (JSONDecodeError, ValueError, IndexError):
+                    except (ValueError, IndexError):
                         # no result
                         continue
 
@@ -189,7 +185,7 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
 
                 try:
                     result_dict = json.loads(requests_result_json)
-                except JSONDecodeError:
+                except ValueError:
                     # no result
                     continue
 

@@ -7,7 +7,6 @@ Defines autosub's command line options.
 from __future__ import absolute_import, print_function, unicode_literals
 import argparse
 import gettext
-import os
 
 # Import third-party modules
 
