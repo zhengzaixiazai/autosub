@@ -12,6 +12,11 @@ import os
 import subprocess
 import tempfile
 import gc
+import json
+try:
+    from json.decoder import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
 
 # Import third-party modules
 import auditok
@@ -246,6 +251,58 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
         return 1
 
     return 0
+
+
+def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
+    """
+    Check that the speech-config args passed to autosub are valid
+    for audio or video processing.
+    """
+    if os.path.isfile(args.speech_config):
+        with open(args.speech_config, 'rb') as config_file:
+            try:
+                config_dict = json.load(config_file)
+            except (JSONDecodeError, ValueError):
+                raise exceptions.AutosubException(
+                    _("Error: Can't decode config file \"{filename}\".").format(
+                        filename=args.speech_config))
+    else:
+        raise exceptions.AutosubException(
+            _("Error: Config file \"{filename}\" doesn't exist.").format(
+                filename=args.speech_config))
+
+    if "encoding" in config_dict and config_dict["encoding"]:
+        # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+        if config_dict["encoding"] == "FLAC":
+            args.api_suffix = ".flac"
+        elif config_dict["encoding"] == "MP3":
+            args.api_suffix = ".mp3"
+        elif config_dict["encoding"] == "LINEAR16":
+            args.api_suffix = ".wav"
+        elif config_dict["encoding"] == "OGG_OPUS":
+            args.api_suffix = ".ogg"
+
+    # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
+    # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
+    # In practice, the client API only accept the second variable format
+    # but the URL API accept the both
+    if "sample_rate_hertz" in config_dict and config_dict["sample_rate_hertz"]:
+        args.api_sample_rate = config_dict["sample_rate_hertz"]
+    elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
+        args.api_sample_rate = config_dict["sampleRateHertz"]
+
+    if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
+        args.api_audio_channel = config_dict["audio_channel_count"]
+    elif "audioChannelCount" in config_dict and config_dict["audioChannelCount"]:
+        args.api_audio_channel = config_dict["audioChannelCount"]
+
+    if "language_code" in config_dict and config_dict["language_code"]:
+        args.speech_language = config_dict["language_code"]
+    elif "languageCode" in config_dict and config_dict["languageCode"]:
+        args.speech_language = config_dict["languageCode"]
+
+    args.speech_config = config_dict
 
 
 def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
@@ -995,6 +1052,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     regions=regions,
                     api_url=gcsv1_api_url,
                     headers=headers,
+                    config=args.speech_config,
                     concurrency=args.speech_concurrency,
                     src_language=args.speech_language,
                     min_confidence=args.min_confidence,
@@ -1007,6 +1065,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     audio_fragments=audio_fragments,
                     sample_rate=args.api_sample_rate,
                     regions=regions,
+                    config=args.speech_config,
                     concurrency=args.speech_concurrency,
                     src_language=args.speech_language,
                     min_confidence=args.min_confidence,
@@ -1019,6 +1078,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                         audio_fragments=audio_fragments,
                         sample_rate=args.api_sample_rate,
                         regions=regions,
+                        config=args.speech_config,
                         concurrency=args.speech_concurrency,
                         src_language=args.speech_language,
                         min_confidence=args.min_confidence,

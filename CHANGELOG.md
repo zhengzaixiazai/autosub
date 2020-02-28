@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## TOC
 
 - [Unreleased](#unreleased)
-  - 
+  - [Added](#addedunreleased)
+  - [Changed](#changedunreleased)
 - [0.5.4-alpha - 2020-01-31](#054-alpha---2020-01-31)
   - [Added](#added054-alpha)
   - [Changed](#changed054-alpha)
@@ -34,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Click up arrow to go back to TOC.
 
 ### Unreleased
+
+#### Added(Unreleased)
+
+- Add Google Cloud Speech-to-Text API Recognition Config json file input support.
 
 #### Changed(Unreleased)
 

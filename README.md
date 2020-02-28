@@ -46,6 +46,8 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
    - 7.1 [Other APIs supports](#other-apis-supports)
    - 7.2 [Batch processing](#batch-processing)
    - 7.3 [proxy support](#proxy-support)
+   - 7.4 [macOS locale issue](#macos-locale-issue)
+   - 7.5 [speech-to-text issue](#)
 8. [Bugs report](#bugs-report)
 9. [Build](#build)
 
@@ -141,6 +143,8 @@ apt install ffmpeg python python-pip -y
 pip install autosub
 ```
 
+Recommend using `python3` and `python-pip3` instead of `python` and `python-pip` after autosub-0.4.0.
+
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 #### Install on Windows
@@ -183,6 +187,8 @@ pip install git+https://github.com/BingLingGroup/autosub.git@origin
 
 PyPI version(autosub-0.3.12) is not recommended using on windows because it just can't run successfully. See the [changelog on the origin branch](CHANGELOG.md#040-alpha---2019-02-17) and you will know the details.
 
+Recommend using `python` instead of `python2` autosub-0.4.0.
+
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ### Workflow
@@ -209,7 +215,7 @@ Supported formats below:
   - MP3
   - 16bit/mono PCM
 
-Also, you can use the built-in audio pre-processing function.(Though Google [doesn't recommend](https://cloud.google.com/speech-to-text/docs/best-practices) doing this.) The default [pre-processing commands](https://github.com/agermanidis/autosub/issues/40#issuecomment-509928060) depend on the ffmpeg-normalize and ffmpeg. The commands include three commands. The [first](https://trac.ffmpeg.org/wiki/AudioChannelManipulation) is for converting stereo to mono. The [second](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg) is for filtering out the sound not in the frequency of speech. The third is to normalize the audio to make sure it is not too loud or too quiet. If you are not satisfied with the default commands, you can also modified them yourself by input `-apc` option. Still, it currently only supports 24bit/44100Hz/mono FLAC format.
+Also, you can use the built-in audio pre-processing function though Google [doesn't recommend](https://cloud.google.com/speech-to-text/docs/best-practices) doing this. Honestly speaking, if your audio volume is not been standardized like too loud or too quiet, it's recommended to use some tools or just the built-in function to standardize it. The default [pre-processing commands](https://github.com/agermanidis/autosub/issues/40#issuecomment-509928060) depend on the ffmpeg-normalize and ffmpeg. The commands include three commands. The [first](https://trac.ffmpeg.org/wiki/AudioChannelManipulation) is for converting stereo to mono. The [second](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg) is for filtering out the sound not in the frequency of speech. The third is to normalize the audio to make sure it is not too loud or too quiet. If you are not satisfied with the default commands, you can also modified them yourself by input `-apc` option. Still, it currently only supports 24bit/44100Hz/mono FLAC format.
 
 If it is a subtitles file and you give the proper arguments, only translate it by py-googletrans.
 
@@ -747,7 +753,7 @@ If you want to translate this program into other languages, first install the ge
 
 #### Other APIs supports
 
-[issue #11](https://github.com/BingLingGroup/autosub/issues/11), [issue 10](https://github.com/BingLingGroup/autosub/issues/10)
+[issue #11](https://github.com/BingLingGroup/autosub/issues/11)
 
 I won't add any new features unless I'm less busy in the future. However, pull requests are welcomed.
 
@@ -779,6 +785,33 @@ If you want do a recursive walk through the directories, replace `'dir /b %in_fo
 Currently I only implement the proxy settings in the same way as setting environment variables in the command line. So it is necessary for you to open a http/https proxy server locally like [shadowsocks-windows](https://github.com/shadowsocks/shadowsocks-windows/releases) or [shadowsocks](https://github.com/shadowsocks/shadowsocks/tree/master).
 
 If you often encounter empty result or connection error during speech-to-text or subtitles translation, perhaps you need to get a better proxy for a better connection with Google or just rent a Linux server which can reach Google's network.
+
+#### macOS locale issue
+
+[issue 83 (comment)](https://github.com/BingLingGroup/autosub/issues/83#issuecomment-586624157)
+
+```Python
+Traceback (most recent call last):
+  File "/usr/local/bin/autosub", line 5, in <module>
+    from autosub import main
+  File "/usr/local/lib/python3.7/site-packages/autosub/__init__.py", line 15, in <module>
+    from autosub import ffmpeg_utils
+  File "/usr/local/lib/python3.7/site-packages/autosub/ffmpeg_utils.py", line 25, in <module>
+    fallback=True)
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/gettext.py", line 518, in translation
+    mofiles = find(domain, localedir, languages, all=True)
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/gettext.py", line 490, in find
+    for nelang in _expand_lang(lang):
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/gettext.py", line 212, in _expand_lang
+    loc = locale.normalize(loc)
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/locale.py", line 401, in normalize
+    code = localename.lower()
+AttributeError: 'NoneType' object has no attribute 'lower'
+```
+
+It seems environment variable `LANG` and `LC_ALL` are not set on some macOS versions. Please manually set it before running the program. [ewdurbin/evacuate_2stp#1 (comment)](https://github.com/ewdurbin/evacuate_2stp/issues/1#issuecomment-413736644)
+
+[How to set environment variables on macOS](https://medium.com/@himanshuagarwal1395/setting-up-environment-variables-in-macos-sierra-f5978369b255).
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 

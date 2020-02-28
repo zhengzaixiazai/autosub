@@ -50,6 +50,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         os.environ['proxy_password'] = args.proxy_password
 
     try:
+        if args.speech_config:
+            cmdline_utils.validate_config_args(args)
+
         if cmdline_utils.list_args(args):
             raise exceptions.AutosubException(_("\nAll works done."))
 

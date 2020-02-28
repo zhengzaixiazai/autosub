@@ -7,6 +7,7 @@ Defines autosub's command line options.
 from __future__ import absolute_import, print_function, unicode_literals
 import argparse
 import gettext
+import os
 
 # Import third-party modules
 
@@ -264,20 +265,25 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(If used, override the credentials "
                "given by\"-sa\"/\"--service-account\")"))
 
-    # speech_group.add_argument(
-    #     '-sconf', '--speech-config',
-    #     nargs='?', metavar=_('path'),
-    #     const='config.json',
-    #     help=_("Use speech recognition config to send request. "
-    #            "Override these options below: "
-    #            "\"-S\", \"-asr\", \"-aac\". "
-    #            "Currently support: "
-    #            "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
-    #            "(https://cloud.google.com/speech-to-text/docs"
-    #            "/reference/rest/v1p1beta1/RecognitionConfig). "
-    #            "If arg_num is 0, use const path. "
-    #            "(arg_num = 0 or 1) (const: %(const)s)")
-    # )
+    speech_group.add_argument(
+        '-sconf', '--speech-config',
+        nargs='?', metavar=_('path'),
+        const='config.json',
+        help=_("Use Speech-to-Text recognition config file to send request. "
+               "Override these options below: "
+               "\"-S\", \"-asr\", \"-asf\". "
+               "Currently support: "
+               "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
+               "API key config reference: "
+               "https://cloud.google.com/speech-to-text/docs"
+               "/reference/rest/v1p1beta1/RecognitionConfig "
+               "Service account config reference: "
+               "https://googleapis.dev/python/speech/latest"
+               "/gapic/v1/types.html"
+               "#google.cloud.speech_v1.types.RecognitionConfig "
+               "If arg_num is 0, use const path. "
+               "(arg_num = 0 or 1) (const: %(const)s)")
+    )
 
     speech_group.add_argument(
         '-mnc', '--min-confidence',

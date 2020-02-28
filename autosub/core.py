@@ -185,6 +185,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
         regions,
         api_url=None,
         headers=None,
+        config=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
         min_confidence=0.0,
@@ -209,24 +210,32 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
 
     try:
         if api_url:
-            # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
-            if audio_fragments[0].lower().endswith(".flac"):
-                encoding = "FLAC"
-            elif audio_fragments[0].lower().endswith(".mp3"):
-                encoding = "MP3"
-            elif audio_fragments[0].lower().endswith(".wav"):
-                # regard WAV as PCM
-                encoding = "LINEAR16"
-            elif audio_fragments[0].lower().endswith(".ogg"):
-                encoding = "OGG_OPUS"
+            # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
+            if config:
+                # Use the fixed argument
+                if "languageCode" in config:
+                    config["languageCode"] = src_language
+                else:
+                    config["language_code"] = src_language
             else:
-                encoding = ""
+                # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
+                if audio_fragments[0].lower().endswith(".flac"):
+                    encoding = "FLAC"
+                elif audio_fragments[0].lower().endswith(".mp3"):
+                    encoding = "MP3"
+                elif audio_fragments[0].lower().endswith(".wav"):
+                    # regard WAV as PCM
+                    encoding = "LINEAR16"
+                elif audio_fragments[0].lower().endswith(".ogg"):
+                    encoding = "OGG_OPUS"
+                else:
+                    encoding = ""
 
-            config = {
-                "encoding": encoding,
-                "sampleRateHertz": sample_rate,
-                "languageCode": src_language,
-            }
+                config = {
+                    "encoding": encoding,
+                    "sampleRateHertz": sample_rate,
+                    "languageCode": src_language,
+                }
 
             recognizer = speech_trans_api.GCSV1P1Beta1URL(
                 config=config,
@@ -266,12 +275,17 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
                 # encoding = 0
 
-            # https://pypi.org/project/google-cloud-speech/
-            config = {
-                "encoding": encoding,
-                "sample_rate_hertz": sample_rate,
-                "language_code": src_language,
-            }
+            # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
+            if config:
+                # Use the fixed arguments
+                config["encoding"] = encoding
+                config["language_code"] = src_language
+            else:
+                config = {
+                    "encoding": encoding,
+                    "sample_rate_hertz": sample_rate,
+                    "language_code": src_language,
+                }
 
             i = 0
             tasks = []

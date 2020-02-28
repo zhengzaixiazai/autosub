@@ -46,6 +46,7 @@
    - 7.1 [其他API的支持](#其他API的支持)
    - 7.2 [批量处理](#批量处理)
    - 7.3 [代理支持](#代理支持)
+   - 7.4 [macOS locale问题](#macos-locale问题)
 8. [问题反馈](#问题反馈)
 9. [构建](#构建)
 
@@ -141,6 +142,8 @@ apt install ffmpeg python python-pip -y
 pip install autosub
 ```
 
+推荐使用`python3`和`python-pip3`而不是`python`和`python-pip`在autosub-0.4.0之后。
+
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 #### 在Windows上安装
@@ -183,6 +186,8 @@ pip install git+https://github.com/BingLingGroup/autosub.git@origin
 
 PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法成功运行。查看[origin分支的更新日志](CHANGELOG.zh-Hans.md#040-alpha---2019-02-17)来了解详情。
 
+推荐使用`python`而不是`python2`在autosub-0.4.0之后。
+
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### 工作流程
@@ -209,7 +214,7 @@ PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法�
   - MP3
   - 16bit/单声道 PCM
 
-你也可以使用自带的音频预处理功能。默认的[音频预处理指令](https://github.com/agermanidis/autosub/issues/40)同时依赖于ffmpeg和ffmpeg-normalize。这些命令包含三个子命令。[第一个](https://trac.ffmpeg.org/wiki/AudioChannelManipulation)是用来把双声道的音频转换为单声道的。[第二个](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg)是通过人声的频率范围来过滤噪音的。第三个则是正常化音频的音量来确保它的音量不是太大或者太小。如果你对默认指令的效果不满意，你也可以通过输入`-apc`选项来自行修改。当然，它仍然只支持24bit/44100Hz/单声道 FLAC格式。
+你也可以使用自带的音频预处理功能，尽管谷歌并不[如此推荐](https://cloud.google.com/speech-to-text/docs/best-practices)。实话讲，如果你音频的音量没有被标准化，譬如音量太大或者太小，建议你使用一些工具或者只是自带的音频预处理功能去将其音量标准化。默认的[音频预处理指令](https://github.com/agermanidis/autosub/issues/40)同时依赖于ffmpeg和ffmpeg-normalize。这些命令包含三个子命令。[第一个](https://trac.ffmpeg.org/wiki/AudioChannelManipulation)是用来把双声道的音频转换为单声道的。[第二个](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg)是通过人声的频率范围来过滤噪音的。第三个则是正常化音频的音量来确保它的音量不是太大或者太小。如果你对默认指令的效果不满意，你也可以通过输入`-apc`选项来自行修改。当然，它仍然只支持24bit/44100Hz/单声道 FLAC格式。
 
 如果输入是字幕文件，同时你提供的参数适合，程序仅会将其通过py-googletrans来翻译。
 
@@ -674,7 +679,7 @@ Autosub通过[GNU gettext](https://www.gnu.org/software/gettext/)支持多语言
 
 #### 其他API的支持
 
-[issue #11](https://github.com/BingLingGroup/autosub/issues/11), [issue 10](https://github.com/BingLingGroup/autosub/issues/10)
+[issue #11](https://github.com/BingLingGroup/autosub/issues/11)
 
 如果以后不忙了，我会考虑添加。当然欢迎各位的拉取请求。
 
@@ -706,6 +711,33 @@ for /f "delims=^" %%i in ('dir /b %in_format%') do (
 现在我只实现了和设置环境变量一个原理的命令行代理支持。所以你需要在本地先打开一个http/https代理服务器，像是[shadowsocks-windows](https://github.com/shadowsocks/shadowsocks-windows/releases)或者[shadowsocks](https://github.com/shadowsocks/shadowsocks/tree/master)。
 
 如果你总是在语音转文字或者字幕翻译时遇到空白的结果或者连接错误，你可能需要换一个好点的proxy，这样才能更稳定地连接到Google服务器，或者干脆租个能连接到Google服务器的Linux服务器。
+
+#### macOS locale问题
+
+[issue 83 (comment)](https://github.com/BingLingGroup/autosub/issues/83#issuecomment-586624157)
+
+```Python
+Traceback (most recent call last):
+  File "/usr/local/bin/autosub", line 5, in <module>
+    from autosub import main
+  File "/usr/local/lib/python3.7/site-packages/autosub/__init__.py", line 15, in <module>
+    from autosub import ffmpeg_utils
+  File "/usr/local/lib/python3.7/site-packages/autosub/ffmpeg_utils.py", line 25, in <module>
+    fallback=True)
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/gettext.py", line 518, in translation
+    mofiles = find(domain, localedir, languages, all=True)
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/gettext.py", line 490, in find
+    for nelang in _expand_lang(lang):
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/gettext.py", line 212, in _expand_lang
+    loc = locale.normalize(loc)
+  File "/usr/local/Cellar/python/3.7.6_1/Frameworks/Python.framework/Versions/3.7/lib/python3.7/locale.py", line 401, in normalize
+    code = localename.lower()
+AttributeError: 'NoneType' object has no attribute 'lower'
+```
+
+环境变量`LANG`和`LC_ALL`在某些macOS版本上未被设置。请在程序运行前先设置它。[ewdurbin/evacuate_2stp#1 (comment)](https://github.com/ewdurbin/evacuate_2stp/issues/1#issuecomment-413736644)
+
+[在macOS上如何设置环境变量](https://medium.com/@himanshuagarwal1395/setting-up-environment-variables-in-macos-sierra-f5978369b255)。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
