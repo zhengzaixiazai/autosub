@@ -18,6 +18,81 @@ from google.protobuf.json_format import MessageToDict
 from autosub import exceptions
 
 
+def get_google_speech_v2_transcript(
+        min_confidence,
+        result):
+    """
+    Function for getting transcript from Google Speech-to-Text V2 json format string result.
+    """
+    for line in result.content.decode('utf-8').split("\n"):
+        try:
+            line = json.loads(line)
+            line_dict = line
+            if 'result' in line and line['result'] \
+                    and 'alternative' in line['result'][0] \
+                    and line['result'][0]['alternative'] \
+                    and 'transcript' in line['result'][0]['alternative'][0]:
+                line = line['result'][0]['alternative'][0]['transcript']
+
+                if 'confidence' in line_dict['result'][0]['alternative'][0]:
+                    confidence = \
+                        float(line_dict['result'][0]['alternative'][0]['confidence'])
+                    if confidence > min_confidence:
+                        result = line[:1].upper() + line[1:]
+                        result = result.replace('’', '\'')
+                        return result
+                    return None
+
+                # can't find confidence in json
+                # means it's 100% confident
+                result = line[:1].upper() + line[1:]
+                result = result.replace('’', '\'')
+                return result
+
+        except (ValueError, IndexError):
+            # no result
+            continue
+
+    return None
+
+
+def get_gcsv1p1beta1_transcript(
+        min_confidence,
+        result_dict):
+    """
+    Function for getting transcript from Google Cloud Speech-to-Text V1P1Beta1 result dictionary.
+    """
+    if 'results' in result_dict and result_dict['results'] \
+            and 'alternatives' in result_dict['results'][0] \
+            and result_dict['results'][0]['alternatives'] \
+            and 'transcript' in result_dict['results'][0]['alternatives'][0]:
+        result_dict = result_dict['results'][0]['alternatives'][0]
+
+        if 'transcript' not in result_dict:
+            return None
+
+    else:
+        raise exceptions.SpeechToTextException(
+            json.dumps(result_dict, indent=4, ensure_ascii=False))
+
+    if 'confidence' in result_dict:
+        confidence = \
+            float(result_dict['confidence'])
+        if confidence > min_confidence:
+            result_dict = result_dict['transcript']
+            result = result_dict[:1].upper() + result_dict[1:]
+            result = result.replace('’', '\'')
+            return result
+        return None
+
+    # can't find confidence in json
+    # means it's 100% confident
+    result_dict = result_dict['transcript']
+    result = result_dict[:1].upper() + result_dict[1:]
+    result = result.replace('’', '\'')
+    return result
+
+
 class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
     """
     Class for performing speech-to-text using Google Speech V2 API for an input FLAC file.
@@ -48,34 +123,7 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                 except requests.exceptions.ConnectionError:
                     continue
 
-                for line in result.content.decode('utf-8').split("\n"):
-                    try:
-                        line = json.loads(line)
-                        line_dict = line
-                        if 'result' in line and line['result'] \
-                                and 'alternative' in line['result'][0] \
-                                and line['result'][0]['alternative'] \
-                                and 'transcript' in line['result'][0]['alternative'][0]:
-                            line = line['result'][0]['alternative'][0]['transcript']
-
-                            if 'confidence' in line_dict['result'][0]['alternative'][0]:
-                                confidence = \
-                                    float(line_dict['result'][0]['alternative'][0]['confidence'])
-                                if confidence > self.min_confidence:
-                                    result = line[:1].upper() + line[1:]
-                                    result = result.replace('’', '\'')
-                                    return result
-                                return None
-
-                            # can't find confidence in json
-                            # means it's 100% confident
-                            result = line[:1].upper() + line[1:]
-                            result = result.replace('’', '\'')
-                            return result
-
-                    except (ValueError, IndexError):
-                        # no result
-                        continue
+                return get_google_speech_v2_transcript(self.min_confidence, result)
 
         except KeyboardInterrupt:
             return None
@@ -89,8 +137,8 @@ def gcsv1p1beta1_service_client(
         config,
         min_confidence):
     """
-    Function for performing speech-to-text
-    using Google Cloud Speech V1P1Beta1 API for an input FLAC file.
+    Function for performing Speech-to-Text
+    using Google Cloud Speech-to-Text V1P1Beta1 API client for an input FLAC file.
     """
     try:  # pylint: disable=too-many-nested-blocks
         audio_file = open(filename, mode='rb')
@@ -101,7 +149,7 @@ def gcsv1p1beta1_service_client(
 
         # https://cloud.google.com/speech-to-text/docs/quickstart-client-libraries
         # https://cloud.google.com/speech-to-text/docs/basics
-        # https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1
+        # https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult
         client = speech_v1p1beta1.SpeechClient()
         audio_dict = {"content": audio_data}
         recognize_reponse = client.recognize(config, audio_dict)
@@ -109,35 +157,7 @@ def gcsv1p1beta1_service_client(
             recognize_reponse,
             preserving_proto_field_name=True)
 
-        if 'results' in result_dict and result_dict['results'] \
-                and 'alternatives' in result_dict['results'][0] \
-                and result_dict['results'][0]['alternatives'] \
-                and 'transcript' in result_dict['results'][0]['alternatives'][0]:
-            result_dict = result_dict['results'][0]['alternatives'][0]
-
-            if 'transcript' not in result_dict:
-                return None
-
-        else:
-            raise exceptions.SpeechToTextException(
-                json.dumps(result_dict, indent=4, ensure_ascii=False))
-
-        if 'confidence' in result_dict:
-            confidence = \
-                float(result_dict['confidence'])
-            if confidence > min_confidence:
-                result_dict = result_dict['transcript']
-                result = result_dict[:1].upper() + result_dict[1:]
-                result = result.replace('’', '\'')
-                return result
-            return None
-
-        # can't find confidence in json
-        # means it's 100% confident
-        result_dict = result_dict['transcript']
-        result = result_dict[:1].upper() + result_dict[1:]
-        result = result.replace('’', '\'')
-        return result
+        return get_gcsv1p1beta1_transcript(min_confidence, result_dict)
 
     except KeyboardInterrupt:
         return None
@@ -145,8 +165,8 @@ def gcsv1p1beta1_service_client(
 
 class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
     """
-    Class for performing speech-to-text
-    using Google Cloud Speech V1P1Beta1 API for an input FLAC file.
+    Class for performing Speech-to-Text
+    using Google Cloud Speech-to-Text V1P1Beta1 API URL for an input FLAC file.
     """
     def __init__(self,
                  config,
@@ -189,35 +209,7 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
                     # no result
                     continue
 
-                if 'results' in result_dict and result_dict['results'] \
-                        and 'alternatives' in result_dict['results'][0] \
-                        and result_dict['results'][0]['alternatives'] \
-                        and 'transcript' in result_dict['results'][0]['alternatives'][0]:
-                    result_dict = result_dict['results'][0]['alternatives'][0]
-
-                    if 'transcript' not in result_dict:
-                        return None
-
-                else:
-                    raise exceptions.SpeechToTextException(
-                        requests_result_json)
-
-                if 'confidence' in result_dict:
-                    confidence = \
-                        float(result_dict['confidence'])
-                    if confidence > self.min_confidence:
-                        result_dict = result_dict['transcript']
-                        result = result_dict[:1].upper() + result_dict[1:]
-                        result = result.replace('’', '\'')
-                        return result
-                    return None
-
-                # can't find confidence in json
-                # means it's 100% confident
-                result_dict = result_dict['transcript']
-                result = result_dict[:1].upper() + result_dict[1:]
-                result = result.replace('’', '\'')
-                return result
+                return get_gcsv1p1beta1_transcript(self.min_confidence, result_dict)
 
         except KeyboardInterrupt:
             return None
