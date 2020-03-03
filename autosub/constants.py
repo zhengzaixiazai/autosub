@@ -74,7 +74,8 @@ DEFAULT_SLEEP_SECONDS = 5
 
 DEFAULT_SUBTITLES_FORMAT = 'srt'
 
-DEFAULT_MODE_SET = {'regions', 'src', 'dst', 'bilingual', 'dst-lf-src', 'src-lf-dst'}
+DEFAULT_MODE_SET = \
+    {'regions', 'src', 'full-src', 'dst', 'bilingual', 'dst-lf-src', 'src-lf-dst'}
 DEFAULT_SUB_MODE_SET = {'dst', 'bilingual', 'dst-lf-src', 'src-lf-dst'}
 DEFAULT_LANG_MODE_SET = {'s', 'src', 'd'}
 DEFAULT_AUDIO_PRCS_MODE_SET = {'o', 's', 'y'}

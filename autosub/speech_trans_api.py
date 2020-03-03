@@ -20,38 +20,30 @@ from autosub import exceptions
 
 def get_google_speech_v2_transcript(
         min_confidence,
-        result):
+        result_dict):
     """
     Function for getting transcript from Google Speech-to-Text V2 json format string result.
     """
-    for line in result.content.decode('utf-8').split("\n"):
-        try:
-            line = json.loads(line)
-            line_dict = line
-            if 'result' in line and line['result'] \
-                    and 'alternative' in line['result'][0] \
-                    and line['result'][0]['alternative'] \
-                    and 'transcript' in line['result'][0]['alternative'][0]:
-                line = line['result'][0]['alternative'][0]['transcript']
+    if 'result' in result_dict and result_dict['result'] \
+            and 'alternative' in result_dict['result'][0] \
+            and result_dict['result'][0]['alternative'] \
+            and 'transcript' in result_dict['result'][0]['alternative'][0]:
+        text = result_dict['result'][0]['alternative'][0]['transcript']
 
-                if 'confidence' in line_dict['result'][0]['alternative'][0]:
-                    confidence = \
-                        float(line_dict['result'][0]['alternative'][0]['confidence'])
-                    if confidence > min_confidence:
-                        result = line[:1].upper() + line[1:]
-                        result = result.replace('’', '\'')
-                        return result
-                    return None
-
-                # can't find confidence in json
-                # means it's 100% confident
-                result = line[:1].upper() + line[1:]
+        if 'confidence' in result_dict['result'][0]['alternative'][0]:
+            confidence = \
+                float(result_dict['result'][0]['alternative'][0]['confidence'])
+            if confidence > min_confidence:
+                result = text[:1].upper() + text[1:]
                 result = result.replace('’', '\'')
                 return result
+            return None
 
-        except (ValueError, IndexError):
-            # no result
-            continue
+        # can't find confidence in json
+        # means it's 100% confident
+        result = text[:1].upper() + text[1:]
+        result = result.replace('’', '\'')
+        return result
 
     return None
 
@@ -102,13 +94,15 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                  headers,
                  min_confidence=0.0,
                  retries=3,
-                 is_keep=False):
+                 is_keep=False,
+                 is_full_result=False):
         # pylint: disable=too-many-arguments
         self.min_confidence = min_confidence
         self.retries = retries
         self.api_url = api_url
         self.is_keep = is_keep
         self.headers = headers
+        self.is_full_result = is_full_result
 
     def __call__(self, filename):
         try:  # pylint: disable=too-many-nested-blocks
@@ -123,7 +117,42 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                 except requests.exceptions.ConnectionError:
                     continue
 
-                return get_google_speech_v2_transcript(self.min_confidence, result)
+                if not self.is_full_result:
+                    # receive several results delimited by LF
+                    result_str = result.content.decode('utf-8').split("\n")
+                    # get the one with valid content
+                    for line in result_str:
+                        try:
+                            line_dict = json.loads(line)
+                            transcript = get_google_speech_v2_transcript(
+                                self.min_confidence,
+                                line_dict)
+                            if transcript:
+                                # make sure it is the valid transcript
+                                return transcript
+
+                        except (ValueError, IndexError):
+                            # no result
+                            continue
+
+                else:
+                    result_str = result.content.decode('utf-8').split("\n")
+                    for line in result_str:
+                        try:
+                            line_dict = json.loads(line)
+                            transcript = get_google_speech_v2_transcript(
+                                self.min_confidence,
+                                line_dict)
+                            if transcript:
+                                # make sure it is the result with valid transcript
+                                return line_dict
+
+                        except (ValueError, IndexError):
+                            # no result
+                            continue
+
+                # Every line of the result can't be loaded to json
+                return None
 
         except KeyboardInterrupt:
             return None
@@ -135,7 +164,8 @@ def gcsv1p1beta1_service_client(
         filename,
         is_keep,
         config,
-        min_confidence):
+        min_confidence,
+        is_full_result=False):
     """
     Function for performing Speech-to-Text
     using Google Cloud Speech-to-Text V1P1Beta1 API client for an input FLAC file.
@@ -157,7 +187,10 @@ def gcsv1p1beta1_service_client(
             recognize_reponse,
             preserving_proto_field_name=True)
 
-        return get_gcsv1p1beta1_transcript(min_confidence, result_dict)
+        if not is_full_result:
+            return get_gcsv1p1beta1_transcript(min_confidence, result_dict)
+        else:
+            return result_dict
 
     except KeyboardInterrupt:
         return None
@@ -174,7 +207,8 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
                  headers=None,
                  min_confidence=0.0,
                  retries=3,
-                 is_keep=False):
+                 is_keep=False,
+                 is_full_result=False):
         # pylint: disable=too-many-arguments
         self.config = config
         self.api_url = api_url
@@ -182,6 +216,7 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
         self.min_confidence = min_confidence
         self.retries = retries
         self.is_keep = is_keep
+        self.is_full_result = is_full_result
 
     def __call__(self, filename):
         try:  # pylint: disable=too-many-nested-blocks
@@ -199,8 +234,14 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
                     {"content": base64.b64encode(audio_data).decode("utf-8")}
                 request_data = {"config": self.config, "audio": audio_dict}
                 config_json = json.dumps(request_data, ensure_ascii=False)
-                requests_result = \
-                    requests.post(self.api_url, data=config_json, headers=self.headers)
+
+                try:
+                    requests_result = \
+                        requests.post(self.api_url, data=config_json, headers=self.headers)
+
+                except requests.exceptions.ConnectionError:
+                    continue
+
                 requests_result_json = requests_result.content.decode('utf-8')
 
                 try:
@@ -209,7 +250,12 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
                     # no result
                     continue
 
-                return get_gcsv1p1beta1_transcript(self.min_confidence, result_dict)
+                if not self.is_full_result:
+                    return get_gcsv1p1beta1_transcript(
+                        self.min_confidence,
+                        result_dict)
+                else:
+                    return result_dict
 
         except KeyboardInterrupt:
             return None

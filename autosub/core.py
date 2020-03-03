@@ -38,6 +38,26 @@ except AttributeError:
     _ = CORE_TEXT.gettext
 
 
+def filename_to_encoding(
+        filename):
+    """
+    File filename to audio encoding.
+    """
+    if filename.lower().endswith(".flac"):
+        encoding = "FLAC"
+    elif filename.lower().endswith(".mp3"):
+        encoding = "MP3"
+    elif filename.lower().endswith(".wav"):
+        # regard WAV as PCM
+        encoding = "LINEAR16"
+    elif filename.lower().endswith(".ogg"):
+        encoding = "OGG_OPUS"
+    else:
+        encoding = ""
+
+    return encoding
+
+
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
         audio_wav,
         energy_threshold=constants.DEFAULT_ENERGY_THRESHOLD,
@@ -126,18 +146,15 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
 def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         audio_fragments,
         api_url,
-        regions,
         headers,
         concurrency=constants.DEFAULT_CONCURRENCY,
         min_confidence=0.0,
-        is_keep=False):
+        is_keep=False,
+        result_list=None):
     """
     Give a list of short-term audio fragment files
     and generate text_list from Google speech-to-text V2 api.
     """
-    if not regions:
-        return None
-
     text_list = []
     pool = multiprocessing.Pool(concurrency)
 
@@ -145,22 +162,37 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
         api_url=api_url,
         headers=headers,
         min_confidence=min_confidence,
-        is_keep=is_keep)
+        is_keep=is_keep,
+        is_full_result=result_list is not None)
 
     print(_("\nSending short-term fragments to Google Speech V2 API and getting result."))
     widgets = [_("Speech-to-Text: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
-    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(audio_fragments)).start()
     try:
-        for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
-            if transcript:
-                text_list.append(transcript)
-            else:
-                text_list.append("")
-            gc.collect(0)
-            pbar.update(i)
+        # get transcript
+        if result_list is None:
+            for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                gc.collect(0)
+                pbar.update(i)
+        # get full result and transcript
+        else:
+            for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
+                result_list.append(result)
+                transcript = \
+                    speech_trans_api.get_google_speech_v2_transcript(min_confidence, result)
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                gc.collect(0)
+                pbar.update(i)
         pbar.finish()
         pool.terminate()
         pool.join()
@@ -182,20 +214,18 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
 def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
         audio_fragments,
         sample_rate,
-        regions,
         api_url=None,
         headers=None,
         config=None,
         concurrency=constants.DEFAULT_CONCURRENCY,
         src_language=constants.DEFAULT_SRC_LANGUAGE,
         min_confidence=0.0,
-        is_keep=False):
+        is_keep=False,
+        result_list=None):
     """
     Give a list of short-term audio fragment files
     and generate text_list from Google cloud speech-to-text V1P1Beta1 api.
     """
-    if not regions:
-        return None
 
     text_list = []
     pool = multiprocessing.Pool(concurrency)
@@ -206,7 +236,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
                progressbar.ETA()]
-    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(audio_fragments)).start()
 
     try:
         if api_url:
@@ -218,21 +248,8 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 else:
                     config["language_code"] = src_language
             else:
-                # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
-                if audio_fragments[0].lower().endswith(".flac"):
-                    encoding = "FLAC"
-                elif audio_fragments[0].lower().endswith(".mp3"):
-                    encoding = "MP3"
-                elif audio_fragments[0].lower().endswith(".wav"):
-                    # regard WAV as PCM
-                    encoding = "LINEAR16"
-                elif audio_fragments[0].lower().endswith(".ogg"):
-                    encoding = "OGG_OPUS"
-                else:
-                    encoding = ""
-
                 config = {
-                    "encoding": encoding,
+                    "encoding": filename_to_encoding(audio_fragments[0]),
                     "sampleRateHertz": sample_rate,
                     "languageCode": src_language,
                 }
@@ -242,14 +259,29 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 api_url=api_url,
                 headers=headers,
                 min_confidence=min_confidence,
-                is_keep=is_keep)
+                is_keep=is_keep,
+                is_full_result=result_list is not None)
 
-            for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
-                if transcript:
-                    text_list.append(transcript)
-                else:
-                    text_list.append("")
-                pbar.update(i)
+            # get transcript
+            if result_list is None:
+                for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+                    if transcript:
+                        text_list.append(transcript)
+                    else:
+                        text_list.append("")
+                    pbar.update(i)
+            # get full result and transcript
+            else:
+                for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
+                    result_list.append(result)
+                    transcript = speech_trans_api.get_gcsv1p1beta1_transcript(
+                        min_confidence,
+                        result)
+                    if transcript:
+                        text_list.append(transcript)
+                    else:
+                        text_list.append("")
+                    pbar.update(i)
 
         else:
             # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
@@ -294,17 +326,32 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 # based on class call, otherwise will receive pickling error
                 tasks.append(pool.apply_async(
                     speech_trans_api.gcsv1p1beta1_service_client,
-                    args=(filename, is_keep, config, min_confidence)))
+                    args=(filename, is_keep, config, min_confidence,
+                          result_list is not None)))
                 gc.collect(0)
 
-            for task in tasks:
-                i = i + 1
-                transcript = task.get()
-                if transcript:
-                    text_list.append(transcript)
-                else:
-                    text_list.append("")
-                pbar.update(i)
+            if result_list is None:
+                for task in tasks:
+                    i = i + 1
+                    transcript = task.get()
+                    if transcript:
+                        text_list.append(transcript)
+                    else:
+                        text_list.append("")
+                    pbar.update(i)
+            else:
+                for task in tasks:
+                    i = i + 1
+                    result = task.get()
+                    result_list.append(result)
+                    transcript = speech_trans_api.get_gcsv1p1beta1_transcript(
+                        min_confidence,
+                        result)
+                    if transcript:
+                        text_list.append(transcript)
+                    else:
+                        text_list.append("")
+                    pbar.update(i)
 
         pbar.finish()
         pool.terminate()

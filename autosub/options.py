@@ -225,7 +225,11 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=["dst", ],
         help=_("Output more files. "
                "Available types: "
-               "regions, src, dst, bilingual, dst-lf-src, src-lf-dst, all. "
+               "regions, src, full-src, dst, bilingual, dst-lf-src, src-lf-dst, all. "
+               "\"regions\", \"src\", \"full-src\" are available only "
+               "if input is not a subtitles file. "
+               "full-src: Full result received from Speech-to-Text API in json format "
+               "with start and end time. "
                "dst-lf-src: dst language and src language in the same event. "
                "And dst is ahead of src. "
                "src-lf-dst: src language and dst language in the same event. "

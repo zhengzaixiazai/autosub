@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-28 13:26+0800\n"
-"PO-Revision-Date: 2020-02-28 13:30+0800\n"
+"POT-Creation-Date: 2020-03-03 12:32+0800\n"
+"PO-Revision-Date: 2020-03-03 12:35+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Language: zh_CN\n"
 
-#: autosub/options.py:45
+#: autosub/options.py:44
 #, python-format
 msgid ""
 "\n"
@@ -28,7 +28,7 @@ msgstr ""
 "\n"
 "用法：%(prog)s [-i 路径] [选项]"
 
-#: autosub/options.py:47
+#: autosub/options.py:46
 msgid ""
 "Make sure the argument with space is in quotes.\n"
 "The default value is used\n"
@@ -48,98 +48,98 @@ msgstr ""
 "Email: {email}\n"
 "问题反馈: {homepage}\n"
 
-#: autosub/options.py:62
+#: autosub/options.py:61
 msgid "Input Options"
 msgstr "输入选项"
 
-#: autosub/options.py:63
+#: autosub/options.py:62
 msgid "Options to control input."
 msgstr "控制输入的选项。"
 
-#: autosub/options.py:65
+#: autosub/options.py:64
 msgid "Language Options"
 msgstr "语言选项"
 
-#: autosub/options.py:66
+#: autosub/options.py:65
 msgid "Options to control language."
 msgstr "控制语言的选项。"
 
-#: autosub/options.py:68
+#: autosub/options.py:67
 msgid "Output Options"
 msgstr "输出选项"
 
-#: autosub/options.py:69
+#: autosub/options.py:68
 msgid "Options to control output."
 msgstr "控制输出的选项。"
 
-#: autosub/options.py:71
+#: autosub/options.py:70
 msgid "Speech Options"
 msgstr "语音选项"
 
-#: autosub/options.py:72
+#: autosub/options.py:71
 msgid ""
 "Options to control speech-to-text. If Speech Options not given, it will only "
 "generate the times."
 msgstr "控制语音转文字的选项。"
 
-#: autosub/options.py:75
+#: autosub/options.py:74
 msgid "py-googletrans Options"
 msgstr "py-googletrans选项"
 
-#: autosub/options.py:76
+#: autosub/options.py:75
 msgid ""
 "Options to control translation. Default method to translate. Could be "
 "blocked at any time."
 msgstr "控制翻译的选项。同时也是默认的翻译方法。可能随时会被谷歌爸爸封。"
 
-#: autosub/options.py:80
+#: autosub/options.py:79
 msgid "Network Options"
 msgstr "网络选项"
 
-#: autosub/options.py:81
+#: autosub/options.py:80
 msgid "Options to control network."
 msgstr "控制网络的选项。"
 
-#: autosub/options.py:83
+#: autosub/options.py:82
 msgid "Other Options"
 msgstr "其他选项"
 
-#: autosub/options.py:84
+#: autosub/options.py:83
 msgid "Other options to control."
 msgstr "控制其他东西的选项。"
 
-#: autosub/options.py:86
+#: autosub/options.py:85
 msgid "Audio Processing Options"
 msgstr "音频处理选项"
 
-#: autosub/options.py:87
+#: autosub/options.py:86
 msgid "Options to control audio processing."
 msgstr "控制音频处理的选项。"
 
-#: autosub/options.py:89
+#: autosub/options.py:88
 msgid "Auditok Options"
 msgstr "Auditok的选项"
 
-#: autosub/options.py:90
+#: autosub/options.py:89
 msgid ""
 "Options to control Auditok when not using external speech regions control."
 msgstr "不使用外部语音区域控制时，用于控制Auditok的选项。"
 
-#: autosub/options.py:93
+#: autosub/options.py:92
 msgid "List Options"
 msgstr "列表选项"
 
-#: autosub/options.py:94
+#: autosub/options.py:93
 msgid "List all available arguments."
 msgstr "列出所有可选参数。"
 
-#: autosub/options.py:98 autosub/options.py:107 autosub/options.py:116
-#: autosub/options.py:198 autosub/options.py:270 autosub/options.py:388
-#: autosub/options.py:582
+#: autosub/options.py:97 autosub/options.py:106 autosub/options.py:115
+#: autosub/options.py:197 autosub/options.py:273 autosub/options.py:391
+#: autosub/options.py:585
 msgid "path"
 msgstr "路径"
 
-#: autosub/options.py:99
+#: autosub/options.py:98
 msgid ""
 "The path to the video/audio/subtitles file that needs to generate subtitles. "
 "When it is a subtitles file, the program will only translate it. (arg_num = "
@@ -148,7 +148,7 @@ msgstr ""
 "用于生成字幕文件的视频/音频/字幕文件。如果输入文件是字幕文件，程序仅会对其进"
 "行翻译。（参数个数为1）"
 
-#: autosub/options.py:108
+#: autosub/options.py:107
 msgid ""
 "Path to the subtitles file which provides external speech regions, which is "
 "one of the formats that pysubs2 supports and overrides the default method to "
@@ -157,7 +157,7 @@ msgstr ""
 "提供外部语音区域（时间轴）的字幕文件。该字幕文件格式需要是pysubs2所支持的。使"
 "用后会替换掉默认的自动寻找语音区域（时间轴）的功能。（参数个数为1）"
 
-#: autosub/options.py:118
+#: autosub/options.py:117
 msgid ""
 "Valid when your output format is \"ass\"/\"ssa\". Path to the subtitles file "
 "which provides \"ass\"/\"ssa\" styles for your output. If the arg_num is 0, "
@@ -168,11 +168,11 @@ msgstr ""
 "幕文件。如果不提供参数，它会使用来自\"-esr\"/\"--external-speech-regions\"选"
 "项提供的样式。更多信息详见\"-sn\"/\"--styles-name\"。（参数个数为0或1）"
 
-#: autosub/options.py:129
+#: autosub/options.py:128
 msgid "style-name"
 msgstr "样式名"
 
-#: autosub/options.py:130
+#: autosub/options.py:129
 msgid ""
 "Valid when your output format is \"ass\"/\"ssa\" and \"-sty\"/\"--styles\" "
 "is given. Adds \"ass\"/\"ssa\" styles to your events. If not provided, "
@@ -187,12 +187,12 @@ msgstr ""
 "数作为样式名。如果参数个数为2，源语言字幕行会使用第一个参数作为样式名。目标语"
 "言行使用第二个。（参数个数为1或2）"
 
-#: autosub/options.py:143 autosub/options.py:154 autosub/options.py:164
-#: autosub/options.py:554 autosub/options.py:570
+#: autosub/options.py:142 autosub/options.py:153 autosub/options.py:163
+#: autosub/options.py:557 autosub/options.py:573
 msgid "lang_code"
 msgstr "语言代码"
 
-#: autosub/options.py:144
+#: autosub/options.py:143
 #, python-format
 msgid ""
 "Lang code/Lang tag for speech-to-text. Recommend using the Google Cloud "
@@ -204,7 +204,7 @@ msgstr ""
 "码。错误的输入不会终止程序。但是后果自负。参考：https://cloud.google.com/"
 "speech-to-text/docs/languages（参数个数为1）（默认参数： %(default)s）"
 
-#: autosub/options.py:155
+#: autosub/options.py:154
 #, python-format
 msgid ""
 "Lang code/Lang tag for translation source language. If not given, use "
@@ -217,7 +217,7 @@ msgstr ""
 "googletrans作为翻译的方法，错误的输入会终止运行。（参数个数为1）（默认参数"
 "为%(default)s）"
 
-#: autosub/options.py:165
+#: autosub/options.py:164
 #, python-format
 msgid ""
 "Lang code/Lang tag for translation destination language. Same attention in "
@@ -226,11 +226,11 @@ msgstr ""
 "用于翻译的目标语言的语言代码/语言标识符。同样的注意参考选项\"-SRC\"/\"--src-"
 "language\"。（参数个数为1）（默认参数为%(default)s）"
 
-#: autosub/options.py:171 autosub/options.py:399
+#: autosub/options.py:170 autosub/options.py:402
 msgid "mode"
 msgstr "模式"
 
-#: autosub/options.py:173
+#: autosub/options.py:172
 msgid ""
 "Allow langcodes to get a best matching lang code when your input is wrong. "
 "Only functional for py-googletrans and Google Speech V2. Available modes: s, "
@@ -242,7 +242,7 @@ msgstr ""
 "\"-S\"/\"--speech-language\"。\"src\"指\"-SRC\"/\"--src-language\"。\"d\"指"
 "\"-D\"/\"--dst-language\"。（参数个数在1到3之间）"
 
-#: autosub/options.py:187
+#: autosub/options.py:186
 msgid ""
 "An integer between 0 and 100 to control the good match group of \"-lsc\"/\"--"
 "list-speech-codes\" or \"-ltc\"/\"--list-translation-codes\" or the match "
@@ -254,7 +254,7 @@ msgstr ""
 "best-match\"选项中的最佳匹配结果。结果会是一组“好的匹配”，其分数需要超过这个"
 "参数的值。（参数个数为1）"
 
-#: autosub/options.py:199
+#: autosub/options.py:198
 msgid ""
 "The output path for subtitles file. (default: the \"input\" path combined "
 "with the proper name tails) (arg_num = 1)"
@@ -262,11 +262,11 @@ msgstr ""
 "输出字幕文件的路径。（默认值是\"input\"路径和适当的文件名后缀的结合）（参数个"
 "数为1）"
 
-#: autosub/options.py:205
+#: autosub/options.py:204
 msgid "format"
 msgstr "格式"
 
-#: autosub/options.py:206
+#: autosub/options.py:205
 msgid ""
 "Destination subtitles format. If not provided, use the extension in the \"-o"
 "\"/\"--output\" arg. If \"-o\"/\"--output\" arg doesn't provide the "
@@ -279,33 +279,36 @@ msgstr ""
 "果\"-i\"/\"--input\"的参数是一个字幕文件，那么使用和字幕文件相同的扩展名。"
 "（参数个数为1）（默认参数为{dft}）"
 
-#: autosub/options.py:219
+#: autosub/options.py:218
 msgid ""
 "Prevent pauses and allow files to be overwritten. Stop the program when your "
 "args are wrong. (arg_num = 0)"
 msgstr ""
 "避免任何暂停和覆写文件的行为。如果参数有误，会直接停止程序。（参数个数为0）"
 
-#: autosub/options.py:224
+#: autosub/options.py:223
 msgid "type"
 msgstr "种类"
 
-#: autosub/options.py:227
+#: autosub/options.py:226
 #, python-format
 msgid ""
-"Output more files. Available types: regions, src, dst, bilingual, dst-lf-"
-"src, src-lf-dst, all. dst-lf-src: dst language and src language in the same "
-"event. And dst is ahead of src. src-lf-dst: src language and dst language in "
-"the same event. And src is ahead of dst. (6 >= arg_num >= 1) (default: "
-"%(default)s)"
+"Output more files. Available types: regions, src, full-src, dst, bilingual, "
+"dst-lf-src, src-lf-dst, all. \"regions\", \"src\", \"full-src\" are "
+"available only if input is not a subtitles file. full-src: Full result "
+"received from Speech-to-Text API in json format with start and end time. dst-"
+"lf-src: dst language and src language in the same event. And dst is ahead of "
+"src. src-lf-dst: src language and dst language in the same event. And src is "
+"ahead of dst. (6 >= arg_num >= 1) (default: %(default)s)"
 msgstr ""
-"输出更多的文件。可选种类：regions, src, dst, bilingual, dst-lf-src, src-lf-"
-"dst, all.（时间轴，源语言字幕，目标语言字幕，双语字幕，dst-lf-src,，src-lf-"
-"dst，所有）dst-lf-src：目标语言和源语言在同一字幕行中，且目标语言先于源语言。"
-"src-lf-dst：源语言和目标语言在同一字幕行中，且源语言先于目标语言。（参数个数"
-"在6和1之间）（默认参数为%(default)s）"
+"输出更多的文件。可选种类：regions，src，full-src，dst，bilingual，dst-lf-"
+"src，src-lf-dst，all。（时间轴，源语言字幕，完整语音识别结果，目标语言字幕，"
+"双语字幕，dst-lf-src,，src-lf-dst，所有）full-src：由语音转文字API得到的json"
+"格式的完整语音识别结果加上开始和结束时间。dst-lf-src：目标语言和源语言在同一"
+"字幕行中，且目标语言先于源语言。src-lf-dst：源语言和目标语言在同一字幕行中，"
+"且源语言先于目标语言。（参数个数在6和1之间）（默认参数为%(default)s）"
 
-#: autosub/options.py:240
+#: autosub/options.py:243
 msgid ""
 "Valid when your output format is \"sub\". If input, it will override the fps "
 "check on the input file. Ref: https://pysubs2.readthedocs.io/en/latest/api-"
@@ -315,11 +318,11 @@ msgstr ""
 "查。参考：https://pysubs2.readthedocs.io/en/latest/api-reference."
 "html#supported-input-output-formats（参数个数为1）"
 
-#: autosub/options.py:249
+#: autosub/options.py:252
 msgid "API_code"
 msgstr "API代码"
 
-#: autosub/options.py:251
+#: autosub/options.py:254
 #, python-format
 msgid ""
 "Choose which Speech-to-Text API to use. Currently support: gsv2: Google "
@@ -332,7 +335,7 @@ msgstr ""
 "Text V1P1Beta1 （https://cloud.google.com/speech-to-text/docs）。（参数个数为"
 "1）（默认参数为%(default)s）"
 
-#: autosub/options.py:261
+#: autosub/options.py:264
 msgid ""
 "The API key for Speech-to-Text API. (arg_num = 1) Currently support: gsv2: "
 "The API key for gsv2. (default: Free API key) gcsv1: The API key for gcsv1. "
@@ -342,7 +345,7 @@ msgstr ""
 "认参数为免费API密钥）gcsv1：gcsv1的API密钥。（如果使用了，可以覆盖 \"-sa\"/"
 "\"--service-account\"提供的服务账号凭据）"
 
-#: autosub/options.py:272
+#: autosub/options.py:275
 #, python-format
 msgid ""
 "Use Speech-to-Text recognition config file to send request. Override these "
@@ -360,7 +363,7 @@ msgstr ""
 "latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig 。"
 "如果参数个数是0，使用const路径。（参数个数为0或1）（const为%(const)s）"
 
-#: autosub/options.py:293
+#: autosub/options.py:296
 #, python-format
 msgid ""
 "API response for text confidence. A float value between 0 and 1. Confidence "
@@ -373,11 +376,11 @@ msgstr ""
 "com/BingLingGroup/google-speech-v2#response（参数个数为1）（默认参数"
 "为%(default)s）"
 
-#: autosub/options.py:303
+#: autosub/options.py:306
 msgid "Drop any regions without speech recognition result. (arg_num = 0)"
 msgstr "删除所有没有语音识别结果的空轴。（参数个数为0）"
 
-#: autosub/options.py:311
+#: autosub/options.py:314
 #, python-format
 msgid ""
 "Number of concurrent Speech-to-Text requests to make. (arg_num = 1) "
@@ -385,12 +388,12 @@ msgid ""
 msgstr ""
 "用于Speech-to-Text请求的并行数量。（参数个数为1）（默认参数为%(default)s）"
 
-#: autosub/options.py:316 autosub/options.py:504 autosub/options.py:513
-#: autosub/options.py:522
+#: autosub/options.py:319 autosub/options.py:507 autosub/options.py:516
+#: autosub/options.py:525
 msgid "second"
 msgstr "秒"
 
-#: autosub/options.py:319
+#: autosub/options.py:322
 #, python-format
 msgid ""
 "(Experimental)Seconds to sleep between two translation requests. (arg_num = "
@@ -399,7 +402,7 @@ msgstr ""
 "（实验性）在两次翻译请求之间睡眠（暂停）的时间。（参数个数为1）（默认参数"
 "为%(default)s）"
 
-#: autosub/options.py:327
+#: autosub/options.py:330
 msgid ""
 "(Experimental)Customize request urls. Ref: https://py-googletrans."
 "readthedocs.io/en/latest/ (arg_num >= 1)"
@@ -407,18 +410,18 @@ msgstr ""
 "（实验性）自定义多个请求URL。参考：https://py-googletrans.readthedocs.io/en/"
 "latest/（参数个数大于等于1）"
 
-#: autosub/options.py:334
+#: autosub/options.py:337
 msgid ""
 "(Experimental)Customize User-Agent headers. Same docs above. (arg_num = 1)"
 msgstr ""
 "（实验性）自定义用户代理（User-Agent）头部。同样的参考文档如上。（参数个数为"
 "1）"
 
-#: autosub/options.py:341
+#: autosub/options.py:344
 msgid "Change the Google Speech V2 API URL into the http one. (arg_num = 0)"
 msgstr "将Google Speech V2 API的URL改为http类型。（参数个数为0）"
 
-#: autosub/options.py:349
+#: autosub/options.py:352
 #, python-format
 msgid ""
 "Add https proxy by setting environment variables. If arg_num is 0, use const "
@@ -427,7 +430,7 @@ msgstr ""
 "通过设置环境变量的方式添加https代理。如果参数个数是0，使用const里的代理URL。"
 "（参数个数为0或1）（const为%(const)s）"
 
-#: autosub/options.py:357
+#: autosub/options.py:360
 #, python-format
 msgid ""
 "Add http proxy by setting environment variables. If arg_num is 0, use const "
@@ -436,33 +439,33 @@ msgstr ""
 "通过设置环境变量的方式添加http代理。如果参数个数是0，使用const里的代理URL。"
 "（参数个数为0或1）（const为%(const)s）"
 
-#: autosub/options.py:363
+#: autosub/options.py:366
 msgid "username"
 msgstr "用户名"
 
-#: autosub/options.py:364
+#: autosub/options.py:367
 msgid "Set proxy username. (arg_num = 1)"
 msgstr "设置代理用户名。（参数个数为1）"
 
-#: autosub/options.py:369
+#: autosub/options.py:372
 msgid "password"
 msgstr "密码"
 
-#: autosub/options.py:370
+#: autosub/options.py:373
 msgid "Set proxy password. (arg_num = 1)"
 msgstr "设置代理密码。（参数个数为1）"
 
-#: autosub/options.py:376
+#: autosub/options.py:379
 #, python-format
 msgid "Show %(prog)s help message and exit. (arg_num = 0)"
 msgstr "显示%(prog)s的帮助信息并退出。（参数个数为0）"
 
-#: autosub/options.py:384
+#: autosub/options.py:387
 #, python-format
 msgid "Show %(prog)s version and exit. (arg_num = 0)"
 msgstr "显示%(prog)s的版本信息并退出。（参数个数为0）"
 
-#: autosub/options.py:389
+#: autosub/options.py:392
 msgid ""
 "Set service account key environment variable. It should be the file path of "
 "the JSON file that contains your service account credentials. Can be "
@@ -475,7 +478,7 @@ msgstr ""
 "authentication/getting-started 当前支持："
 "gcsv1（GOOGLE_APPLICATION_CREDENTIALS）（参数个数为1）"
 
-#: autosub/options.py:400
+#: autosub/options.py:403
 msgid ""
 "Option to control audio process. If not given the option, do normal "
 "conversion work. \"y\": pre-process the input first then start normal "
@@ -494,15 +497,15 @@ msgstr ""
 "scripts/subgen.sh https://ffmpeg.org/ffmpeg-filters.html）（参数个数介于1和2"
 "之间）"
 
-#: autosub/options.py:424
+#: autosub/options.py:427
 msgid "Keep audio processing files to the output path. (arg_num = 0)"
 msgstr "将音频处理中产生的文件放在输出路径中。（参数个数为0）"
 
-#: autosub/options.py:429 autosub/options.py:447 autosub/options.py:459
+#: autosub/options.py:432 autosub/options.py:450 autosub/options.py:462
 msgid "command"
 msgstr "命令"
 
-#: autosub/options.py:430
+#: autosub/options.py:433
 msgid ""
 "This arg will override the default audio pre-process command. Every line of "
 "the commands need to be in quotes. Input file name is {in_}. Output file "
@@ -511,7 +514,7 @@ msgstr ""
 "这个参数会取代默认的音频预处理命令。每行命令需要放在一个引号内。输入文件名写"
 "为{in_}。输出文件名写为{out_}。（参数个数大于1）"
 
-#: autosub/options.py:442
+#: autosub/options.py:445
 #, python-format
 msgid ""
 "Number of concurrent ffmpeg audio split process to make. (arg_num = 1) "
@@ -519,7 +522,7 @@ msgid ""
 msgstr ""
 "用于ffmpeg音频切割的进程并行数量。（参数个数为1）（默认参数为%(default)s）"
 
-#: autosub/options.py:449
+#: autosub/options.py:452
 #, python-format
 msgid ""
 "(Experimental)This arg will override the default audio conversion command. "
@@ -531,7 +534,7 @@ msgstr ""
 "除。\"{{\", \"}}\"是必选参数，不可移除。（参数个数为1）（默认参数"
 "为%(default)s）"
 
-#: autosub/options.py:461
+#: autosub/options.py:464
 #, python-format
 msgid ""
 "(Experimental)This arg will override the default audio split command. Same "
@@ -540,11 +543,11 @@ msgstr ""
 "（实验性）这个参数会取代默认的音频转换命令。相同的注意如上。（参数个数为1）"
 "（默认参数为%(default)s）"
 
-#: autosub/options.py:468
+#: autosub/options.py:471
 msgid "file_suffix"
 msgstr "文件名后缀"
 
-#: autosub/options.py:470
+#: autosub/options.py:473
 #, python-format
 msgid ""
 "(Experimental)This arg will override the default API audio suffix. (arg_num "
@@ -553,11 +556,11 @@ msgstr ""
 "（实验性）这个参数会取代默认的给API使用的音频文件后缀。（默认参数"
 "为%(default)s）"
 
-#: autosub/options.py:476
+#: autosub/options.py:479
 msgid "sample_rate"
 msgstr "采样率"
 
-#: autosub/options.py:479
+#: autosub/options.py:482
 #, python-format
 msgid ""
 "(Experimental)This arg will override the default API audio sample rate(Hz). "
@@ -566,11 +569,11 @@ msgstr ""
 "（实验性）这个参数会取代默认的给API使用的音频采样率（赫兹）。（参数个数为1）"
 "（默认参数为%(default)s）"
 
-#: autosub/options.py:485
+#: autosub/options.py:488
 msgid "channel_num"
 msgstr "声道数"
 
-#: autosub/options.py:488
+#: autosub/options.py:491
 #, python-format
 msgid ""
 "(Experimental)This arg will override the default API audio channel. (arg_num "
@@ -579,11 +582,11 @@ msgstr ""
 "（实验性）这个参数会取代默认的给API使用的音频声道数量。（参数个数为1）（默认"
 "参数为%(default)s）"
 
-#: autosub/options.py:494
+#: autosub/options.py:497
 msgid "energy"
 msgstr "能量（相对值）"
 
-#: autosub/options.py:497
+#: autosub/options.py:500
 #, python-format
 msgid ""
 "The energy level which determines the region to be detected. Ref: https://"
@@ -594,7 +597,7 @@ msgstr ""
 "latest/apitutorial.html#examples-using-real-audio-data（参数个数为1）（默认参"
 "数为%(default)s）"
 
-#: autosub/options.py:507
+#: autosub/options.py:510
 #, python-format
 msgid ""
 "Minimum region size. Same docs above. (arg_num = 1) (default: %(default)s)"
@@ -602,7 +605,7 @@ msgstr ""
 "最小语音区域大小。同样的参考文档如上。（参数个数为1）（默认参数"
 "为%(default)s）"
 
-#: autosub/options.py:516
+#: autosub/options.py:519
 #, python-format
 msgid ""
 "Maximum region size. Same docs above. (arg_num = 1) (default: %(default)s)"
@@ -610,7 +613,7 @@ msgstr ""
 "最大音频区域大小。同样的参考文档如上。（参数个数为1）（默认参数"
 "为%(default)s）"
 
-#: autosub/options.py:525
+#: autosub/options.py:528
 #, python-format
 msgid ""
 "Maximum length of a tolerated silence within a valid audio activity. Same "
@@ -619,7 +622,7 @@ msgstr ""
 "在一段有效的音频活动区域中可以容忍的最大（连续）安静区域。同样的参考文档如"
 "上。（参数个数为1）（默认参数为%(default)s）"
 
-#: autosub/options.py:532 autosub/options.py:538
+#: autosub/options.py:535 autosub/options.py:541
 msgid ""
 "Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
 "(arg_num = 0)"
@@ -627,7 +630,7 @@ msgstr ""
 "参考：https://auditok.readthedocs.io/en/latest/core.html#class-summary（参数"
 "个数为0）"
 
-#: autosub/options.py:544
+#: autosub/options.py:547
 msgid ""
 "List all available subtitles formats. If your format is not supported, you "
 "can use ffmpeg or SubtitleEdit to convert the formats. You need to offer fps "
@@ -638,7 +641,7 @@ msgstr ""
 "SubtitleEdit来对其进行转换。如果输出格式是\"sub\"且输入文件是音频无法获取到视"
 "频帧率时，你需要提供fps选项指定帧率。（参数个数为0）"
 
-#: autosub/options.py:557
+#: autosub/options.py:560
 msgid ""
 "List all recommended \"-S\"/\"--speech-language\" Google Speech-to-Text "
 "language codes. If no arg is given, list all. Or else will list a group of "
@@ -656,7 +659,7 @@ msgstr ""
 "言）-扩展-私有（https://www.zhihu.com/question/21980689/answer/93615123）（参"
 "数个数为0或1）"
 
-#: autosub/options.py:573
+#: autosub/options.py:576
 msgid ""
 "List all available \"-SRC\"/\"--src-language\" py-googletrans translation "
 "language codes. Or else will list a group of \"good match\" of the arg. Same "
@@ -666,7 +669,7 @@ msgstr ""
 "言代码。否则会给出一个“好的匹配”的清单。同样的参考文档如上。（参数个数为0或"
 "1）"
 
-#: autosub/options.py:583
+#: autosub/options.py:586
 #, python-format
 msgid ""
 "Use py-googletrans to detect a sub file's first line language. And list a "

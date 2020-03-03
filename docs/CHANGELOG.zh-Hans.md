@@ -38,6 +38,7 @@
 #### 添加(未发布)
 
 - 添加Google Cloud语音转文字API识别配置文件输入支持。
+- 添加语音转文字识别结果json文件输出支持。[issue #76](https://github.com/BingLingGroup/autosub/issues/76)
 
 #### 改动(未发布)
 

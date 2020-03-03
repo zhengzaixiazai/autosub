@@ -150,10 +150,10 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         elif validate_result == 1:
             cmdline_utils.validate_sp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
-            cmdline_utils.subs_trans(args,
-                                     input_m=input_m,
-                                     fps=fps,
-                                     styles_list=None)
+            cmdline_utils.sub_trans(args,
+                                    input_m=input_m,
+                                    fps=fps,
+                                    styles_list=None)
 
     except KeyboardInterrupt:
         print(_("\nKeyboardInterrupt. Works stopped."))

@@ -278,15 +278,21 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
             args.api_suffix = ".wav"
         elif config_dict["encoding"] == "OGG_OPUS":
             args.api_suffix = ".ogg"
+    else:
+        # it's necessary to set default encoding
+        config_dict["encoding"] = core.filename_to_encoding(args.api_suffix)
 
     # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
     # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
-    # In practice, the client API only accept the second variable format
+    # In practice, the client API only accept the Snake case naming variable
     # but the URL API accept the both
     if "sample_rate_hertz" in config_dict and config_dict["sample_rate_hertz"]:
         args.api_sample_rate = config_dict["sample_rate_hertz"]
     elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
         args.api_sample_rate = config_dict["sampleRateHertz"]
+    else:
+        # it's necessary to set default sample_rate_hertz
+        config_dict["sample_rate_hertz"] = args.api_sample_rate
 
     if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
         args.api_audio_channel = config_dict["audio_channel_count"]
@@ -592,7 +598,7 @@ def get_timed_text(
     return timed_text
 
 
-def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         args,
         input_m=input,
         fps=30.0,
@@ -996,6 +1002,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             raise exceptions.AutosubException(
                 _("Audio processing complete.\nAll works done."))
 
+        try:
+            args.output_files.remove("full-src")
+            result_list = []
+        except KeyError:
+            result_list = None
+
         if args.speech_api == "gsv2":
             # Google speech-to-text v2
             if args.http_speech_api:
@@ -1025,14 +1037,15 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 audio_fragments=audio_fragments,
                 api_url=gsv2_api_url,
                 headers=headers,
-                regions=regions,
                 concurrency=args.speech_concurrency,
                 min_confidence=args.min_confidence,
-                is_keep=args.keep)
+                is_keep=args.keep,
+                result_list=result_list)
             gc.collect(0)
 
         elif args.speech_api == "gcsv1":
             # Google Cloud speech-to-text V1P1Beta1
+
             if args.speech_key:
                 headers = \
                     {"Content-Type": "application/json"}
@@ -1045,14 +1058,14 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 text_list = core.gcsv1_to_text(
                     audio_fragments=audio_fragments,
                     sample_rate=args.api_sample_rate,
-                    regions=regions,
                     api_url=gcsv1_api_url,
                     headers=headers,
                     config=args.speech_config,
                     concurrency=args.speech_concurrency,
                     src_language=args.speech_language,
                     min_confidence=args.min_confidence,
-                    is_keep=args.keep)
+                    is_keep=args.keep,
+                    result_list=result_list)
             elif args.service_account and os.path.isfile(args.service_account):
                 print(_("Set the GOOGLE_APPLICATION_CREDENTIALS "
                         "given in the option \"-sa\"/\"--service-account\"."))
@@ -1060,12 +1073,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 text_list = core.gcsv1_to_text(
                     audio_fragments=audio_fragments,
                     sample_rate=args.api_sample_rate,
-                    regions=regions,
                     config=args.speech_config,
                     concurrency=args.speech_concurrency,
                     src_language=args.speech_language,
                     min_confidence=args.min_confidence,
-                    is_keep=args.keep)
+                    is_keep=args.keep,
+                    result_list=result_list)
             else:
                 if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
                     print(_("Use the GOOGLE_APPLICATION_CREDENTIALS "
@@ -1073,12 +1086,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     text_list = core.gcsv1_to_text(
                         audio_fragments=audio_fragments,
                         sample_rate=args.api_sample_rate,
-                        regions=regions,
                         config=args.speech_config,
                         concurrency=args.speech_concurrency,
                         src_language=args.speech_language,
                         min_confidence=args.min_confidence,
-                        is_keep=args.keep)
+                        is_keep=args.keep,
+                        result_list=result_list)
                 else:
                     print(_("No available GOOGLE_APPLICATION_CREDENTIALS. "
                             "Use \"-sa\"/\"--service-account\" to set one."))
@@ -1095,6 +1108,23 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             is_empty_dropped=args.drop_empty_regions,
             regions=regions,
             text_list=text_list)
+
+        if result_list is not None:
+            timed_result = get_timed_text(
+                is_empty_dropped=False,
+                regions=regions,
+                text_list=result_list)
+            result_string = sub_utils.list_to_json_str(timed_result)
+            result_name = "{base}.result.json".format(base=args.output)
+            result_file_path = core.str_to_file(
+                str_=result_string,
+                output=result_name,
+                input_m=input_m)
+            print(_("Speech-to-Text recogntion result json "
+                    "file created at \"{}\".").format(result_file_path))
+
+            if not args.output_files:
+                raise exceptions.AutosubException(_("\nAll works done."))
 
         if args.dst_language:
             # process output first
