@@ -636,7 +636,8 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         dst_language=args.dst_language,
         sleep_seconds=args.sleep_seconds,
         user_agent=args.user_agent,
-        service_urls=args.service_urls)
+        service_urls=args.service_urls,
+        drop_override_codes=args.drop_override_codes)
 
     if not translated_text or len(translated_text) != len(text_list):
         raise exceptions.AutosubException(
@@ -1169,7 +1170,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 dst_language=args.dst_language,
                 sleep_seconds=args.sleep_seconds,
                 user_agent=args.user_agent,
-                service_urls=args.service_urls)
+                service_urls=args.service_urls,
+                drop_override_codes=args.drop_override_codes)
 
             if not translated_text or len(translated_text) != len(regions):
                 raise exceptions.AutosubException(

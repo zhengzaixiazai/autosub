@@ -44,6 +44,7 @@
 
 - 修复部分高内存占用，通过终结子进程，减少默认多进程数量，使用`gc.collect(0)`。[issue #67](https://github.com/BingLingGroup/autosub/issues/67)，[issue #74](https://github.com/BingLingGroup/autosub/issues/74)
 - 修复依赖查找问题。[issue #82](https://github.com/BingLingGroup/autosub/issues/82)
+- 修复ass标签翻译问题。[issue #79](https://github.com/BingLingGroup/autosub/issues/79)
 
 ### [0.5.4-alpha] - 2020-01-31
 

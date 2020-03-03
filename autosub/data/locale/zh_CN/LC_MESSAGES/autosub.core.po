@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-03 12:32+0800\n"
+"POT-Creation-Date: 2020-03-03 15:53+0800\n"
 "PO-Revision-Date: 2020-02-03 16:38+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,7 +17,7 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.2.4\n"
 
-#: autosub/core.py:122
+#: autosub/core.py:123
 msgid ""
 "\n"
 "Converting speech regions to short-term fragments."
@@ -25,11 +25,11 @@ msgstr ""
 "\n"
 "按照语音区域将音频转换为多个短语音片段。"
 
-#: autosub/core.py:123
+#: autosub/core.py:124
 msgid "Converting: "
 msgstr "转换中： "
 
-#: autosub/core.py:168
+#: autosub/core.py:169
 msgid ""
 "\n"
 "Sending short-term fragments to Google Speech V2 API and getting result."
@@ -37,11 +37,11 @@ msgstr ""
 "\n"
 "将短片段语音发送给Google Speech V2 API并得到识别结果。"
 
-#: autosub/core.py:169 autosub/core.py:235
+#: autosub/core.py:170 autosub/core.py:236
 msgid "Speech-to-Text: "
 msgstr "语音转文字中： "
 
-#: autosub/core.py:207 autosub/core.py:367
+#: autosub/core.py:208 autosub/core.py:368
 msgid ""
 "Error: Connection error happened too many times.\n"
 "All works done."
@@ -49,7 +49,7 @@ msgstr ""
 "错误：过多连接错误。\n"
 "做完了。"
 
-#: autosub/core.py:233
+#: autosub/core.py:234
 msgid ""
 "\n"
 "Sending short-term fragments to Google Cloud Speech V1P1Beta1 API and "
@@ -58,11 +58,11 @@ msgstr ""
 "\n"
 "将短片段语音发送给Google Cloud Speech V1P1Beta1 API并得到识别结果。"
 
-#: autosub/core.py:375
+#: autosub/core.py:376
 msgid "Receive something unexpected:"
 msgstr "收到未预期数据："
 
-#: autosub/core.py:397
+#: autosub/core.py:399
 msgid ""
 "\n"
 "Translating text from \"{0}\" to \"{1}\"."
@@ -70,24 +70,24 @@ msgstr ""
 "\n"
 "从\"{0}\"翻译为\"{1}\"。"
 
-#: autosub/core.py:447
+#: autosub/core.py:449
 msgid "Translation: "
 msgstr "翻译中： "
 
-#: autosub/core.py:508
+#: autosub/core.py:512
 msgid "Cancelling translation."
 msgstr "取消翻译。"
 
-#: autosub/core.py:581 autosub/core.py:640
+#: autosub/core.py:585 autosub/core.py:644
 msgid "Format \"{fmt}\" not supported. Use \"{default_fmt}\" instead."
 msgstr "不支持格式\"{fmt}\"。改用\"{default_fmt}\"。"
 
-#: autosub/core.py:713
+#: autosub/core.py:717
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/core.py:716
+#: autosub/core.py:720
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 

@@ -10,6 +10,7 @@ import multiprocessing
 import time
 import gettext
 import gc
+import re
 
 # Import third-party modules
 import progressbar
@@ -386,7 +387,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
         size_per_trans=constants.DEFAULT_SIZE_PER_TRANS,
         sleep_seconds=constants.DEFAULT_SLEEP_SECONDS,
         user_agent=None,
-        service_urls=None):
+        service_urls=None,
+        drop_override_codes=False):
     """
     Give a text list, generate translated text list from GoogleTranslatorV2 api.
     """
@@ -462,6 +464,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
 
         for index in partial_index:
             content_to_trans = '\n'.join(text_list[i:index])
+            if drop_override_codes:
+                content_to_trans = "".join(re.compile(r'{.*?}').split(content_to_trans))
             translation = translator.translate(text=content_to_trans,
                                                dest=dst_language,
                                                src=src_language)

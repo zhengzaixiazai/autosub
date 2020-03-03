@@ -189,8 +189,7 @@ def gcsv1p1beta1_service_client(
 
         if not is_full_result:
             return get_gcsv1p1beta1_transcript(min_confidence, result_dict)
-        else:
-            return result_dict
+        return result_dict
 
     except KeyboardInterrupt:
         return None
@@ -251,11 +250,8 @@ class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
                     continue
 
                 if not self.is_full_result:
-                    return get_gcsv1p1beta1_transcript(
-                        self.min_confidence,
-                        result_dict)
-                else:
-                    return result_dict
+                    return get_gcsv1p1beta1_transcript(self.min_confidence, result_dict)
+                return result_dict
 
         except KeyboardInterrupt:
             return None

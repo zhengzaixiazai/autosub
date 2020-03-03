@@ -338,6 +338,13 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "Same docs above. "
                "(arg_num = 1)"))
 
+    pygt_group.add_argument(
+        '-doc', '--drop-override-codes',
+        action='store_true',
+        help=_("Drop any .ass override codes in the text before translation. "
+               "Only affect the translation result. "
+               "(arg_num = 0)"))
+
     network_group.add_argument(
         '-hsa', '--http-speech-api',
         action='store_true',
