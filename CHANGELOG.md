@@ -41,6 +41,7 @@ Click up arrow to go back to TOC.
 - Add Google Cloud Speech-to-Text API Recognition Config json file input support.
 - Add Speech-to-Text API recognition result json file output support. [issue #76](https://github.com/BingLingGroup/autosub/issues/76)
 - Add exception when receiving error from [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2).
+- Add Nuitka compatibility codes to stop program compiled by Nuitka when using Google Cloud service account credentials. [Nuitka pkg_resources.DistributionNotFound error](https://github.com/Nuitka/Nuitka/issues/146)
 
 #### Changed(Unreleased)
 

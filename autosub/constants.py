@@ -10,8 +10,14 @@ import sys
 import shlex
 import locale
 import multiprocessing
+from pkg_resources import DistributionNotFound
 
 # Import third-party modules
+try:
+    from google.cloud.speech_v1p1beta1 import enums  # pylint: disable=unused-import
+    IS_GOOGLECLOUDCLIENT = True
+except DistributionNotFound:
+    IS_GOOGLECLOUDCLIENT = False
 
 # Any changes to the path and your own modules
 
@@ -367,9 +373,9 @@ def which_exe(program_path):
         # else find the program path
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
-            program = os.path.join(path, program_path)
-            if is_exe(program):
-                return program
+            program_name = os.path.join(path, program_path)
+            if is_exe(program_name):
+                return program_name
         # if program located at app's directory
         program_name = os.path.join(APP_PATH, os.path.basename(program_path))
         if is_exe(program_name):
@@ -385,10 +391,14 @@ def get_cmd(program_name):
     """
     Return the executable name. "" returned when no executable exists.
     """
-    if which_exe(program_name):
-        return program_name
-    if which_exe(program_name + ".exe"):
-        return program_name + ".exe"
+    command = which_exe(program_name)
+    if command:
+        return command
+
+    command = which_exe(program_name + ".exe")
+    if command:
+        return command
+
     return ""
 
 

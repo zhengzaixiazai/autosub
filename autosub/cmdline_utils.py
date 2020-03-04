@@ -255,7 +255,7 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
     for audio or video processing.
     """
     if os.path.isfile(args.speech_config):
-        with open(args.speech_config, 'rb') as config_file:
+        with open(args.speech_config, 'r') as config_file:
             try:
                 config_dict = json.load(config_file)
             except ValueError:
@@ -916,7 +916,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             sample_rate=48000,
             out_=audio_wav)
         print(_("\nConvert source file to \"{name}\" "
-                "to get audio length and detect audio regions.").format(
+                "to detect audio regions.").format(
                     name=audio_wav))
         print(command)
         subprocess.check_output(
@@ -928,7 +928,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 _("Error: Convert source file to \"{name}\" failed.").format(
                     name=audio_wav))
 
-        print(_("Use Auditok to detect speech regions."))
+        print(_("Conversion complete.\nUse Auditok to detect speech regions."))
 
         regions = core.auditok_gen_speech_regions(
             audio_wav=audio_wav,
@@ -1046,7 +1046,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
         elif args.speech_api == "gcsv1":
             # Google Cloud speech-to-text V1P1Beta1
-
             if args.speech_key:
                 headers = \
                     {"Content-Type": "application/json"}
@@ -1067,6 +1066,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     min_confidence=args.min_confidence,
                     is_keep=args.keep,
                     result_list=result_list)
+            elif not constants.IS_GOOGLECLOUDCLIENT:
+                raise exceptions.SpeechToTextException(
+                    _("Error: Current build version doesn't support "
+                      "Google Cloud service account credentials."
+                      "\nPlease use other build version "
+                      "or use option \"-skey\"/\"--speech-key\" instead."))
             elif args.service_account and os.path.isfile(args.service_account):
                 print(_("Set the GOOGLE_APPLICATION_CREDENTIALS "
                         "given in the option \"-sa\"/\"--service-account\"."))

@@ -40,6 +40,7 @@
 - 添加Google Cloud语音转文字API识别配置文件输入支持。
 - 添加语音转文字识别结果json文件输出支持。[issue #76](https://github.com/BingLingGroup/autosub/issues/76)
 - 添加[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)识别错误的异常。
+- 添加Nuitka兼容性代码，使得Nuitka编译版在使用Google Cloud服务账号凭据时终止运行。[Nuitka pkg_resources.DistributionNotFound错误](https://github.com/Nuitka/Nuitka/issues/146)
 
 #### 改动(未发布)
 

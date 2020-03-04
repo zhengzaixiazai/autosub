@@ -18,7 +18,6 @@ import pysubs2
 import auditok
 import googletrans
 import wcwidth
-from google.cloud.speech_v1p1beta1 import enums
 
 # Any changes to the path and your own modules
 from autosub import google_speech_api
@@ -26,6 +25,11 @@ from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
 from autosub import exceptions
+
+if constants.IS_GOOGLECLOUDCLIENT:
+    from google.cloud.speech_v1p1beta1 import enums
+else:
+    enums = None  # pylint: disable=invalid-name
 
 CORE_TEXT = gettext.translation(domain=__name__,
                                 localedir=constants.LOCALE_PATH,

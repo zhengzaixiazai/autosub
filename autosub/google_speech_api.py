@@ -11,11 +11,17 @@ import json
 
 # Import third-party modules
 import requests
-from google.cloud import speech_v1p1beta1
-from google.protobuf.json_format import MessageToDict
 
 # Any changes to the path and your own modules
 from autosub import exceptions
+from autosub import constants
+
+if constants.IS_GOOGLECLOUDCLIENT:
+    from google.cloud import speech_v1p1beta1
+    from google.protobuf.json_format import MessageToDict
+else:
+    speech_v1p1beta1 = None  # pylint: disable=invalid-name
+    MessageToDict = None  # pylint: disable=invalid-name
 
 
 def get_google_speech_v2_transcript(
