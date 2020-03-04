@@ -11,6 +11,8 @@ import gettext
 import os
 import subprocess
 import tempfile
+import gc
+import json
 
 # Import third-party modules
 import auditok
@@ -245,6 +247,64 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
         return 1
 
     return 0
+
+
+def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
+    """
+    Check that the speech-config args passed to autosub are valid
+    for audio or video processing.
+    """
+    if os.path.isfile(args.speech_config):
+        with open(args.speech_config, 'r') as config_file:
+            try:
+                config_dict = json.load(config_file)
+            except ValueError:
+                raise exceptions.AutosubException(
+                    _("Error: Can't decode config file \"{filename}\".").format(
+                        filename=args.speech_config))
+    else:
+        raise exceptions.AutosubException(
+            _("Error: Config file \"{filename}\" doesn't exist.").format(
+                filename=args.speech_config))
+
+    if "encoding" in config_dict and config_dict["encoding"]:
+        # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+        if config_dict["encoding"] == "FLAC":
+            args.api_suffix = ".flac"
+        elif config_dict["encoding"] == "MP3":
+            args.api_suffix = ".mp3"
+        elif config_dict["encoding"] == "LINEAR16":
+            args.api_suffix = ".wav"
+        elif config_dict["encoding"] == "OGG_OPUS":
+            args.api_suffix = ".ogg"
+    else:
+        # it's necessary to set default encoding
+        config_dict["encoding"] = core.extension_to_encoding(args.api_suffix)
+
+    # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
+    # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
+    # In practice, the client API only accept the Snake case naming variable
+    # but the URL API accept the both
+    if "sample_rate_hertz" in config_dict and config_dict["sample_rate_hertz"]:
+        args.api_sample_rate = config_dict["sample_rate_hertz"]
+    elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
+        args.api_sample_rate = config_dict["sampleRateHertz"]
+    else:
+        # it's necessary to set sample_rate_hertz from option --api-sample-rate
+        config_dict["sample_rate_hertz"] = args.api_sample_rate
+
+    if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
+        args.api_audio_channel = config_dict["audio_channel_count"]
+    elif "audioChannelCount" in config_dict and config_dict["audioChannelCount"]:
+        args.api_audio_channel = config_dict["audioChannelCount"]
+
+    if "language_code" in config_dict and config_dict["language_code"]:
+        args.speech_language = config_dict["language_code"]
+    elif "languageCode" in config_dict and config_dict["languageCode"]:
+        args.speech_language = config_dict["languageCode"]
+
+    args.speech_config = config_dict
 
 
 def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
@@ -494,8 +554,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
         args.styles = args.ext_regions
 
 
-def fix_args(args,
-             ffmpeg_cmd):
+def fix_args(args):
     """
     Check that the commandline arguments value passed to autosub are proper.
     """
@@ -521,16 +580,6 @@ def fix_args(args,
                                                   dmxcs=constants.DEFAULT_CONTINUOUS_SILENCE))
             args.max_continuous_silence = constants.DEFAULT_CONTINUOUS_SILENCE
 
-    if not args.audio_conversion_cmd:
-        args.audio_conversion_cmd = \
-            constants.DEFAULT_AUDIO_CVT[:7].replace(
-                'ffmpeg ', ffmpeg_cmd) + constants.DEFAULT_AUDIO_CVT[7:]
-
-    if not args.audio_split_cmd:
-        args.audio_split_cmd = \
-            constants.DEFAULT_AUDIO_SPLT[:7].replace(
-                'ffmpeg ', ffmpeg_cmd) + constants.DEFAULT_AUDIO_SPLT[7:]
-
 
 def get_timed_text(
         is_empty_dropped,
@@ -549,7 +598,7 @@ def get_timed_text(
     return timed_text
 
 
-def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         args,
         input_m=input,
         fps=30.0,
@@ -587,7 +636,8 @@ def subs_trans(  # pylint: disable=too-many-branches, too-many-statements, too-m
         dst_language=args.dst_language,
         sleep_seconds=args.sleep_seconds,
         user_agent=args.user_agent,
-        service_urls=args.service_urls)
+        service_urls=args.service_urls,
+        drop_override_codes=args.drop_override_codes)
 
     if not translated_text or len(translated_text) != len(text_list):
         raise exceptions.AutosubException(
@@ -865,8 +915,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             channel=1,
             sample_rate=48000,
             out_=audio_wav)
-        print(_("\nConvert source audio to \"{name}\" "
-                "to get audio length and detect audio regions.").format(
+        print(_("\nConvert source file to \"{name}\" "
+                "to detect audio regions.").format(
                     name=audio_wav))
         print(command)
         subprocess.check_output(
@@ -875,8 +925,10 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
         if not ffmpeg_utils.ffprobe_check_file(audio_wav):
             raise exceptions.AutosubException(
-                _("Error: Convert source audio to \"{name}\" failed.").format(
+                _("Error: Convert source file to \"{name}\" failed.").format(
                     name=audio_wav))
+
+        print(_("Conversion complete.\nUse Auditok to detect speech regions."))
 
         regions = core.auditok_gen_speech_regions(
             audio_wav=audio_wav,
@@ -886,6 +938,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             max_continuous_silence=args.max_continuous_silence,
             mode=mode)
         os.remove(audio_wav)
+        gc.collect(0)
+
         print(_("\n\"{name}\" has been deleted.").format(name=audio_wav))
 
     if not regions:
@@ -935,6 +989,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             suffix=args.api_suffix,
             concurrency=args.audio_concurrency,
             is_keep=args.keep)
+        gc.collect(0)
 
         if not audio_fragments or \
                 len(audio_fragments) != len(regions):
@@ -947,6 +1002,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         if args.audio_process and 's' in args.audio_process:
             raise exceptions.AutosubException(
                 _("Audio processing complete.\nAll works done."))
+
+        try:
+            args.output_files.remove("full-src")
+            result_list = []
+        except KeyError:
+            result_list = None
 
         if args.speech_api == "gsv2":
             # Google speech-to-text v2
@@ -977,10 +1038,11 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 audio_fragments=audio_fragments,
                 api_url=gsv2_api_url,
                 headers=headers,
-                regions=regions,
                 concurrency=args.speech_concurrency,
                 min_confidence=args.min_confidence,
-                is_keep=args.keep)
+                is_keep=args.keep,
+                result_list=result_list)
+            gc.collect(0)
 
         elif args.speech_api == "gcsv1":
             # Google Cloud speech-to-text V1P1Beta1
@@ -996,13 +1058,20 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 text_list = core.gcsv1_to_text(
                     audio_fragments=audio_fragments,
                     sample_rate=args.api_sample_rate,
-                    regions=regions,
                     api_url=gcsv1_api_url,
                     headers=headers,
+                    config=args.speech_config,
                     concurrency=args.speech_concurrency,
                     src_language=args.speech_language,
                     min_confidence=args.min_confidence,
-                    is_keep=args.keep)
+                    is_keep=args.keep,
+                    result_list=result_list)
+            elif not constants.IS_GOOGLECLOUDCLIENT:
+                raise exceptions.SpeechToTextException(
+                    _("Error: Current build version doesn't support "
+                      "Google Cloud service account credentials."
+                      "\nPlease use other build version "
+                      "or use option \"-skey\"/\"--speech-key\" instead."))
             elif args.service_account and os.path.isfile(args.service_account):
                 print(_("Set the GOOGLE_APPLICATION_CREDENTIALS "
                         "given in the option \"-sa\"/\"--service-account\"."))
@@ -1010,11 +1079,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 text_list = core.gcsv1_to_text(
                     audio_fragments=audio_fragments,
                     sample_rate=args.api_sample_rate,
-                    regions=regions,
+                    config=args.speech_config,
                     concurrency=args.speech_concurrency,
                     src_language=args.speech_language,
                     min_confidence=args.min_confidence,
-                    is_keep=args.keep)
+                    is_keep=args.keep,
+                    result_list=result_list)
             else:
                 if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
                     print(_("Use the GOOGLE_APPLICATION_CREDENTIALS "
@@ -1022,17 +1092,37 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     text_list = core.gcsv1_to_text(
                         audio_fragments=audio_fragments,
                         sample_rate=args.api_sample_rate,
-                        regions=regions,
+                        config=args.speech_config,
                         concurrency=args.speech_concurrency,
                         src_language=args.speech_language,
                         min_confidence=args.min_confidence,
-                        is_keep=args.keep)
+                        is_keep=args.keep,
+                        result_list=result_list)
                 else:
                     print(_("No available GOOGLE_APPLICATION_CREDENTIALS. "
                             "Use \"-sa\"/\"--service-account\" to set one."))
                     text_list = None
         else:
             text_list = None
+
+        gc.collect(0)
+
+        if result_list is not None:
+            timed_result = get_timed_text(
+                is_empty_dropped=False,
+                regions=regions,
+                text_list=result_list)
+            result_string = sub_utils.list_to_json_str(timed_result)
+            result_name = "{base}.result.json".format(base=args.output)
+            result_file_path = core.str_to_file(
+                str_=result_string,
+                output=result_name,
+                input_m=input_m)
+            print(_("Speech-to-Text recogntion result json "
+                    "file created at \"{}\".").format(result_file_path))
+
+            if not args.output_files:
+                raise exceptions.AutosubException(_("\nAll works done."))
 
         if not text_list or len(text_list) != len(regions):
             raise exceptions.SpeechToTextException(
@@ -1086,7 +1176,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 dst_language=args.dst_language,
                 sleep_seconds=args.sleep_seconds,
                 user_agent=args.user_agent,
-                service_urls=args.service_urls)
+                service_urls=args.service_urls,
+                drop_override_codes=args.drop_override_codes)
 
             if not translated_text or len(translated_text) != len(regions):
                 raise exceptions.AutosubException(

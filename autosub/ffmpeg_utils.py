@@ -119,7 +119,7 @@ def ffprobe_get_fps(  # pylint: disable=superfluous-parens
             raise ValueError
 
     except (subprocess.CalledProcessError, ValueError):
-        print(_("ffprobe(ffmpeg) can't get video fps.\n"
+        print(_("ffprobe can't get video fps.\n"
                 "It is necessary when output is \".sub\"."))
         if input_m:
             input_str = input_m(_("Input your video fps. "
@@ -142,13 +142,15 @@ def ffprobe_check_file(filename):
     Give an audio or video file
     and check whether it is not empty by get its bitrate.
     """
-    command = "ffprobe {in_} -show_format -pretty -loglevel quiet".format(in_=filename)
+    print(_("\nUse ffprobe to check conversion result."))
+    command = constants.DEFAULT_CHECK_CMD.format(in_=filename)
     print(command)
     ffprobe_bytes = subprocess.check_output(
         constants.cmd_conversion(command),
         stdin=open(os.devnull),
         shell=False)
     ffprobe_str = ffprobe_bytes.decode(sys.stdout.encoding)
+    print(ffprobe_str)
     bitrate_idx = ffprobe_str.find('bit_rate')
     if bitrate_idx < 0 or \
             ffprobe_str[bitrate_idx + 9:bitrate_idx + 10].lower() == 'n':
@@ -156,66 +158,19 @@ def ffprobe_check_file(filename):
     return True
 
 
-def is_exe(file_path):
-    """
-    Checks whether a file is executable.
-    """
-    return os.path.isfile(file_path) and os.access(file_path, os.X_OK)
-
-
-def which_exe(program_path):
-    """
-    Return the path for a given executable.
-    """
-    program_dir = os.path.split(program_path)[0]
-    if program_dir:
-        # if program directory exists
-        if is_exe(program_path):
-            return program_path
-    else:
-        # else find the program path
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            program = os.path.join(path, program_path)
-            if is_exe(program):
-                return program
-        # if program located at app's directory
-        program_name = os.path.join(constants.APP_PATH, os.path.basename(program_path))
-        if is_exe(program_name):
-            return program_name
-        # if program located at current directory
-        program_name = os.path.join(os.getcwd(), os.path.basename(program_path))
-        if is_exe(program_name):
-            return program_name
-    return None
-
-
-def get_cmd(program_name):
-    """
-    Return the executable name. "None" returned when no executable exists.
-    """
-    if which_exe(program_name):
-        return program_name
-    if which_exe(program_name + ".exe"):
-        return program_name + ".exe"
-    return None
-
-
 def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
         filename,
         is_keep,
         cmds,
         output_name=None,
-        input_m=input,
-        ffmpeg_cmd="ffmpeg"):
+        input_m=input):
     """
     Pre-process audio file.
     """
     output_list = [filename, ]
     if not cmds:
         cmds = constants.DEFAULT_AUDIO_PRCS
-        ffmpeg_norm_cmd = get_cmd("ffmpeg-normalize")
-        if not ffmpeg_norm_cmd:
+        if not constants.FFMPEG_NORMALIZE_CMD:
             print(_("Warning: Dependency ffmpeg-normalize "
                     "not found on this machine. "
                     "Try default method."))
@@ -243,7 +198,6 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
             command = cmds[i - 1].format(
                 in_=output_list[i - 1],
                 out_=output_list[i])
-            command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
             print(command)
             subprocess.check_output(
                 constants.cmd_conversion(command),
@@ -276,7 +230,6 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
             command = cmds[i - 1].format(
                 in_=output_list[i - 1],
                 out_=output_list[i])
-            command = command[:7].replace('ffmpeg ', ffmpeg_cmd) + command[7:]
             print(command)
             subprocess.check_output(
                 constants.cmd_conversion(command),

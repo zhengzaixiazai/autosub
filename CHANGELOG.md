@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
-- [Unreleased](#unreleased)
+- [0.5.5-alpha - 2020-03-04](#055-alpha---2020-03-04)
+  - [Added](#added055-alpha)
+  - [Changed](#changed055-alpha)
 - [0.5.4-alpha - 2020-01-31](#054-alpha---2020-01-31)
   - [Added](#added054-alpha)
   - [Changed](#changed054-alpha)
@@ -32,7 +34,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Click up arrow to go back to TOC.
 
-### Unreleased
+### [0.5.5-alpha] - 2020-03-04
+
+#### Added(0.5.5-alpha)
+
+- Add Google Cloud Speech-to-Text API Recognition Config json file input support.
+- Add Speech-to-Text API recognition result json file output support. [issue #76](https://github.com/BingLingGroup/autosub/issues/76)
+- Add exception when receiving error from [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2).
+- Add Nuitka compatibility codes to stop program compiled by Nuitka when using Google Cloud service account credentials. [Nuitka pkg_resources.DistributionNotFound error](https://github.com/Nuitka/Nuitka/issues/146)
+
+#### Changed(0.5.5-alpha)
+
+- Fix high memory/RAM usage partially by terminating child processes, lowering default multiprocessing counts and using `gc.collect(0)`. [issue #67](https://github.com/BingLingGroup/autosub/issues/67), [issue #74](https://github.com/BingLingGroup/autosub/issues/74)
+- Fix dependency finding issue. [issue #82](https://github.com/BingLingGroup/autosub/issues/82)
+- Fix ass override tags translation issue. [issue #79](https://github.com/BingLingGroup/autosub/issues/79)
 
 ### [0.5.4-alpha] - 2020-01-31
 
@@ -46,6 +61,8 @@ Click up arrow to go back to TOC.
 - Fix output format limits when input is a subtitles file.
 - Remove gtransv2 support.
 
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
 ### [0.5.3-alpha] - 2019-12-30
 
 #### Changed(0.5.3-alpha)
@@ -53,6 +70,8 @@ Click up arrow to go back to TOC.
 - Fix excessive transcoding time issue. [pull request #66](https://github.com/BingLingGroup/autosub/pull/66)
 - Fix Auditok option issues. [issue #70](https://github.com/BingLingGroup/autosub/issues/70)
 - Fix output option issue. [issue #73](https://github.com/BingLingGroup/autosub/issues/73)
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.2-alpha] - 2019-11-05
 
@@ -171,7 +190,8 @@ Click up arrow to go back to TOC.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
-[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...HEAD
+[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.5-alpha...HEAD
+[0.5.5-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...0.5.5-alpha
 [0.5.4-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...0.5.4-alpha
 [0.5.3-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...0.5.3-alpha
 [0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha

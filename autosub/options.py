@@ -225,7 +225,11 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         default=["dst", ],
         help=_("Output more files. "
                "Available types: "
-               "regions, src, dst, bilingual, dst-lf-src, src-lf-dst, all. "
+               "regions, src, full-src, dst, bilingual, dst-lf-src, src-lf-dst, all. "
+               "\"regions\", \"src\", \"full-src\" are available only "
+               "if input is not a subtitles file. "
+               "full-src: Full result received from Speech-to-Text API in json format "
+               "with start and end time. "
                "dst-lf-src: dst language and src language in the same event. "
                "And dst is ahead of src. "
                "src-lf-dst: src language and dst language in the same event. "
@@ -264,20 +268,25 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(If used, override the credentials "
                "given by\"-sa\"/\"--service-account\")"))
 
-    # speech_group.add_argument(
-    #     '-sconf', '--speech-config',
-    #     nargs='?', metavar=_('path'),
-    #     const='config.json',
-    #     help=_("Use speech recognition config to send request. "
-    #            "Override these options below: "
-    #            "\"-S\", \"-asr\", \"-aac\". "
-    #            "Currently support: "
-    #            "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
-    #            "(https://cloud.google.com/speech-to-text/docs"
-    #            "/reference/rest/v1p1beta1/RecognitionConfig). "
-    #            "If arg_num is 0, use const path. "
-    #            "(arg_num = 0 or 1) (const: %(const)s)")
-    # )
+    speech_group.add_argument(
+        '-sconf', '--speech-config',
+        nargs='?', metavar=_('path'),
+        const='config.json',
+        help=_("Use Speech-to-Text recognition config file to send request. "
+               "Override these options below: "
+               "\"-S\", \"-asr\", \"-asf\". "
+               "Currently support: "
+               "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
+               "API key config reference: "
+               "https://cloud.google.com/speech-to-text/docs"
+               "/reference/rest/v1p1beta1/RecognitionConfig "
+               "Service account config reference: "
+               "https://googleapis.dev/python/speech/latest"
+               "/gapic/v1/types.html"
+               "#google.cloud.speech_v1.types.RecognitionConfig "
+               "If arg_num is 0, use const path. "
+               "(arg_num = 0 or 1) (const: %(const)s)")
+    )
 
     speech_group.add_argument(
         '-mnc', '--min-confidence',
@@ -328,6 +337,13 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         help=_("(Experimental)Customize User-Agent headers. "
                "Same docs above. "
                "(arg_num = 1)"))
+
+    pygt_group.add_argument(
+        '-doc', '--drop-override-codes',
+        action='store_true',
+        help=_("Drop any .ass override codes in the text before translation. "
+               "Only affect the translation result. "
+               "(arg_num = 0)"))
 
     network_group.add_argument(
         '-hsa', '--http-speech-api',
@@ -439,26 +455,23 @@ def get_cmd_args():  # pylint: disable=too-many-statements
     audio_prcs_group.add_argument(
         '-acc', '--audio-conversion-cmd',
         metavar=_('command'),
+        default=constants.DEFAULT_AUDIO_CVT,
         help=_("(Experimental)This arg will override the default "
                "audio conversion command. "
                "\"[\", \"]\" are optional arguments "
                "meaning you can remove them. "
                "\"{{\", \"}}\" are required arguments "
                "meaning you can't remove them. "
-               "Default command to process the audio: "
-               "{dft} "
-               "(arg_num = 1)").format(
-                   dft=constants.DEFAULT_AUDIO_CVT))
+               "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-asc', '--audio-split-cmd',
         metavar=_('command'),
+        default=constants.DEFAULT_AUDIO_SPLT,
         help=_("(Experimental)This arg will override the default "
                "audio split command. "
                "Same attention above. "
-               "Default: {dft} "
-               "(arg_num = 1)").format(
-                   dft=constants.DEFAULT_AUDIO_SPLT))
+               "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-asf', '--api-suffix',
