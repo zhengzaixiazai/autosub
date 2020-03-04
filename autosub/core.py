@@ -21,7 +21,7 @@ import wcwidth
 from google.cloud.speech_v1p1beta1 import enums
 
 # Any changes to the path and your own modules
-from autosub import speech_trans_api
+from autosub import google_speech_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
@@ -159,7 +159,7 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
     text_list = []
     pool = multiprocessing.Pool(concurrency)
 
-    recognizer = speech_trans_api.GoogleSpeechV2(
+    recognizer = google_speech_api.GoogleSpeechV2(
         api_url=api_url,
         headers=headers,
         min_confidence=min_confidence,
@@ -187,7 +187,7 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
             for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
                 result_list.append(result)
                 transcript = \
-                    speech_trans_api.get_google_speech_v2_transcript(min_confidence, result)
+                    google_speech_api.get_google_speech_v2_transcript(min_confidence, result)
                 if transcript:
                     text_list.append(transcript)
                 else:
@@ -255,7 +255,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     "languageCode": src_language,
                 }
 
-            recognizer = speech_trans_api.GCSV1P1Beta1URL(
+            recognizer = google_speech_api.GCSV1P1Beta1URL(
                 config=config,
                 api_url=api_url,
                 headers=headers,
@@ -275,7 +275,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
             else:
                 for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
                     result_list.append(result)
-                    transcript = speech_trans_api.get_gcsv1p1beta1_transcript(
+                    transcript = google_speech_api.get_gcsv1p1beta1_transcript(
                         min_confidence,
                         result)
                     if transcript:
@@ -326,7 +326,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 # google cloud speech-to-text client can't use multiprocessing.pool
                 # based on class call, otherwise will receive pickling error
                 tasks.append(pool.apply_async(
-                    speech_trans_api.gcsv1p1beta1_service_client,
+                    google_speech_api.gcsv1p1beta1_service_client,
                     args=(filename, is_keep, config, min_confidence,
                           result_list is not None)))
                 gc.collect(0)
@@ -345,7 +345,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     i = i + 1
                     result = task.get()
                     result_list.append(result)
-                    transcript = speech_trans_api.get_gcsv1p1beta1_transcript(
+                    transcript = google_speech_api.get_gcsv1p1beta1_transcript(
                         min_confidence,
                         result)
                     if transcript:

@@ -34,12 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Click up arrow to go back to TOC.
 
-### Unreleased
+### [Unreleased]
 
 #### Added(Unreleased)
 
 - Add Google Cloud Speech-to-Text API Recognition Config json file input support.
 - Add Speech-to-Text API recognition result json file output support. [issue #76](https://github.com/BingLingGroup/autosub/issues/76)
+- Add exception when receiving error from [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2).
 
 #### Changed(Unreleased)
 

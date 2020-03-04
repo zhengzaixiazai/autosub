@@ -152,7 +152,8 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                             continue
 
                 # Every line of the result can't be loaded to json
-                return None
+                raise exceptions.SpeechToTextException(
+                    result_str)
 
         except KeyboardInterrupt:
             return None
