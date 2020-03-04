@@ -39,6 +39,10 @@
      - 6.1.2 [检测语音区域](#检测语音区域)
      - 6.1.3 [分割音频](#分割音频)
      - 6.1.4 [语音转录为字幕](#语音转录为字幕)
+       - 6.1.4.1 [Google Speech V2](#google-speech-v2)
+       - 6.1.4.2 [Google Cloud Speech-to-Text](#google-cloud-speech-to-text)
+       - 6.1.4.3 [语音识别配置](#语音识别配置)
+       - 6.1.4.4 [输出API完整响应](#输出API完整响应)
      - 6.1.5 [翻译字幕](#翻译字幕)
    - 6.2 [选项](#选项)
    - 6.3 [国际化](#国际化)
@@ -47,6 +51,7 @@
    - 7.2 [批量处理](#批量处理)
    - 7.3 [代理支持](#代理支持)
    - 7.4 [macOS locale问题](#macos-locale问题)
+   - 7.5 [准确性](#准确性)
 8. [问题反馈](#问题反馈)
 9. [构建](#构建)
 
@@ -371,6 +376,8 @@ autosub -i 输入文件 -k ...(其他选项)
 
 语音音频片段转为语音语言字幕。
 
+###### Google Speech V2
+
 使用默认的[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)仅转录得到语音语言字幕。
 
 ```
@@ -382,6 +389,10 @@ autosub -i 输入文件 -S 语言代码
 ```
 autosub -i 输入文件 -S 语言代码 -of src ...(其他选项)
 ```
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
+
+###### Google Cloud Speech-to-Text
 
 使用Google Cloud Speech-to-Text API服务账号（GOOGLE_APPLICATION_CREDENTIALS环境变量已经设置好了）来转录字幕。
 
@@ -410,6 +421,88 @@ autosub -i 输入文件 -sapi gcsv1 -asf .ogg -asr 48000 ...(其他选项)
 在Google Cloud Speech-to-Text API中使用MP3格式。(不推荐这样用，因为OGG_OPUS比MP3更好)
 ```
 autosub -i 输入文件 -sapi gcsv1 -asf .mp3 ...(其他选项)
+```
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
+
+###### 语音识别配置
+
+使用定制的[语音识别配置文件](https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig)来发送请求给Google Cloud Speech API。如果使用配置文件，就会替代这些选项：`-S`, `-asr`, `-asf`。
+
+如果使用了选项`-bm src`或者`-bm all`，那么`language_code`会被最佳匹配替代。如果使用了服务账号凭据，那么`encoding`会被`google.cloud.speech_v1p1beta1.enums.RecognitionConfig.AudioEncoding`里的枚举 替代。默认`encoding`是`FLAC`。默认`sample_rate_hertz`是`44100`。
+
+示例语音识别配置文件：
+
+```json
+{
+    "language_code": "zh",
+    "enable_word_time_offsets": true
+}
+```
+
+如果不提供选项`-asr`和`-asf`，等效于：
+
+```json
+{
+    "language_code": "zh",
+    "sample_rate_hertz": 44100,
+    "encoding": "FLAC",
+    "enable_word_time_offsets": true
+}
+```
+
+否则：
+
+```json
+{
+    "language_code": "zh",
+    "sample_rate_hertz": "由--api-sample-rate提供",
+    "encoding": "由--api-suffix提供",
+    "enable_word_time_offsets": true
+}
+```
+
+命令：
+
+```
+autosub -i 输入文件 -sconf json格式配置文件 -bm all -sapi gcsv1 -skey API密钥 ...(其他选项)
+```
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
+
+###### 输出API完整响应
+
+现在autosub不能处理API返回的语音识别结果里的很多[高级领域](https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult)，特别是从Google Cloud Speech-to-Text API中返回的。配合复杂的[语音识别配置](#speech-config)输入和选项`-of full-src`，语音识别结果就会被输出到json格式的文件中，所以你能定制化并在autosub外部处理这些数据。
+
+示例json格式输出：
+
+```json
+[
+    {
+        "start": 0.52,
+        "end": 1.31,
+        "content": {
+            "results": [
+                {
+                    "alternatives": [
+                        {
+                            "confidence": 0.98267895,
+                            "transcript": "how old is the Brooklyn Bridge"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+]
+```
+
+"start"和"end"的意思是对整个音频文件而言的开始和结束秒。"content"则是从API接收到的结果
+
+命令：
+
+```
+autosub -i 输入文件 -sconf json格式配置文件 -bm all -sapi gcsv1 -skey API密钥 -of full-src ...(其他选项)
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
@@ -474,14 +567,14 @@ usage:
                         不会终止程序。但是后果自负。参考：https://cloud.google.com/speech-to-
                         text/docs/languages（参数个数为1）（默认参数： None）
   -SRC 语言代码, --src-language 语言代码
-                        用于翻译的源语言的语言代码/语言标识符。如果没有提供，会使用langcodes-
-                        py2从列表里获取一个最佳匹配选项"-S"/"--speech-language"的语言代码。如果使用py-
+                        用于翻译的源语言的语言代码/语言标识符。如果没有提供，会使用langcodes从列表里获取一个最佳匹配选项"
+                        -S"/"--speech-language"的语言代码。如果使用py-
                         googletrans作为翻译的方法，错误的输入会终止运行。（参数个数为1）（默认参数为None）
   -D 语言代码, --dst-language 语言代码
                         用于翻译的目标语言的语言代码/语言标识符。同样的注意参考选项"-SRC"/"--src-
                         language"。（参数个数为1）（默认参数为None）
   -bm [模式 [模式 ...]], --best-match [模式 [模式 ...]]
-                        在输入有误的情况下，允许langcodes-py2为输入获取一个最佳匹配的语言代码。仅在使用py-
+                        在输入有误的情况下，允许langcodes为输入获取一个最佳匹配的语言代码。仅在使用py-
                         googletrans和Google Speech V2时起作用。可选的模式：s, src, d,
                         all。"s"指"-S"/"--speech-language"。"src"指"-SRC"/"--src-
                         language"。"d"指"-D"/"--dst-language"。（参数个数在1到3之间）
@@ -489,7 +582,7 @@ usage:
                         一个介于0和100之间的整数用于控制以下两个选项的匹配结果组，"-lsc"/"--list-speech-
                         codes"以及"-ltc"/"--list-translation-codes"或者在"-bm"/"--
                         best-
-                        match"选项中的最佳匹配结果。结果会是一组“好的匹配”，其分数需要超过这个参数的值。（参数个数为1 ）
+                        match"选项中的最佳匹配结果。结果会是一组“好的匹配”，其分数需要超过这个参数的值。（参数个数为1）
 
 输出选项:
   控制输出的选项。
@@ -500,9 +593,11 @@ usage:
                         input"的参数是一个字幕文件，那么使用和字幕文件相同的扩展名。（参数个数为1）（默认参数为srt）
   -y, --yes             避免任何暂停和覆写文件的行为。如果参数有误，会直接停止程序。（参数个数为0）
   -of [种类 [种类 ...]], --output-files [种类 [种类 ...]]
-                        输出更多的文件。可选种类：regions, src, dst, bilingual, dst-lf-src,
-                        src-lf-dst, all.（时间轴，源语言字幕，目标语言字幕，双语字幕，dst-lf-
-                        src,，src-lf-dst，所有）dst-lf-
+                        输出更多的文件。可选种类：regions，src，full-src，dst，bilingual，dst-
+                        lf-src，src-lf-
+                        dst，all。（时间轴，源语言字幕，完整语音识别结果，目标语言字幕，双语字幕，dst-lf-
+                        src,，src-lf-dst，所有）full-
+                        src：由语音转文字API得到的json格式的完整语音识别结果加上开始和结束时间。dst-lf-
                         src：目标语言和源语言在同一字幕行中，且目标语言先于源语言。src-lf-dst：源语言和目标语言在同一字
                         幕行中，且源语言先于目标语言。（参数个数在6和1之间）（默认参数为['dst']）
   -fps float, --sub-fps float
@@ -523,14 +618,24 @@ usage:
                         Speech-to-Text API的密钥。（参数个数为1）当前支持：gsv2：gsv2的API密钥。（默认
                         参数为免费API密钥）gcsv1：gcsv1的API密钥。（如果使用了，可以覆盖 "-sa"/"--
                         service-account"提供的服务账号凭据）
+  -sconf [路径], --speech-config [路径]
+                        使用语音转文字识别配置文件来发送请求。取代以下选项："-S", "-asr",
+                        "-asf"。目前支持：gcsv1：Google Cloud Speech-to-Text
+                        V1P1Beta1 API密钥配置参考：https://cloud.google.com/speech-
+                        to-
+                        text/docs/reference/rest/v1p1beta1/RecognitionConfig 服
+                        务账号配置参考：https://googleapis.dev/python/speech/latest/ga
+                        pic/v1/types.html#google.cloud.speech_v1.types.Recogni
+                        tionConfig
+                        。如果参数个数是0，使用const路径。（参数个数为0或1）（const为config.json）
   -mnc float, --min-confidence float
-                        API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味着结果越好。输入这个参数会 导致所有
+                        API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味着结果越好。输入这个参数会导致所有
                         低于这个结果的识别结果被删除。参考：https://github.com/BingLingGroup/goo
                         gle-speech-v2#response（参数个数为1）（默认参数为0.0）
   -der, --drop-empty-regions
                         删除所有没有语音识别结果的空轴。（参数个数为0）
   -sc integer, --speech-concurrency integer
-                        用于Speech-to-Text请求的并行数量。（参数个数为1）（默认参数为10）
+                        用于Speech-to-Text请求的并行数量。（参数个数为1）（默认参数为4）
 
 py-googletrans选项:
   控制翻译的选项。同时也是默认的翻译方法。可能随时会被谷歌爸爸封。
@@ -542,6 +647,8 @@ py-googletrans选项:
                         googletrans.readthedocs.io/en/latest/（参数个数大于等于1）
   -ua User-Agent headers, --user-agent User-Agent headers
                         （实验性）自定义用户代理（User-Agent）头部。同样的参考文档如上。（参数个数为1）
+  -doc, --drop-override-codes
+                        在翻译前删除所有文本中的ass特效标签。只影响翻译结果。（参数个数为0）
 
 网络选项:
   控制网络的选项。
@@ -565,7 +672,7 @@ py-googletrans选项:
   -h, --help            显示autosub的帮助信息并退出。（参数个数为0）
   -V, --version         显示autosub的版本信息并退出。（参数个数为0）
   -sa 路径, --service-account 路径
-                        设置服务账号密钥的环境变量。应该是包含服务帐号凭据的JSON文件的文件路径。如果使用了，会被API密钥 选项覆
+                        设置服务账号密钥的环境变量。应该是包含服务帐号凭据的JSON文件的文件路径。如果使用了，会被API密钥选项覆
                         盖。参考：https://cloud.google.com/docs/authentication/gett
                         ing-started
                         当前支持：gcsv1（GOOGLE_APPLICATION_CREDENTIALS）（参数个数为1）
@@ -574,34 +681,37 @@ py-googletrans选项:
   控制音频处理的选项。
 
   -ap [模式 [模式 ...]], --audio-process [模式 [模式 ...]]
-                        控制音频处理的选项。如果没有提供选项，进行正常的格式转换工作。"y"：它会先预处理输入文件，如果成 功了，在语
+                        控制音频处理的选项。如果没有提供选项，进行正常的格式转换工作。"y"：它会先预处理输入文件，如果成功了，在语
                         音转文字之前不会对音频进行额外的处理。"o"：只会预处理输入音频。（"-k"/"--
-                        keep"选项自动置为真）"s"：只会分割输入音频。（"-k"/"--
-                        keep"选项自动置为真）以下是用于处理音频的默认命令：ffmpeg -hide_banner -i
-                        "{in_}" -af "asplit[a],aphasemeter=video=0,ametadata=s
-                        elect:key=lavfi.aphasemeter.phase:value=-0.005:functio
-                        n=less,pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]a
-                        mix" -ac 1 -f flac "{out_}" | ffmpeg -hide_banner -i
-                        "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
-                        ffmpeg-normalize -v "{in_}" -ar 44100 -ofmt flac -c:a
-                        flac -pr -p -o "{out_}"（参考：https://github.com/stevenj/
-                        autosub/blob/master/scripts/subgen.sh
-                        https://ffmpeg.org/ffmpeg-filters.html）（参数个数介于1和2之间）
+                        keep"选项自动置为真）"s"：只会分割输入音频。（"-k"/"--keep"选项自动置为真）以下是用于处
+                        理音频的默认命令：c:\programdata\chocolatey\bin\ffmpeg.exe
+                        -hide_banner -i "{in_}" -af "asplit[a],aphasemeter=vid
+                        eo=0,ametadata=select:key=lavfi.aphasemeter.phase:valu
+                        e=-0.005:function=less,pan=1c|c0=c0,aresample=async=1:
+                        first_pts=0,[a]amix" -ac 1 -f flac "{out_}" |
+                        c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
+                        -i "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
+                        C:\Python27\Scripts\ffmpeg-normalize.exe -v "{in_}"
+                        -ar 44100 -ofmt flac -c:a flac -pr -p -o "{out_}"（参考：h
+                        ttps://github.com/stevenj/autosub/blob/master/scripts/
+                        subgen.sh https://ffmpeg.org/ffmpeg-
+                        filters.html）（参数个数介于1和2之间）
   -k, --keep            将音频处理中产生的文件放在输出路径中。（参数个数为0）
   -apc [命令 [命令 ...]], --audio-process-cmd [命令 [命令 ...]]
-                        这个参数会取代默认的音频预处理命令。每行命令需要放在一个引号内。输入文件名写为{in_}。输出文件名 写为{o
+                        这个参数会取代默认的音频预处理命令。每行命令需要放在一个引号内。输入文件名写为{in_}。输出文件名写为{o
                         ut_}。（参数个数大于1）
   -ac integer, --audio-concurrency integer
-                        用于ffmpeg音频切割的进程并行数量。（参数个数为1）（默认参数为10）
+                        用于ffmpeg音频切割的进程并行数量。（参数个数为1）（默认参数为4）
   -acc 命令, --audio-conversion-cmd 命令
-                        （实验性）这个参数会取代默认的音频转换命令。"[", "]" 是可选参数，可以移除。"{",
-                        "}"是必选参数，不可移除。以下是用于处理音频的默认命令：ffmpeg -hide_banner -y -i
-                        "{in_}" -vn -ac {channel} -ar {sample_rate}
-                        "{out_}"（默认参数为1）
+                        （实验性）这个参数会取代默认的音频转换命令。"[", "]" 是可选参数，可以移除。"{{", "}}"是必
+                        选参数，不可移除。（参数个数为1）（默认参数为c:\programdata\chocolatey\bin\f
+                        fmpeg.exe -hide_banner -y -i "{in_}" -vn -ac {channel}
+                        -ar {sample_rate} "{out_}"）
   -asc 命令, --audio-split-cmd 命令
-                        （实验性）这个参数会取代默认的音频转换命令。相同的注意如上。默认：ffmpeg -y -ss {start}
-                        -i "{in_}" -t {dura} -vn -ac [channel] -ar
-                        [sample_rate] -loglevel error "{out_}"（参数个数为1）
+                        （实验性）这个参数会取代默认的音频转换命令。相同的注意如上。（参数个数为1）（默认参数为c:\program
+                        data\chocolatey\bin\ffmpeg.exe -y -ss {start} -i
+                        "{in_}" -t {dura} -vn -ac [channel] -ar [sample_rate]
+                        -loglevel error "{out_}"）
   -asf 文件名后缀, --api-suffix 文件名后缀
                         （实验性）这个参数会取代默认的给API使用的音频文件后缀。（默认参数为.flac）
   -asr 采样率, --api-sample-rate 采样率
@@ -621,7 +731,7 @@ Auditok的选项:
   -mxrs 秒, --max-region-size 秒
                         最大音频区域大小。同样的参考文档如上。（参数个数为1）（默认参数为6.0）
   -mxcs 秒, --max-continuous-silence 秒
-                        在一段有效的音频活动区域中可以容忍的最大（连续）安静区域。同样的参考文档如上。（参数个数为1）（ 默认参数为0
+                        在一段有效的音频活动区域中可以容忍的最大（连续）安静区域。同样的参考文档如上。（参数个数为1）（默认参数为0
                         .3）
   -sml, --strict-min-length
                         参考：https://auditok.readthedocs.io/en/latest/core.html#
@@ -660,7 +770,7 @@ Auditok的选项:
 该选项所需要的参数个数。
 作者: Bing Ling
 Email: binglinggroup@outlook.com
-问题反馈: https://github.com/agermanidis/autosub
+问题反馈: https://github.com/BingLingGroup/autosub
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
@@ -741,6 +851,10 @@ AttributeError: 'NoneType' object has no attribute 'lower'
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
+#### 准确性
+
+除了[输入](#输入)一节提到的音量问题，你还需要确保音频中不包含人声歌唱的部分，不然你可能需要调整Auditok选项或者语音识别配置。
+
 ### 问题反馈
 
 问题和建议可以反馈在[issues](https://github.com/BingLingGroup/autosub/issues)。
@@ -749,7 +863,9 @@ AttributeError: 'NoneType' object has no attribute 'lower'
 
 我只写了在windows上构建独立运行程序的脚本，一个用于[Nuitka](../scripts/nuitka_build.bat)一个用于[pyinstaller](../scripts/pyinstaller_build.bat)。
 
-0.5.4a以后的版本不支持Nuitka构建，因为0.5.4a导入了google.cloud包，里面包含的`pkg_resources.get_distribution`并不被Nuitka支持，详见[Nuitka issue #146](https://github.com/Nuitka/Nuitka/issues/146)。你可以手动移除和google.cloud包有关的代码并进行构建。我会考虑在以后的版本中移除这部分代码以支持Nuitka构建。
+0.5.4a不支持Nuitka构建，因为0.5.4a导入了google.cloud包，里面包含的`pkg_resources.get_distribution`并不被Nuitka支持，详见[Nuitka issue #146](https://github.com/Nuitka/Nuitka/issues/146)。你可以手动移除和google.cloud包有关的代码并进行构建。我会考虑在以后的版本中移除这部分代码以支持Nuitka构建。
+
+0.5.5a处理了异常`pkg_resources.DistributionNotFound`，如果是Nuitka构建的版本，代码会移除对Google Cloud服务账号凭据的支持。
 
 Nuitka的构建有点麻烦。以下是我成功尝试的环境。
 
@@ -784,3 +900,5 @@ binaries\ffprobe.exe
 binaries\ffmpeg-normalize-Nuitka\ffmpeg-normalize.exe
 binaries\ffmpeg-normalize-pyinstaller\ffmpeg-normalize.exe
 ```
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>

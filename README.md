@@ -39,6 +39,10 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
      - 6.1.2 [Detect Regions](#detect-regions)
      - 6.1.3 [Split Audio](#split-audio)
      - 6.1.4 [Transcribe Audio To Subtitles](#transcribe-audio-to-subtitles)
+       - 6.1.4.1 [Google Speech V2](#google-speech-v2)
+       - 6.1.4.2 [Google Cloud Speech-to-Text](#google-cloud-speech-to-text)
+       - 6.1.4.3 [Speech config](#speech-config)
+       - 6.1.4.4 [Output API full response](#output-api-full-response)
      - 6.1.5 [Translate Subtitles](#translate-subtitles)
    - 6.2 [Options](#Options)
    - 6.3 [Internationalization](#internationalization)
@@ -47,7 +51,7 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
    - 7.2 [Batch processing](#batch-processing)
    - 7.3 [proxy support](#proxy-support)
    - 7.4 [macOS locale issue](#macos-locale-issue)
-   - 7.5 [speech-to-text issue](#)
+   - 7.5 [Accuracy](#accuracy)
 8. [Bugs report](#bugs-report)
 9. [Build](#build)
 
@@ -293,6 +297,7 @@ Or other subtitles types/output modes, depend on what you need. More info in hel
 DEFAULT_MODE_SET = {
     'regions',
     'src',
+    'full-src',
     'dst',
     'bilingual',
     'dst-lf-src',
@@ -372,6 +377,8 @@ autosub -i input_file -k ...(other options)
 
 Speech audio fragments to speech language subtitles.
 
+###### Google Speech V2
+
 Use default [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2) to transcribe speech language subtitles only.
 
 ```
@@ -384,13 +391,17 @@ Use default [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2) 
 autosub -i input_file -S lang_code -of src ...(other options)
 ```
 
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+###### Google Cloud Speech-to-Text
+
 Use Google Cloud Speech-to-Text API service account(GOOGLE_APPLICATION_CREDENTIALS has already been set in system environment variable) to transcribe.
 
 ```
 autosub -i input_file -sapi gcsv1 -S lang_code ...(other options)
 ```
 
-Use Google Cloud Speech-to-Text API service account(GOOGLE_APPLICATION_CREDENTIALS is set by `-sa`) to transcribe.
+Use Google Cloud Speech-to-Text API service account(GOOGLE_APPLICATION_CREDENTIALS is set by `-sa`) to transcribe.(Currently not available in Nuitka build.)
 
 ```
 autosub -i input_file -sapi gcsv1 -S lang_code -sa path_to_key_file ...(other options)
@@ -411,6 +422,88 @@ autosub -i input_file -sapi gcsv1 -asf .ogg -asr 48000 ...(other options)
 Use MP3 in Google Cloud Speech-to-Text API.(Not recommended because OGG_OPUS is better than MP3)
 ```
 autosub -i input_file -sapi gcsv1 -asf .mp3 ...(other options)
+```
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+###### Speech config
+
+Use customized [speech config file](https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig) to send request to Google Cloud Speech API. If using the config file, override these options: `-S`, `-asr`, `-asf`.
+
+`language_code` will be replaced by the best matching one if using option `-bm src` or `-bm all`. `encoding` string will be replaced by the enum in `google.cloud.speech_v1p1beta1.enums.RecognitionConfig.AudioEncoding` if using service account credentials. Default `encoding` is `FLAC`. Default `sample_rate_hertz` is `44100`.
+
+Example speech config file:
+
+```json
+{
+    "language_code": "zh",
+    "enable_word_time_offsets": true
+}
+```
+
+If not provide option `-asr` and `-asf`, equal to:
+
+```json
+{
+    "language_code": "zh",
+    "sample_rate_hertz": 44100,
+    "encoding": "FLAC",
+    "enable_word_time_offsets": true
+}
+```
+
+otherwise:
+
+```json
+{
+    "language_code": "zh",
+    "sample_rate_hertz": "from --api-sample-rate",
+    "encoding": "from --api-suffix",
+    "enable_word_time_offsets": true
+}
+```
+
+command:
+
+```
+autosub -i input_file -sconf config_json_file -bm all -sapi gcsv1 -skey API_key ...(other options)
+```
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
+###### Output API full response
+
+Currently autosub can't handle many [advanced fields](https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult) contained in the speech recognition result received from API, especially from Google Cloud Speech-to-Text API. With complex [speech config](#speech-config) input and option `-of full-src`, recognition results will be output into json file so you can customize them and handle them outside autosub.
+
+Example json output:
+
+```json
+[
+    {
+        "start": 0.52,
+        "end": 1.31,
+        "content": {
+            "results": [
+                {
+                    "alternatives": [
+                        {
+                            "confidence": 0.98267895,
+                            "transcript": "how old is the Brooklyn Bridge"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+]
+```
+
+"start" and "end" mean the start seconds and the end seconds in the whole audio file. "content" is the result received from API.
+
+command:
+
+```
+autosub -i input_file -sconf config_json_file -bm all -sapi gcsv1 -skey API_key -of full-src ...(other options)
 ```
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
@@ -489,27 +582,27 @@ Language Options:
                         text/docs/languages(arg_num = 1) (default: None)
   -SRC lang_code, --src-language lang_code
                         Lang code/Lang tag for translation source language. If
-                        not given, use langcodes-py2 to get a best matching of
-                        the "-S"/"--speech-language". If using py-googletrans
-                        as the method to translate, WRONG INPUT STOP RUNNING.
+                        not given, use langcodes to get a best matching of the
+                        "-S"/"--speech-language". If using py-googletrans as
+                        the method to translate, WRONG INPUT STOP RUNNING.
                         (arg_num = 1) (default: None)
   -D lang_code, --dst-language lang_code
                         Lang code/Lang tag for translation destination
                         language. Same attention in the "-SRC"/"--src-
                         language". (arg_num = 1) (default: None)
   -bm [mode [mode ...]], --best-match [mode [mode ...]]
-                        Allow langcodes-py2 to get a best matching lang code
-                        when your input is wrong. Only functional for py-
+                        Allow langcodes to get a best matching lang code when
+                        your input is wrong. Only functional for py-
                         googletrans and Google Speech V2. Available modes: s,
                         src, d, all. "s" for "-S"/"--speech-language". "src"
                         for "-SRC"/"--src-language". "d" for "-D"/"--dst-
                         language". (3 >= arg_num >= 1)
   -mns integer, --min-score integer
                         An integer between 0 and 100 to control the good match
-                        group of "-lsc"/"--list-speech-codes" or "-ltc"/"--
-                        list-translation-codes" or the match result in "-bm"/"
-                        --best-match". Result will be a group of "good match"
-                        whose score is above this arg. (arg_num = 1)
+                        group of "-lsc"/"--list-speech-codes" or "-ltc
+                        "/"--list-translation-codes" or the match result in
+                        "-bm"/"--best-match". Result will be a group of "good
+                        match" whose score is above this arg. (arg_num = 1)
 
 Output Options:
   Options to control output.
@@ -528,12 +621,16 @@ Output Options:
   -y, --yes             Prevent pauses and allow files to be overwritten. Stop
                         the program when your args are wrong. (arg_num = 0)
   -of [type [type ...]], --output-files [type [type ...]]
-                        Output more files. Available types: regions, src, dst,
-                        bilingual, dst-lf-src, src-lf-dst, all. dst-lf-src:
-                        dst language and src language in the same event. And
-                        dst is ahead of src. src-lf-dst: src language and dst
-                        language in the same event. And src is ahead of dst.
-                        (6 >= arg_num >= 1) (default: ['dst'])
+                        Output more files. Available types: regions, src,
+                        full-src, dst, bilingual, dst-lf-src, src-lf-dst, all.
+                        "regions", "src", "full-src" are available only if
+                        input is not a subtitles file. full-src: Full result
+                        received from Speech-to-Text API in json format with
+                        start and end time. dst-lf-src: dst language and src
+                        language in the same event. And dst is ahead of src.
+                        src-lf-dst: src language and dst language in the same
+                        event. And src is ahead of dst. (6 >= arg_num >= 1)
+                        (default: [u'dst'])
   -fps float, --sub-fps float
                         Valid when your output format is "sub". If input, it
                         will override the fps check on the input file. Ref:
@@ -555,8 +652,20 @@ Speech Options:
                         The API key for Speech-to-Text API. (arg_num = 1)
                         Currently support: gsv2: The API key for gsv2.
                         (default: Free API key) gcsv1: The API key for gcsv1.
-                        (If used, override the credentials given by"-sa"/"--
-                        service-account")
+                        (If used, override the credentials given by"-sa
+                        "/"--service-account")
+  -sconf [path], --speech-config [path]
+                        Use Speech-to-Text recognition config file to send
+                        request. Override these options below: "-S", "-asr",
+                        "-asf". Currently support: gcsv1: Google Cloud Speech-
+                        to-Text V1P1Beta1 API key config reference:
+                        https://cloud.google.com/speech-to-
+                        text/docs/reference/rest/v1p1beta1/RecognitionConfig
+                        Service account config reference: https://googleapis.d
+                        ev/python/speech/latest/gapic/v1/types.html#google.clo
+                        ud.speech_v1.types.RecognitionConfig If arg_num is 0,
+                        use const path. (arg_num = 0 or 1) (const:
+                        config.json)
   -mnc float, --min-confidence float
                         API response for text confidence. A float value
                         between 0 and 1. Confidence bigger means the result is
@@ -568,7 +677,7 @@ Speech Options:
                         (arg_num = 0)
   -sc integer, --speech-concurrency integer
                         Number of concurrent Speech-to-Text requests to make.
-                        (arg_num = 1) (default: 10)
+                        (arg_num = 1) (default: 4)
 
 py-googletrans Options:
   Options to control translation. Default method to translate. Could be blocked at any time.
@@ -582,6 +691,10 @@ py-googletrans Options:
   -ua User-Agent headers, --user-agent User-Agent headers
                         (Experimental)Customize User-Agent headers. Same docs
                         above. (arg_num = 1)
+  -doc, --drop-override-codes
+                        Drop any .ass override codes in the text before
+                        translation. Only affect the translation result.
+                        (arg_num = 0)
 
 Network Options:
   Options to control network.
@@ -627,15 +740,18 @@ Audio Processing Options:
                         procedure. "o": only pre-process the input audio.
                         ("-k"/"--keep" is true) "s": only split the input
                         audio. ("-k"/"--keep" is true) Default command to pre-
-                        process the audio: ffmpeg -hide_banner -i "{in_}" -af
-                        "asplit[a],aphasemeter=video=0,ametadata=select:key=la
-                        vfi.aphasemeter.phase:value=-0.005:function=less,pan=1
-                        c|c0=c0,aresample=async=1:first_pts=0,[a]amix" -ac 1
-                        -f flac "{out_}" | ffmpeg -hide_banner -i "{in_}" -af
-                        lowpass=3000,highpass=200 "{out_}" | ffmpeg-normalize
-                        -v "{in_}" -ar 44100 -ofmt flac -c:a flac -pr -p -o
-                        "{out_}" (Ref: https://github.com/stevenj/autosub/blob
-                        /master/scripts/subgen.sh https://ffmpeg.org/ffmpeg-
+                        process the audio:
+                        c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
+                        -i "{in_}" -af "asplit[a],aphasemeter=video=0,ametadat
+                        a=select:key=lavfi.aphasemeter.phase:value=-0.005:func
+                        tion=less,pan=1c|c0=c0,aresample=async=1:first_pts=0,[
+                        a]amix" -ac 1 -f flac "{out_}" |
+                        c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
+                        -i "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
+                        C:\Python27\Scripts\ffmpeg-normalize.exe -v "{in_}"
+                        -ar 44100 -ofmt flac -c:a flac -pr -p -o "{out_}"
+                        (Ref: https://github.com/stevenj/autosub/blob/master/s
+                        cripts/subgen.sh https://ffmpeg.org/ffmpeg-
                         filters.html) (2 >= arg_num >= 1)
   -k, --keep            Keep audio processing files to the output path.
                         (arg_num = 0)
@@ -646,21 +762,21 @@ Audio Processing Options:
                         {out_}. (arg_num >= 1)
   -ac integer, --audio-concurrency integer
                         Number of concurrent ffmpeg audio split process to
-                        make. (arg_num = 1) (default: 10)
+                        make. (arg_num = 1) (default: 4)
   -acc command, --audio-conversion-cmd command
                         (Experimental)This arg will override the default audio
                         conversion command. "[", "]" are optional arguments
-                        meaning you can remove them. "{", "}" are required
-                        arguments meaning you can't remove them. Default
-                        command to process the audio: ffmpeg -hide_banner -y
-                        -i "{in_}" -vn -ac {channel} -ar {sample_rate}
-                        "{out_}" (arg_num = 1)
+                        meaning you can remove them. "{{", "}}" are required
+                        arguments meaning you can't remove them. (arg_num = 1)
+                        (default: c:\programdata\chocolatey\bin\ffmpeg.exe
+                        -hide_banner -y -i "{in_}" -vn -ac {channel} -ar
+                        {sample_rate} "{out_}")
   -asc command, --audio-split-cmd command
                         (Experimental)This arg will override the default audio
-                        split command. Same attention above. Default: ffmpeg
-                        -y -ss {start} -i "{in_}" -t {dura} -vn -ac [channel]
-                        -ar [sample_rate] -loglevel error "{out_}" (arg_num =
-                        1)
+                        split command. Same attention above. (arg_num = 1)
+                        (default: c:\programdata\chocolatey\bin\ffmpeg.exe -y
+                        -ss {start} -i "{in_}" -t {dura} -vn -ac [channel] -ar
+                        [sample_rate] -loglevel error "{out_}")
   -asf file_suffix, --api-suffix file_suffix
                         (Experimental)This arg will override the default API
                         audio suffix. (arg_num = 1) (default: .flac)
@@ -690,11 +806,13 @@ Auditok Options:
                         audio activity. Same docs above. (arg_num = 1)
                         (default: 0.3)
   -sml, --strict-min-length
-                        Ref: https://auditok.readthedocs.io/en/latest/core.htm
-                        l#class-summary (arg_num = 0)
+                        Ref:
+                        https://auditok.readthedocs.io/en/latest/core.html
+                        #class-summary (arg_num = 0)
   -dts, --drop-trailing-silence
-                        Ref: https://auditok.readthedocs.io/en/latest/core.htm
-                        l#class-summary (arg_num = 0)
+                        Ref:
+                        https://auditok.readthedocs.io/en/latest/core.html
+                        #class-summary (arg_num = 0)
 
 List Options:
   List all available arguments.
@@ -707,25 +825,25 @@ List Options:
   -lsc [lang_code], --list-speech-codes [lang_code]
                         List all recommended "-S"/"--speech-language" Google
                         Speech-to-Text language codes. If no arg is given,
-                        list all. Or else will list get a group of "good
-                        match" of the arg. Default "good match" standard is
-                        whose match score above 90 (score between 0 and 100).
-                        Ref: https://tools.ietf.org/html/bcp47 https://github.
-                        com/LuminosoInsight/langcodes/blob/master/langcodes/__
-                        init__.py lang code example: language-script-region-
+                        list all. Or else will list a group of "good match" of
+                        the arg. Default "good match" standard is whose match
+                        score above 90 (score between 0 and 100). Ref:
+                        https://tools.ietf.org/html/bcp47 https://github.com/L
+                        uminosoInsight/langcodes/blob/master/langcodes/__init_
+                        _.py lang code example: language-script-region-
                         variant-extension-privateuse (arg_num = 0 or 1)
   -ltc [lang_code], --list-translation-codes [lang_code]
                         List all available "-SRC"/"--src-language" py-
                         googletrans translation language codes. Or else will
-                        list get a group of "good match" of the arg. Same docs
+                        list a group of "good match" of the arg. Same docs
                         above. (arg_num = 0 or 1)
   -dsl path, --detect-sub-language path
                         Use py-googletrans to detect a sub file's first line
                         language. And list a group of matched language in
                         recommended "-S"/"--speech-language" Google Speech-to-
-                        Text language codes. Ref:
-                        https://cloud.google.com/speech-to-text/docs/languages
-                        (arg_num = 1) (default: None)
+                        Text language codes. Ref: https://cloud.google.com
+                        /speech-to-text/docs/languages (arg_num = 1) (default:
+                        None)
 
 Make sure the argument with space is in quotes.
 The default value is used
@@ -786,6 +904,8 @@ Currently I only implement the proxy settings in the same way as setting environ
 
 If you often encounter empty result or connection error during speech-to-text or subtitles translation, perhaps you need to get a better proxy for a better connection with Google or just rent a Linux server which can reach Google's network.
 
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
 #### macOS locale issue
 
 [issue 83 (comment)](https://github.com/BingLingGroup/autosub/issues/83#issuecomment-586624157)
@@ -815,6 +935,10 @@ It seems environment variable `LANG` and `LC_ALL` are not set on some macOS vers
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
+#### Accuracy
+
+Apart from the volume issue mentioned in the [input](#input) section above, you need to make sure the audio doesn't contain some kind of vocals otherwise you need to adjust the Auditok options or the speech recognition config.
+
 ### Bugs report
 
 Bugs and suggestions can be reported at [issues](https://github.com/BingLingGroup/autosub/issues).
@@ -823,7 +947,9 @@ Bugs and suggestions can be reported at [issues](https://github.com/BingLingGrou
 
 I only write the scripts for building standalone executable files on windows, [Nuitka script](scripts/nuitka_build.bat) and [pyinstaller script](scripts/pyinstaller_build.bat).
 
-The version after 0.5.4a doesn't support Nuitka build since 0.5.4a import google.cloud package and it contains `pkg_resources.get_distribution` which is not supported by Nuitka due to this [Nuitka issue #146](https://github.com/Nuitka/Nuitka/issues/146). You can manually remove the codes include the google.cloud package and build it. I will consider removing the codes to support Nuitka build in the future version.
+The version 0.5.4a doesn't support Nuitka build since 0.5.4a import google.cloud package and it contains `pkg_resources.get_distribution` which is not supported by Nuitka due to this [Nuitka issue #146](https://github.com/Nuitka/Nuitka/issues/146).
+
+The version 0.5.5a catches the exception `pkg_resources.DistributionNotFound` to remove the Google Cloud service account support when it is built by Nuitka.
 
 Nuitka build is pretty tricky. These environments I tried and worked.
 
@@ -858,3 +984,5 @@ binaries\ffprobe.exe
 binaries\ffmpeg-normalize-Nuitka\ffmpeg-normalize.exe
 binaries\ffmpeg-normalize-pyinstaller\ffmpeg-normalize.exe
 ```
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>

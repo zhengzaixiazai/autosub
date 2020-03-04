@@ -280,7 +280,7 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
             args.api_suffix = ".ogg"
     else:
         # it's necessary to set default encoding
-        config_dict["encoding"] = core.filename_to_encoding(args.api_suffix)
+        config_dict["encoding"] = core.extension_to_encoding(args.api_suffix)
 
     # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
     # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
@@ -291,7 +291,7 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
     elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
         args.api_sample_rate = config_dict["sampleRateHertz"]
     else:
-        # it's necessary to set default sample_rate_hertz
+        # it's necessary to set sample_rate_hertz from option --api-sample-rate
         config_dict["sample_rate_hertz"] = args.api_sample_rate
 
     if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
@@ -1106,14 +1106,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             text_list = None
 
         gc.collect(0)
-        if not text_list or len(text_list) != len(regions):
-            raise exceptions.SpeechToTextException(
-                _("Error: Speech-to-text failed.\nAll works done."))
-
-        timed_text = get_timed_text(
-            is_empty_dropped=args.drop_empty_regions,
-            regions=regions,
-            text_list=text_list)
 
         if result_list is not None:
             timed_result = get_timed_text(
@@ -1131,6 +1123,15 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
             if not args.output_files:
                 raise exceptions.AutosubException(_("\nAll works done."))
+
+        if not text_list or len(text_list) != len(regions):
+            raise exceptions.SpeechToTextException(
+                _("Error: Speech-to-text failed.\nAll works done."))
+
+        timed_text = get_timed_text(
+            is_empty_dropped=args.drop_empty_regions,
+            regions=regions,
+            text_list=text_list)
 
         if args.dst_language:
             # process output first

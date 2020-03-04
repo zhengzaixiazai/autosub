@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Defines speech and translation api used by autosub.
+Defines google speech api used by autosub.
 """
 # Import built-in modules
 from __future__ import absolute_import, unicode_literals

@@ -87,20 +87,20 @@ if __name__ == "__main__":
     if os.path.isdir(target_pyi):
         shutil.rmtree(target_pyi)
     os.makedirs(target_pyi)
-    # command = "pipreqs --encoding=utf-8 --force --savepath requirements.txt {}".format(package_name)
-    # print(command)
-    # if sys.platform.startswith('win'):
-    #     args = command
-    # else:
-    #     args = shlex.split(command)
-    # p = subprocess.Popen(args,
-    #                      stdout=subprocess.PIPE,
-    #                      stderr=subprocess.PIPE)
-    # out, err = p.communicate()
-    # if out:
-    #     print(out.decode(sys.stdout.encoding))
-    # if err:
-    #     print(err.decode(sys.stdout.encoding))
+    command = "pipreqs --encoding=utf-8 --force --savepath requirements.txt {}".format(package_name)
+    print(command)
+    if sys.platform.startswith('win'):
+        args = command
+    else:
+        args = shlex.split(command)
+    p = subprocess.Popen(args,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    out, err = p.communicate()
+    if out:
+        print(out.decode(sys.stdout.encoding))
+    if err:
+        print(err.decode(sys.stdout.encoding))
     copytree(src=here, dst=target, exts=[".md", ".txt"])
     target_docs = os.path.join(target, "docs")
     os.makedirs(target_docs)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         shutil.copy2("binaries/ffprobe.exe", target_nuitka)
         shutil.copy2("binaries/ffmpeg.exe", target_pyi)
         shutil.copy2("binaries/ffprobe.exe", target_pyi)
-    command = "7z a -sdel \".release/{release_name}-{version}-win-x64.7z\" \"{target}\"".format(
+    command = "7z a -sdel \".release/{release_name}-{version}-win-x64-nuitka.7z\" \"{target}\"".format(
         release_name=release_name,
         version=metadata['VERSION'],
         target=target)

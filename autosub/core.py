@@ -43,24 +43,87 @@ except AttributeError:
     _ = CORE_TEXT.gettext
 
 
-def filename_to_encoding(
-        filename):
+def extension_to_encoding(
+        extension,
+        is_string=True):
     """
-    File filename to audio encoding.
+    File extension to audio encoding.
     """
-    if filename.lower().endswith(".flac"):
-        encoding = "FLAC"
-    elif filename.lower().endswith(".mp3"):
-        encoding = "MP3"
-    elif filename.lower().endswith(".wav"):
-        # regard WAV as PCM
-        encoding = "LINEAR16"
-    elif filename.lower().endswith(".ogg"):
-        encoding = "OGG_OPUS"
+
+    if is_string:
+        if extension.lower().endswith(".flac"):
+            encoding = "FLAC"
+        elif extension.lower().endswith(".mp3"):
+            encoding = "MP3"
+        elif extension.lower().endswith(".wav"):
+            # regard WAV as PCM
+            encoding = "LINEAR16"
+        elif extension.lower().endswith(".ogg"):
+            encoding = "OGG_OPUS"
+        else:
+            encoding = ""
+
     else:
-        encoding = ""
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+        if extension.lower().endswith(".flac"):
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.FLAC
+            # encoding = 2
+        elif extension.lower().endswith(".mp3"):
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.MP3
+            # encoding = 8
+        elif extension.lower().endswith(".wav"):
+            # regard WAV as PCM
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.LINEAR16
+            # encoding = 1
+        elif extension.lower().endswith(".ogg"):
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.OGG_OPUS
+            # encoding = 6
+        else:
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
+            # encoding = 0
 
     return encoding
+
+
+def encoding_to_extension(  # pylint: disable=too-many-branches
+        encoding):
+    """
+    Audio encoding to file extension.
+    """
+    if isinstance(encoding, str):
+        if encoding == "FLAC":
+            extension = ".flac"
+        elif encoding == "MP3":
+            extension = ".mp3"
+        elif encoding == "LINEAR16":
+            extension = ".wav"
+        elif encoding == "OGG_OPUS":
+            extension = ".ogg"
+        else:
+            extension = ""
+
+    elif isinstance(encoding, int):
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+        if encoding == 2:
+            extension = ".flac"
+        elif encoding == 8:
+            extension = ".mp3"
+        elif encoding == 1:
+            extension = ".wav"
+        elif encoding == 6:
+            extension = ".ogg"
+        else:
+            extension = ""
+
+    else:
+        extension = ""
+
+    return extension
 
 
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
@@ -254,7 +317,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     config["language_code"] = src_language
             else:
                 config = {
-                    "encoding": filename_to_encoding(audio_fragments[0]),
+                    "encoding": extension_to_encoding(audio_fragments[0]),
                     "sampleRateHertz": sample_rate,
                     "languageCode": src_language,
                 }
@@ -289,37 +352,20 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     pbar.update(i)
 
         else:
-            # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-            if audio_fragments[0].lower().endswith(".flac"):
-                encoding = \
-                    enums.RecognitionConfig.AudioEncoding.FLAC
-                # encoding = 2
-            elif audio_fragments[0].lower().endswith(".mp3"):
-                encoding = \
-                    enums.RecognitionConfig.AudioEncoding.MP3
-                # encoding = 8
-            elif audio_fragments[0].lower().endswith(".wav"):
-                # regard WAV as PCM
-                encoding = \
-                    enums.RecognitionConfig.AudioEncoding.LINEAR16
-                # encoding = 1
-            elif audio_fragments[0].lower().endswith(".ogg"):
-                encoding = \
-                    enums.RecognitionConfig.AudioEncoding.OGG_OPUS
-                # encoding = 6
-            else:
-                encoding = \
-                    enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
-                # encoding = 0
-
             # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
             if config:
                 # Use the fixed arguments
-                config["encoding"] = encoding
+                config["encoding"] = extension_to_encoding(
+                    extension=audio_fragments[0],
+                    is_string=False
+                )
                 config["language_code"] = src_language
             else:
                 config = {
-                    "encoding": encoding,
+                    "encoding": extension_to_encoding(
+                        extension=audio_fragments[0],
+                        is_string=False
+                    ),
                     "sample_rate_hertz": sample_rate,
                     "language_code": src_language,
                 }

@@ -8,9 +8,9 @@
 
 ## 目录
 
-- [未发布](#未发布)
-  - [添加](#添加未发布)
-  - [改动](#改动未发布)
+- [0.5.5-alpha - 2020-03-04](#055-alpha---2020-03-04)
+  - [添加](#添加055-alpha)
+  - [改动](#改动055-alpha)
 - [0.5.4-alpha - 2020-01-31](#054-alpha---2020-01-31)
   - [添加](#添加054-alpha)
   - [改动](#改动054-alpha)
@@ -33,16 +33,16 @@
 
 点击上箭头以返回目录。
 
-### [未发布]
+### [0.5.5-alpha] - 2020-03-04
 
-#### 添加(未发布)
+#### 添加(0.5.5-alpha)
 
 - 添加Google Cloud语音转文字API识别配置文件输入支持。
 - 添加语音转文字识别结果json文件输出支持。[issue #76](https://github.com/BingLingGroup/autosub/issues/76)
 - 添加[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)识别错误的异常。
 - 添加Nuitka兼容性代码，使得Nuitka编译版在使用Google Cloud服务账号凭据时终止运行。[Nuitka pkg_resources.DistributionNotFound错误](https://github.com/Nuitka/Nuitka/issues/146)
 
-#### 改动(未发布)
+#### 改动(0.5.5-alpha)
 
 - 修复部分高内存占用，通过终结子进程，减少默认多进程数量，使用`gc.collect(0)`。[issue #67](https://github.com/BingLingGroup/autosub/issues/67)，[issue #74](https://github.com/BingLingGroup/autosub/issues/74)
 - 修复依赖查找问题。[issue #82](https://github.com/BingLingGroup/autosub/issues/82)
@@ -183,7 +183,8 @@
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
-[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...HEAD
+[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.5-alpha...HEAD
+[0.5.5-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...0.5.5-alpha
 [0.5.4-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...0.5.4-alpha
 [0.5.3-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...0.5.3-alpha
 [0.5.2-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.1-alpha...0.5.2-alpha
