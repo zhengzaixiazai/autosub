@@ -125,7 +125,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
 
     input_group.add_argument(
         '-sn', '--styles-name',
-        nargs='*', metavar=_('style-name'),
+        nargs='*', metavar=_('style_name'),
         help=_("Valid when your output format is \"ass\"/\"ssa\" "
                "and \"-sty\"/\"--styles\" is given. "
                "Adds \"ass\"/\"ssa\" styles to your events. "
@@ -513,7 +513,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-mnrs', '--min-region-size',
         metavar=_('second'),
         type=float,
-        default=constants.MIN_REGION_SIZE,
+        default=constants.DEFAULT_MIN_REGION_SIZE,
         help=_("Minimum region size. "
                "Same docs above. "
                "(arg_num = 1) (default: %(default)s)"))
@@ -522,7 +522,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-mxrs', '--max-region-size',
         metavar=_('second'),
         type=float,
-        default=constants.MAX_REGION_SIZE,
+        default=constants.DEFAULT_MAX_REGION_SIZE,
         help=_("Maximum region size. "
                "Same docs above. "
                "(arg_num = 1) (default: %(default)s)"))

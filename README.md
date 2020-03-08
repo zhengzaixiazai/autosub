@@ -260,7 +260,7 @@ To solve this problem, autosub uses [langcodes](https://github.com/LuminosoInsig
 
 To manually match or see the full list of the lang codes, run the utility with the argument `-lsc`/`--list-speech-codes` and `-ltc`/ `--list-translation-codes`. Or open [constants.py](autosub/constants.py) and check.
 
-To get a subtitles first line language, you can use `-dsl` to detect.
+To get the language of the first line of the subtitles file, you can use `-dsl` to detect.
 
 - Currently, autosub allows to send the lang codes not from the `--list-speech-codes`, which means in this case the program won't stop.
 

@@ -129,8 +129,8 @@ def encoding_to_extension(  # pylint: disable=too-many-branches
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
         audio_wav,
         energy_threshold=constants.DEFAULT_ENERGY_THRESHOLD,
-        min_region_size=constants.MIN_REGION_SIZE,
-        max_region_size=constants.MAX_REGION_SIZE,
+        min_region_size=constants.DEFAULT_MIN_REGION_SIZE,
+        max_region_size=constants.DEFAULT_MAX_REGION_SIZE,
         max_continuous_silence=constants.DEFAULT_CONTINUOUS_SILENCE,
         mode=auditok.StreamTokenizer.STRICT_MIN_LENGTH):
     """
@@ -252,13 +252,16 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
         # get full result and transcript
         else:
             for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
-                result_list.append(result)
-                transcript = \
-                    google_speech_api.get_google_speech_v2_transcript(min_confidence, result)
-                if transcript:
-                    text_list.append(transcript)
+                if result:
+                    result_list.append(result)
+                    transcript = \
+                        google_speech_api.get_google_speech_v2_transcript(min_confidence, result)
+                    if transcript:
+                        text_list.append(transcript)
+                        continue
                 else:
-                    text_list.append("")
+                    result_list.append("")
+                text_list.append("")
                 gc.collect(0)
                 pbar.update(i)
         pbar.finish()
@@ -279,7 +282,7 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
     return text_list
 
 
-def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements, too-many-nested-blocks
         audio_fragments,
         sample_rate,
         api_url=None,
@@ -341,14 +344,17 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
             # get full result and transcript
             else:
                 for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
-                    result_list.append(result)
-                    transcript = google_speech_api.get_gcsv1p1beta1_transcript(
-                        min_confidence,
-                        result)
-                    if transcript:
-                        text_list.append(transcript)
+                    if result:
+                        result_list.append(result)
+                        transcript = google_speech_api.get_gcsv1p1beta1_transcript(
+                            min_confidence,
+                            result)
+                        if transcript:
+                            text_list.append(transcript)
+                            continue
                     else:
-                        text_list.append("")
+                        result_list.append("")
+                    text_list.append("")
                     pbar.update(i)
 
         else:

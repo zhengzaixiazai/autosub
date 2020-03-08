@@ -559,19 +559,19 @@ def fix_args(args):
     Check that the commandline arguments value passed to autosub are proper.
     """
     if not args.ext_regions:
-        if args.min_region_size < constants.MIN_REGION_SIZE:
+        if args.min_region_size < constants.MIN_REGION_SIZE_LIMIT:
             print(
                 _("Your minimum region size {mrs0} is smaller than {mrs}.\n"
                   "Now reset to {mrs}.").format(mrs0=args.min_region_size,
-                                                mrs=constants.MIN_REGION_SIZE))
-            args.min_region_size = constants.MIN_REGION_SIZE
+                                                mrs=constants.MIN_REGION_SIZE_LIMIT))
+            args.min_region_size = constants.MIN_REGION_SIZE_LIMIT
 
-        if args.max_region_size > constants.MAX_EXT_REGION_SIZE:
+        if args.max_region_size > constants.MAX_REGION_SIZE_LIMIT:
             print(
                 _("Your maximum region size {mrs0} is larger than {mrs}.\n"
                   "Now reset to {mrs}.").format(mrs0=args.max_region_size,
-                                                mrs=constants.MAX_EXT_REGION_SIZE))
-            args.max_region_size = constants.MAX_EXT_REGION_SIZE
+                                                mrs=constants.MAX_REGION_SIZE_LIMIT))
+            args.max_region_size = constants.MAX_REGION_SIZE_LIMIT
 
         if args.max_continuous_silence < 0:
             print(

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## TOC
 
+- [Unreleased](#unreleased)
+  - [Added](#addedunreleased)
+  - [Changed](#changedunreleased)
 - [0.5.5-alpha - 2020-03-04](#055-alpha---2020-03-04)
   - [Added](#added055-alpha)
   - [Changed](#changed055-alpha)
@@ -33,6 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Changed](#changed040-alpha)
 
 Click up arrow to go back to TOC.
+
+### [Unreleased]
+
+#### Changed(unreleased)
+
+- Fix Google Speech-to-Text API empty result response bug. [issue #89](https://github.com/BingLingGroup/autosub/issues/89)
 
 ### [0.5.5-alpha] - 2020-03-04
 

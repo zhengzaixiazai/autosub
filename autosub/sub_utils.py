@@ -18,7 +18,7 @@ from autosub import constants
 def sub_to_speech_regions(
         audio_wav,
         sub_file,
-        ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000):
+        ext_max_size_ms=constants.MAX_REGION_SIZE_LIMIT * 1000):
     """
     Give an input audio_wav file and subtitles file and generate proper speech regions.
     """

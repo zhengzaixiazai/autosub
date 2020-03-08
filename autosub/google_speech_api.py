@@ -70,8 +70,12 @@ def get_gcsv1p1beta1_transcript(
             return None
 
     else:
-        raise exceptions.SpeechToTextException(
-            json.dumps(result_dict, indent=4, ensure_ascii=False))
+        if not result_dict:
+            # if api returned empty json, don't throw the exception
+            return None
+        else:
+            raise exceptions.SpeechToTextException(
+                json.dumps(result_dict, indent=4, ensure_ascii=False))
 
     if 'confidence' in result_dict:
         confidence = \
@@ -123,43 +127,27 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                 except requests.exceptions.ConnectionError:
                     continue
 
-                if not self.is_full_result:
-                    # receive several results delimited by LF
-                    result_str = result.content.decode('utf-8').split("\n")
-                    # get the one with valid content
-                    for line in result_str:
-                        try:
-                            line_dict = json.loads(line)
-                            transcript = get_google_speech_v2_transcript(
-                                self.min_confidence,
-                                line_dict)
-                            if transcript:
-                                # make sure it is the valid transcript
+                # receive several results delimited by LF
+                result_str = result.content.decode('utf-8').split("\n")
+                # get the one with valid content
+                for line in result_str:
+                    try:
+                        line_dict = json.loads(line)
+                        transcript = get_google_speech_v2_transcript(
+                            self.min_confidence,
+                            line_dict)
+                        if transcript:
+                            # make sure it is the valid transcript
+                            if not self.is_full_result:
                                 return transcript
+                            return line_dict
 
-                        except (ValueError, IndexError):
-                            # no result
-                            continue
-
-                else:
-                    result_str = result.content.decode('utf-8').split("\n")
-                    for line in result_str:
-                        try:
-                            line_dict = json.loads(line)
-                            transcript = get_google_speech_v2_transcript(
-                                self.min_confidence,
-                                line_dict)
-                            if transcript:
-                                # make sure it is the result with valid transcript
-                                return line_dict
-
-                        except (ValueError, IndexError):
-                            # no result
-                            continue
+                    except (ValueError, IndexError):
+                        # no result
+                        continue
 
                 # Every line of the result can't be loaded to json
-                raise exceptions.SpeechToTextException(
-                    result_str)
+                return None
 
         except KeyboardInterrupt:
             return None
