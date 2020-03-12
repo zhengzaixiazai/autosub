@@ -39,7 +39,11 @@ Click up arrow to go back to TOC.
 
 ### [Unreleased]
 
-#### Changed(unreleased)
+#### Added(Unreleased)
+
+- Add extra environment variables check when finding dependencies. [issue #91](https://github.com/BingLingGroup/autosub/issues/91)
+
+#### Changed(Unreleased)
 
 - Fix Google Speech-to-Text API empty result response bug. [issue #89](https://github.com/BingLingGroup/autosub/issues/89)
 

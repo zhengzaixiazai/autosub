@@ -76,6 +76,7 @@ This repo has a different license from [the original repo](https://github.com/ag
 Autosub depends on these third party softwares or Python site-packages. Much appreciation to all of these projects.
 
 - [ffmpeg](https://ffmpeg.org/)
+- [ffprobe](https://ffmpeg.org/ffprobe.html)
 - [auditok](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
 - [py-googletrans](https://github.com/ssut/py-googletrans)
@@ -95,6 +96,13 @@ Except the PyPI version, others include non-original codes not from the original
 After autosub-0.4.0, all of the codes is compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
 
 About the dependencies installation. If you install autosub by pip, ffmpeg and ffmpeg-normalize won't be installed together not like the Python site-packages already listed on the `setup.py` or `requirements.txt`. You need to install them separately. But of course they are optional. They aren't necessary if you only use autosub to translate your subtitles.
+
+ffmpeg, ffprobe, ffmpeg-normalize need to be put on one of these places to let the autosub detect and use them. The following codes are in the [constants.py](autosub/constants.py). Priority is determined in order.
+
+1. Set the following environment variables before running the program: `FFMPEG_PATH`, `FFPROBE_PATH` and `FFMPEG_NORMALIZE_PATH`. It will override the ones located at the environment variable `PATH`. This will be helpful if you don't want to use the one in the `PATH`.
+2. Add them to the environment variable `PATH`. No need to worry about if using package manager to install such as using pip to install ffmpeg-normalize and using chocolatey to install ffmpeg.
+3. Add them to the same directory as the autosub executable.
+4. Add them to the current command line working directory.
 
 About the git installation. If you don't want to install git to use pip [VCS](https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support) support to install python package or just confused with git environment variables, you can manually click that clone and download button to download the source code and use pip to install the source code [locally](https://pip.pypa.io/en/stable/reference/pip_install/#description) by input these commands.
 

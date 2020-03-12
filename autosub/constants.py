@@ -401,10 +401,20 @@ def get_cmd(program_name):
     return ""
 
 
-FFMPEG_CMD = get_cmd("ffmpeg")
-FFPROBE_CMD = get_cmd("ffprobe")
-FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
+if 'FFMPEG_PATH' in os.environ:
+    FFMPEG_CMD = os.environ['FFMPEG_PATH']
+else:
+    FFMPEG_CMD = get_cmd("ffmpeg")
 
+if 'FFPROBE_PATH' in os.environ:
+    FFPROBE_CMD = os.environ['FFPROBE_PATH']
+else:
+    FFPROBE_CMD = get_cmd("ffprobe")
+
+if 'FFMPEG_NORMALIZE_PATH' in os.environ:
+    FFMPEG_NORMALIZE_CMD = os.environ['FFMPEG_NORMALIZE_PATH']
+else:
+    FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
 
 DEFAULT_AUDIO_PRCS = [
     FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\

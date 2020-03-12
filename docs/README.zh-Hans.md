@@ -76,6 +76,7 @@ Autosub是一个字幕自动生成工具。它能使用Auditok来自动检测语
 Autosub依赖于这些第三方的软件或者Python的site-packages。非常感谢以下这些项目的工作。
 
 - [ffmpeg](https://ffmpeg.org/)
+- [ffprobe](https://ffmpeg.org/ffprobe.html)
 - [auditok](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
 - [py-googletrans](https://github.com/ssut/py-googletrans)
@@ -95,6 +96,13 @@ Autosub依赖于这些第三方的软件或者Python的site-packages。非常感
 在autosub-0.4.0之后，所有的代码都是Python3和Python2.7兼容的。所以后面的安装指令中的Python版本你可以随便改。
 
 至于依赖的安装，如果你是通过pip来安装的autosub，那么ffmpeg和ffmpeg-normalize不会被一块儿安装，不像site-packages那样列在`setup.py`或者`requirements.txt`里面自动安装了。你需要分别安装它们。当然安装是可选的，如果你只是翻译字幕，不需要安装这两个软件。
+
+ffmpeg, ffprobe, ffmpeg-normalize需要被放在以下位置之一来让autosub检测并使用。以下代码都在[constants.py](autosub/constants.py)里。优先级按照先后顺序确定。
+
+1. 在运行程序前设置以下环境变量：`FFMPEG_PATH`，`FFPROBE_PATH`和 `FFMPEG_NORMALIZE_PATH`。它会替代环境变量`PATH`里的值。如果你不想使用`PATH`里的值，那么这会帮到你。
+2. 把它们加入环境变量`PATH`。如果使用的是包管理器进行的安装，那么就不需要关心这件事。用管理器进行安装是指使用pip安装ffmpeg-normalize或者chocolatey安装ffmpeg。
+3. 把它们放在和autosub的可执行文件的同一个目录下。
+4. 把它们放在当前命令行工作的文件夹下。
 
 至于git的安装，如果你不想通过pip的[VCS](https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support)支持来安装python包或者只是不想碰git的环境变量这些东西，你可以手动点击clone and download来下载源码并在[本地](https://pip.pypa.io/en/stable/reference/pip_install/#description)进行安装。指令如下。
 

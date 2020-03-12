@@ -38,6 +38,10 @@
 
 ### [未发布](未发布)
 
+#### 添加(未发布)
+
+- 添加额外的环境变量检查在查找依赖时。[issue #91](https://github.com/BingLingGroup/autosub/issues/91)
+
 #### 改动(未发布)
 
 - 修复Google Speech-to-Text API空结果返回bug。[issue #89](https://github.com/BingLingGroup/autosub/issues/89)
