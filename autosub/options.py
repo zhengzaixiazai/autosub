@@ -34,9 +34,9 @@ except AttributeError:
     M_ = META_TEXT.gettext
 
 
-def get_cmd_args():  # pylint: disable=too-many-statements
+def get_cmd_parser():  # pylint: disable=too-many-statements
     """
-    Get command-line arguments.
+    Get command-line parser.
     """
 
     parser = argparse.ArgumentParser(
@@ -596,4 +596,4 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "Ref: https://cloud.google.com/speech-to-text/docs/languages "
                "(arg_num = 1) (default: %(default)s)"))
 
-    return parser.parse_args()
+    return parser

@@ -42,6 +42,7 @@ Click up arrow to go back to TOC.
 #### Added(Unreleased)
 
 - Add extra environment variables check when finding dependencies. [issue #91](https://github.com/BingLingGroup/autosub/issues/91)
+- Add arguments parser input when open it without arguments. [issue #92](https://github.com/BingLingGroup/autosub/issues/92)
 
 #### Changed(Unreleased)
 

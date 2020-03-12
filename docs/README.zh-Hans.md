@@ -165,6 +165,8 @@ pip install autosub
 
 建议：`Shift - 右键`是打开当前目录Powershell的快捷键。Powershell打开当前目录的exe需要输入这样的格式`.\autosub`。
 
+或者你也可以直接打开它并手动输入参数，尽管我并不建议这样做，因为效率比较低。
+
 - 发布包里没有pyinstaller后缀的是Nuitka编译的。它比pyinstaller的版本快，因为它是编译的，不同于pyinstaller只是把程序进行了打包。
 - ffmpeg和ffmpeg-normalize也在发布包内。原本ffmpeg-normalize没有独立运行的版本。这个独立运行的ffmpeg-normalize是另外构建的。代码在[这里](https://github.com/BingLingGroup/ffmpeg-normalize)。
 - 如果在使用发布包时遇到任何问题，或者包的大小太大或者遇到了什么烦人的事情，你依然可以采用下方所说的通过pip的方法进行安装。

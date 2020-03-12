@@ -41,6 +41,7 @@
 #### 添加(未发布)
 
 - 添加额外的环境变量检查在查找依赖时。[issue #91](https://github.com/BingLingGroup/autosub/issues/91)
+- 添加无参数启动时的请求输入参数解析功能。[issue #92](https://github.com/BingLingGroup/autosub/issues/92)
 
 #### 改动(未发布)
 

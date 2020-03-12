@@ -165,6 +165,8 @@ You can just go to the [release page](https://github.com/BingLingGroup/autosub/r
 
 Tips: `Shift - Right Click` is the keyboard shortcut for opening a Powershell on current directory. To open an exe at current directory, the format is like `.\autosub`.
 
+Or you can just directly open it and input the args manually though I don't recommend doing this due to its less efficiency.
+
 - The one without pyinstaller suffix is compiled by Nuitka. It's faster than the pyinstaller due to its compiling feature different from pyinstaller which just bundles the application.
 - ffmpeg and ffmpeg-normalize are also in the package. The original ffmpeg-normalize doesn't have a standalone version. The standalone version of ffmpeg-normalize is built separately. Codes are [here](https://github.com/BingLingGroup/ffmpeg-normalize).
 - If there's anything wrong on the both releases, or the package size and any other things are annoying you, you can just use the traditional pip installation method below.
