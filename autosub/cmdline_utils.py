@@ -322,7 +322,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             if args.speech_language \
                     not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES:
                 print(
-                    _("Warning: Speech language \"{src}\" not recommended. "
+                    _("Warning: Speech language \"{src}\" is not recommended. "
                       "Run with \"-lsc\"/\"--list-speech-codes\" "
                       "to see all supported languages.").format(src=args.speech_language))
                 if args.best_match and 's' in args.best_match:
@@ -378,8 +378,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             if not is_src_matched:
                 if args.best_match and 'src' in args.best_match:
                     print(
-                        _("Warning: Source language \"{src}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        _("Warning: Translation source language \"{src}\" is not supported. "
+                          "Run with \"-ltc\"/\"--list-translation-codes\" "
                           "to see all supported languages.").format(src=args.src_language))
                     best_result = lang_code_utils.match_print(
                         dsr_lang=args.src_language,
@@ -397,8 +397,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
                 else:
                     raise exceptions.AutosubException(
-                        _("Error: Source language \"{src}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        _("Error: Translation source language \"{src}\" is not supported. "
+                          "Run with \"-ltc\"/\"--list-translation-codes\" "
                           "to see all supported languages. "
                           "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
                               src=args.src_language))
@@ -406,8 +406,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             if not is_dst_matched:
                 if args.best_match and 'd' in args.best_match:
                     print(
-                        _("Warning: Destination language \"{dst}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        _("Warning: Translation destination language \"{dst}\" is not supported. "
+                          "Run with \"-ltc\"/\"--list-translation-codes\" "
                           "to see all supported languages.").format(dst=args.dst_language))
                     best_result = lang_code_utils.match_print(
                         dsr_lang=args.dst_language,
@@ -425,8 +425,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
                 else:
                     raise exceptions.AutosubException(
-                        _("Error: Destination language \"{dst}\" not supported. "
-                          "Run with \"-lsc\"/\"--list-translation-codes\" "
+                        _("Error: Translation destination language \"{dst}\" is not supported. "
+                          "Run with \"-ltc\"/\"--list-translation-codes\" "
                           "to see all supported languages. "
                           "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
                               dst=args.dst_language))

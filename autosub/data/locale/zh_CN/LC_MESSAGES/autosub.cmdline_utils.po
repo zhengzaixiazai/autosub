@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-04 21:39+0800\n"
-"PO-Revision-Date: 2020-03-04 21:39+0800\n"
+"POT-Creation-Date: 2020-03-12 11:08+0800\n"
+"PO-Revision-Date: 2020-03-12 11:10+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -140,7 +140,7 @@ msgstr "错误：\"-slp\"/\"--sleep-seconds\"参数非法。"
 
 #: autosub/cmdline_utils.py:325
 msgid ""
-"Warning: Speech language \"{src}\" not recommended. Run with \"-lsc\"/\"--"
+"Warning: Speech language \"{src}\" is not recommended. Run with \"-lsc\"/\"--"
 "list-speech-codes\" to see all supported languages."
 msgstr ""
 "警告：语音语言\"{src}\"不在推荐的清单里面。用\"-lsc\"/\"--list-speech-codes"
@@ -176,46 +176,45 @@ msgstr "翻译目的语言未提供。只进行语音识别。"
 msgid "Source language not provided. Use Speech language instead."
 msgstr "翻译源语言未提供。改用语音语言。"
 
-#: autosub/cmdline_utils.py:381 autosub/cmdline_utils.py:488
+#: autosub/cmdline_utils.py:381
 msgid ""
-"Warning: Source language \"{src}\" not supported. Run with \"-lsc\"/\"--list-"
-"translation-codes\" to see all supported languages."
+"Warning: Translation source language \"{src}\" is not supported. Run with \"-"
+"ltc\"/\"--list-translation-codes\" to see all supported languages."
 msgstr ""
-"警告：源语言\"{src}\"不在推荐的清单里面。用 \"-lsc\"/\"--list-translation-"
-"codes\"选项运行来查看所有支持的语言。"
+"警告：翻译源语言\"{src}\"不在推荐的清单里面。用 \"-ltc\"/\"--list-"
+"translation-codes\"选项运行来查看所有支持的语言。"
 
 #: autosub/cmdline_utils.py:394 autosub/cmdline_utils.py:422
 #: autosub/cmdline_utils.py:500 autosub/cmdline_utils.py:527
 msgid "Match failed. Still using \"{lang_code}\". Program stopped."
 msgstr "匹配失败。仍在使用\"{lang_code}\"。程序终止。"
 
-#: autosub/cmdline_utils.py:400 autosub/cmdline_utils.py:506
+#: autosub/cmdline_utils.py:400
 msgid ""
-"Error: Source language \"{src}\" not supported. Run with \"-lsc\"/\"--list-"
-"translation-codes\" to see all supported languages. Or use \"-bm\"/\"--best-"
-"match\" to get a best match."
+"Error: Translation source language \"{src}\" is not supported. Run with \"-"
+"ltc\"/\"--list-translation-codes\" to see all supported languages. Or use \"-"
+"bm\"/\"--best-match\" to get a best match."
 msgstr ""
-"警告：源语言\"{src}\"不在推荐的清单里面。用\"-lsc\"/\"--list-translation-"
+"警告：翻译源语言\"{src}\"不在推荐的清单里面。用\"-ltc\"/\"--list-translation-"
 "codes\"选项运行来查看所有支持的语言。或者使用\"-bm\"/\"--best-match\"来获得最"
 "佳匹配。"
 
-#: autosub/cmdline_utils.py:409 autosub/cmdline_utils.py:515
+#: autosub/cmdline_utils.py:409
 msgid ""
-"Warning: Destination language \"{dst}\" not supported. Run with \"-lsc\"/\"--"
-"list-translation-codes\" to see all supported languages."
+"Warning: Translation destination language \"{dst}\" is not supported. Run "
+"with \"-ltc\"/\"--list-translation-codes\" to see all supported languages."
 msgstr ""
-"警告：不支持目的语言\"{dst}\"。用 \"-lsc\"/\"--list-translation-codes\"选项运"
-"行来查看所有支持的语言。"
+"警告：不支持翻译目的语言\"{dst}\"。用 \"-ltc\"/\"--list-translation-codes\"选"
+"项运行来查看所有支持的语言。"
 
-#: autosub/cmdline_utils.py:428 autosub/cmdline_utils.py:533
+#: autosub/cmdline_utils.py:428
 msgid ""
-"Error: Destination language \"{dst}\" not supported. Run with \"-lsc\"/\"--"
-"list-translation-codes\" to see all supported languages. Or use \"-bm\"/\"--"
-"best-match\" to get a best match."
+"Error: Translation destination language \"{dst}\" is not supported. Run with "
+"\"-ltc\"/\"--list-translation-codes\" to see all supported languages. Or use "
+"\"-bm\"/\"--best-match\" to get a best match."
 msgstr ""
-"错误：不支持输出的字幕格式\"{dst}\"。用\"-lf\"/\"--list-formats\"选项运行来查"
-"看所有支持的格式。\n"
-"或者使用ffmpeg或者SubtitleEdit来转换格式。"
+"错误：不支持翻译目的语言\"{dst}\"。用 \"-ltc\"/\"--list-translation-codes\"选"
+"项运行来查看所有支持的语言。或者使用\"-bm\"/\"--best-match\"来获得最佳匹配。"
 
 #: autosub/cmdline_utils.py:437
 msgid ""
@@ -238,6 +237,42 @@ msgstr "错误：外部时间轴文件未提供。"
 #: autosub/cmdline_utils.py:472
 msgid "Error: Destination language not provided."
 msgstr "错误：目的语言未提供。"
+
+#: autosub/cmdline_utils.py:488
+msgid ""
+"Warning: Source language \"{src}\" not supported. Run with \"-lsc\"/\"--list-"
+"translation-codes\" to see all supported languages."
+msgstr ""
+"警告：源语言\"{src}\"不在推荐的清单里面。用 \"-lsc\"/\"--list-translation-"
+"codes\"选项运行来查看所有支持的语言。"
+
+#: autosub/cmdline_utils.py:506
+msgid ""
+"Error: Source language \"{src}\" not supported. Run with \"-lsc\"/\"--list-"
+"translation-codes\" to see all supported languages. Or use \"-bm\"/\"--best-"
+"match\" to get a best match."
+msgstr ""
+"警告：源语言\"{src}\"不在推荐的清单里面。用\"-lsc\"/\"--list-translation-"
+"codes\"选项运行来查看所有支持的语言。或者使用\"-bm\"/\"--best-match\"来获得最"
+"佳匹配。"
+
+#: autosub/cmdline_utils.py:515
+msgid ""
+"Warning: Destination language \"{dst}\" not supported. Run with \"-lsc\"/\"--"
+"list-translation-codes\" to see all supported languages."
+msgstr ""
+"警告：不支持目的语言\"{dst}\"。用 \"-lsc\"/\"--list-translation-codes\"选项运"
+"行来查看所有支持的语言。"
+
+#: autosub/cmdline_utils.py:533
+msgid ""
+"Error: Destination language \"{dst}\" not supported. Run with \"-lsc\"/\"--"
+"list-translation-codes\" to see all supported languages. Or use \"-bm\"/\"--"
+"best-match\" to get a best match."
+msgstr ""
+"错误：不支持输出的字幕格式\"{dst}\"。用\"-lf\"/\"--list-formats\"选项运行来查"
+"看所有支持的格式。\n"
+"或者使用ffmpeg或者SubtitleEdit来转换格式。"
 
 #: autosub/cmdline_utils.py:541
 msgid "Error: Source language is the same as the Destination language."

@@ -27,8 +27,6 @@ SUPPORTED_LOCALE = {
 }
 # Ref: https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html#Locale-Names
 
-ENCODING = 'UTF-8'
-
 if getattr(sys, 'frozen', False):
     # If the application is run as a bundle, the pyInstaller bootloader
     # extends the sys module by a flag frozen=True and sets the app
@@ -67,7 +65,7 @@ else:
 
 DEFAULT_SRC_LANGUAGE = 'en-US'
 DEFAULT_ENERGY_THRESHOLD = 45
-DEFAULT_MAX_REGION_SIZE = 6.0
+DEFAULT_MAX_REGION_SIZE = 8.0
 DEFAULT_MIN_REGION_SIZE = 1.0
 MIN_REGION_SIZE_LIMIT = 0.5
 MAX_REGION_SIZE_LIMIT = 12.0
