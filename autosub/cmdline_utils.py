@@ -89,7 +89,7 @@ def list_args(args):
                     column_1=lang_code_utils.wjust(code, 18),
                     column_2=language))
         else:
-            print(_("Match Google Speech V2 lang codes."))
+            print(_("Match Google Speech-to-Text lang codes."))
             lang_code_utils.match_print(
                 dsr_lang=args.list_speech_codes,
                 match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
@@ -321,11 +321,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
             args.speech_language = args.speech_language.lower()
             if args.speech_language \
                     not in constants.SPEECH_TO_TEXT_LANGUAGE_CODES:
-                print(
-                    _("Warning: Speech language \"{src}\" is not recommended. "
-                      "Run with \"-lsc\"/\"--list-speech-codes\" "
-                      "to see all supported languages.").format(src=args.speech_language))
                 if args.best_match and 's' in args.best_match:
+                    print(_("Let speech lang code to match Google Speech-to-Text lang codes."))
                     best_result = lang_code_utils.match_print(
                         dsr_lang=args.speech_language,
                         match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
@@ -336,9 +333,14 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         print(_("Use \"{lang_code}\" instead.").format(
                             lang_code=args.speech_language))
                     else:
-                        print(
-                            _("Match failed. Still using \"{lang_code}\".").format(
-                                lang_code=args.speech_language))
+                        print(_("Match failed. Still using \"{lang_code}\".").format(
+                            lang_code=args.speech_language))
+                else:
+                    print(_("Warning: Speech language \"{src}\" is not recommended. "
+                            "Run with \"-lsc\"/\"--list-speech-codes\" "
+                            "to see all supported languages. "
+                            "Or use \"-bm\"/\"--best-match\" to get a best match."
+                           ).format(src=args.speech_language))
 
             if args.min_confidence < 0.0 or args.min_confidence > 1.0:
                 raise exceptions.AutosubException(
@@ -349,15 +351,13 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                 _("Error: Wrong API code."))
 
         if args.dst_language is None:
-            print(
-                _("Destination language not provided. "
-                  "Only performing speech recognition."))
+            print(_("Translation destination language not provided. "
+                    "Only performing speech recognition."))
 
         else:
             if not args.src_language:
-                print(
-                    _("Source language not provided. "
-                      "Use Speech language instead."))
+                print(_("Translation source language not provided. "
+                        "Use speech language instead."))
                 args.src_language = args.speech_language
                 if not args.best_match:
                     args.best_match = {'src'}
@@ -377,10 +377,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
             if not is_src_matched:
                 if args.best_match and 'src' in args.best_match:
-                    print(
-                        _("Warning: Translation source language \"{src}\" is not supported. "
-                          "Run with \"-ltc\"/\"--list-translation-codes\" "
-                          "to see all supported languages.").format(src=args.src_language))
+                    print(_("Let translation source lang code "
+                            "to match py-googletrans lang codes."))
                     best_result = lang_code_utils.match_print(
                         dsr_lang=args.src_language,
                         match_list=list(googletrans.constants.LANGUAGES.keys()),
@@ -390,11 +388,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                             lang_code=best_result[0]))
                         args.src_language = best_result[0]
                     else:
-                        raise exceptions.AutosubException(
-                            _("Match failed. Still using \"{lang_code}\". "
-                              "Program stopped.").format(
-                                  lang_code=args.src_language))
-
+                        raise exceptions.AutosubException(_("Error: Match failed."))
                 else:
                     raise exceptions.AutosubException(
                         _("Error: Translation source language \"{src}\" is not supported. "
@@ -405,10 +399,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
             if not is_dst_matched:
                 if args.best_match and 'd' in args.best_match:
-                    print(
-                        _("Warning: Translation destination language \"{dst}\" is not supported. "
-                          "Run with \"-ltc\"/\"--list-translation-codes\" "
-                          "to see all supported languages.").format(dst=args.dst_language))
+                    print(_("Let translation destination lang code "
+                            "to match py-googletrans lang codes."))
                     best_result = lang_code_utils.match_print(
                         dsr_lang=args.dst_language,
                         match_list=list(googletrans.constants.LANGUAGES.keys()),
@@ -418,11 +410,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                             lang_code=best_result[0]))
                         args.dst_language = best_result[0]
                     else:
-                        raise exceptions.AutosubException(
-                            _("Match failed. Still using \"{lang_code}\". "
-                              "Program stopped.").format(
-                                  lang_code=args.dst_language))
-
+                        raise exceptions.AutosubException(_("Error: Match failed."))
                 else:
                     raise exceptions.AutosubException(
                         _("Error: Translation destination language \"{dst}\" is not supported. "
@@ -433,9 +421,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
 
         if args.dst_language == args.speech_language \
                 or args.src_language == args.dst_language:
-            print(
-                _("Speech language is the same as the Destination language. "
-                  "Only performing speech recognition."))
+            print(_("Speech language is the same as the destination language. "
+                    "Only performing speech recognition."))
             args.dst_language = None
             args.src_language = None
 
@@ -447,9 +434,8 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                       "No works done."))
 
         else:
-            print(
-                _("Speech language not provided. "
-                  "Only performing speech regions detection."))
+            print(_("Speech language not provided. "
+                    "Only performing speech regions detection."))
 
     if args.styles == ' ':
         # when args.styles is used but without option
@@ -538,11 +524,11 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
 
         if args.dst_language == args.src_language:
             raise exceptions.AutosubException(
-                _("Error: Source language is the same as the Destination language."))
+                _("Error: Translation source language is the same as the destination language."))
 
     else:
         raise exceptions.AutosubException(
-            _("Error: Source language not provided."))
+            _("Error: Translation source language is not provided."))
 
     if args.styles == ' ':
         # when args.styles is used but without option

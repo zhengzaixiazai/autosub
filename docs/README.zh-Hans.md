@@ -266,7 +266,7 @@ Autosub使用Auditok来检测语音区域。通过语音区域来分割并转换
 
 - 尽管你可以输入任何你想输入的语言代码，需要指出的是如果你使用了不在清单上的语言代码但是API接受了，[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)可能会按照你的IP地址机型个性化识别，而这是不受你控制的。这是一个已知的问题，我已经在原仓库申请了[拉取请求](https://github.com/agermanidis/autosub/pull/136)。
 
-- 另外一方面，[py-googletrans](https://github.com/ssut/py-googletrans)更加严格。当它收到了一个不在它清单内的语言代码，它会直接抛出异常。当然这可以设计成一个抛出-捕获的代码块，并允许用户再次输入语言代码，不过我目前还没加入这个支持，所以不适合的翻译语言代码会终止程序运行，除非你使用前面提到的最佳匹配功能。
+- 另外一方面，[py-googletrans](https://github.com/ssut/py-googletrans)更加严格。当它收到了一个不在它清单内的语言代码，它会直接抛出异常。
 
 - 除了用户输入的部分，另外一个显著的更改是我将`-S`选项分为了两部分，一个是`-S`一个是`-SRC`。`-S`选项是给语音识别的语言代码使用的。`-SRC`则是给翻译源语言代码使用的。如果不输入`-SRC`的参数时，autosub会使用[langcodes](https://github.com/LuminosoInsight/langcodes)来匹配`-S`的参数来获得其在翻译支持的语言代码清单中的最佳匹配，尽管[py-googletrans](https://github.com/ssut/py-googletrans)可以自动检测翻译源语言。当然你可以手动配置`-SRC`选项。而`-D`还是给目标翻译语言使用的，和之前一样。
 
