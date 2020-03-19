@@ -8,7 +8,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 import os
 import gettext
 import sys
-import subprocess
+import shlex
 
 # Import third-party modules
 import pysubs2
@@ -50,7 +50,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
     else:
         option_parser.print_help()
         new_argv = input_main(_("\nInput args(without \"autosub\"): "))
-        args = option_parser.parse_args(new_argv.split())
+        args = option_parser.parse_args(shlex.split(new_argv))
         is_pause = True
 
     if args.https_proxy:

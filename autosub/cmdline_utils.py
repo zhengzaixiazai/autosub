@@ -886,12 +886,10 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     else:
         # use auditok_gen_speech_regions
         mode = 0
-        if args.strict_min_length:
+        if not args.not_strict_min_length:
             mode = auditok.StreamTokenizer.STRICT_MIN_LENGTH
-            if args.drop_trailing_silence:
-                mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
-        elif args.drop_trailing_silence:
-            mode = auditok.StreamTokenizer.DROP_TRAILING_SILENCE
+        if args.drop_trailing_silence:
+            mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
 
         audio_wav_temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
         audio_wav = audio_wav_temp.name

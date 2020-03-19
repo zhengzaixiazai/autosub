@@ -46,6 +46,8 @@
 #### 改动(未发布)
 
 - 修复Google Speech-to-Text API空结果返回bug。[issue #89](https://github.com/BingLingGroup/autosub/issues/89)
+- 修改选项`-sml`为`-nsml`。
+- 修改Auditok默认参数。
 
 ### [0.5.5-alpha] - 2020-03-04
 

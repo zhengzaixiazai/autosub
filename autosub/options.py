@@ -537,9 +537,11 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "(arg_num = 1) (default: %(default)s)"))
 
     auditok_group.add_argument(
-        '-sml', '--strict-min-length',
+        '-nsml', '--not-strict-min-length',
         action='store_true',
-        help=_("Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
+        help=_("If not input this option, "
+               "it will keep all regions strictly follow the minimum region limit. "
+               "Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
                "(arg_num = 0)"))
 
     auditok_group.add_argument(

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-08 21:07+0800\n"
+"POT-Creation-Date: 2020-03-19 10:17+0800\n"
 "PO-Revision-Date: 2020-03-09 17:27+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -135,7 +135,7 @@ msgstr "列出所有可选参数。"
 
 #: autosub/options.py:97 autosub/options.py:106 autosub/options.py:115
 #: autosub/options.py:197 autosub/options.py:273 autosub/options.py:398
-#: autosub/options.py:592
+#: autosub/options.py:594
 msgid "path"
 msgstr "路径"
 
@@ -188,7 +188,7 @@ msgstr ""
 "言行使用第二个。（参数个数为1或2）"
 
 #: autosub/options.py:142 autosub/options.py:153 autosub/options.py:163
-#: autosub/options.py:564 autosub/options.py:580
+#: autosub/options.py:566 autosub/options.py:582
 msgid "lang_code"
 msgstr "语言代码"
 
@@ -197,8 +197,8 @@ msgstr "语言代码"
 msgid ""
 "Lang code/Lang tag for speech-to-text. Recommend using the Google Cloud "
 "Speech reference lang codes. WRONG INPUT WON'T STOP RUNNING. But use it at "
-"your own risk. Ref: https://cloud.google.com/speech-to-text/docs/"
-"languages(arg_num = 1) (default: %(default)s)"
+"your own risk. Ref: https://cloud.google.com/speech-to-text/docs/languages"
+"(arg_num = 1) (default: %(default)s)"
 msgstr ""
 "用于语音识别的语言代码/语言标识符。推荐使用Google Cloud Speech的参考语言代"
 "码。错误的输入不会终止程序。但是后果自负。参考：https://cloud.google.com/"
@@ -214,8 +214,8 @@ msgid ""
 msgstr ""
 "用于翻译的源语言的语言代码/语言标识符。如果没有提供，会使用langcodes从列表里"
 "获取一个最佳匹配选项\"-S\"/\"--speech-language\"的语言代码。如果使用py-"
-"googletrans作为翻译的方法，错误的输入会终止运行。（参数个数为1）（默认参数"
-"为%(default)s）"
+"googletrans作为翻译的方法，错误的输入会终止运行。（参数个数为1）（默认参数为%"
+"(default)s）"
 
 #: autosub/options.py:164
 #, python-format
@@ -373,8 +373,8 @@ msgid ""
 msgstr ""
 "API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味着结果越"
 "好。输入这个参数会导致所有低于这个结果的识别结果被删除。参考：https://github."
-"com/BingLingGroup/google-speech-v2#response（参数个数为1）（默认参数"
-"为%(default)s）"
+"com/BingLingGroup/google-speech-v2#response（参数个数为1）（默认参数为%"
+"(default)s）"
 
 #: autosub/options.py:306
 msgid "Drop any regions without speech recognition result. (arg_num = 0)"
@@ -399,8 +399,8 @@ msgid ""
 "(Experimental)Seconds to sleep between two translation requests. (arg_num = "
 "1) (default: %(default)s)"
 msgstr ""
-"（实验性）在两次翻译请求之间睡眠（暂停）的时间。（参数个数为1）（默认参数"
-"为%(default)s）"
+"（实验性）在两次翻译请求之间睡眠（暂停）的时间。（参数个数为1）（默认参数为%"
+"(default)s）"
 
 #: autosub/options.py:330
 msgid ""
@@ -481,8 +481,8 @@ msgid ""
 msgstr ""
 "设置服务账号密钥的环境变量。应该是包含服务帐号凭据的JSON文件的文件路径。如果"
 "使用了，会被API密钥选项覆盖。参考：https://cloud.google.com/docs/"
-"authentication/getting-started 当前支持："
-"gcsv1（GOOGLE_APPLICATION_CREDENTIALS）（参数个数为1）"
+"authentication/getting-started 当前支持：gcsv1"
+"（GOOGLE_APPLICATION_CREDENTIALS）（参数个数为1）"
 
 #: autosub/options.py:410
 msgid ""
@@ -532,13 +532,13 @@ msgstr ""
 #, python-format
 msgid ""
 "(Experimental)This arg will override the default audio conversion command. "
-"\"[\", \"]\" are optional arguments meaning you can remove them. \"{{\", "
-"\"}}\" are required arguments meaning you can't remove them. (arg_num = 1) "
+"\"[\", \"]\" are optional arguments meaning you can remove them. \"{{\", \"}}"
+"\" are required arguments meaning you can't remove them. (arg_num = 1) "
 "(default: %(default)s)"
 msgstr ""
 "（实验性）这个参数会取代默认的音频转换命令。\"[\", \"]\" 是可选参数，可以移"
-"除。\"{{\", \"}}\"是必选参数，不可移除。（参数个数为1）（默认参数"
-"为%(default)s）"
+"除。\"{{\", \"}}\"是必选参数，不可移除。（参数个数为1）（默认参数为%(default)"
+"s）"
 
 #: autosub/options.py:471
 #, python-format
@@ -559,8 +559,8 @@ msgid ""
 "(Experimental)This arg will override the default API audio suffix. (arg_num "
 "= 1) (default: %(default)s)"
 msgstr ""
-"（实验性）这个参数会取代默认的给API使用的音频文件后缀。（默认参数"
-"为%(default)s）"
+"（实验性）这个参数会取代默认的给API使用的音频文件后缀。（默认参数为%(default)"
+"s）"
 
 #: autosub/options.py:486
 msgid "sample_rate"
@@ -608,16 +608,16 @@ msgstr ""
 msgid ""
 "Minimum region size. Same docs above. (arg_num = 1) (default: %(default)s)"
 msgstr ""
-"最小语音区域大小。同样的参考文档如上。（参数个数为1）（默认参数"
-"为%(default)s）"
+"最小语音区域大小。同样的参考文档如上。（参数个数为1）（默认参数为%(default)"
+"s）"
 
 #: autosub/options.py:526
 #, python-format
 msgid ""
 "Maximum region size. Same docs above. (arg_num = 1) (default: %(default)s)"
 msgstr ""
-"最大音频区域大小。同样的参考文档如上。（参数个数为1）（默认参数"
-"为%(default)s）"
+"最大音频区域大小。同样的参考文档如上。（参数个数为1）（默认参数为%(default)"
+"s）"
 
 #: autosub/options.py:535
 #, python-format
@@ -628,7 +628,17 @@ msgstr ""
 "在一段有效的音频活动区域中可以容忍的最大（连续）安静区域。同样的参考文档如"
 "上。（参数个数为1）（默认参数为%(default)s）"
 
-#: autosub/options.py:542 autosub/options.py:548
+#: autosub/options.py:542
+#, fuzzy
+msgid ""
+"If not input this option, it will keep all regions strictly follow the "
+"minimum region limit. Ref: https://auditok.readthedocs.io/en/latest/core."
+"html#class-summary (arg_num = 0)"
+msgstr ""
+"参考：https://auditok.readthedocs.io/en/latest/core.html#class-summary（参数"
+"个数为0）"
+
+#: autosub/options.py:550
 msgid ""
 "Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
 "(arg_num = 0)"
@@ -636,7 +646,7 @@ msgstr ""
 "参考：https://auditok.readthedocs.io/en/latest/core.html#class-summary（参数"
 "个数为0）"
 
-#: autosub/options.py:554
+#: autosub/options.py:556
 msgid ""
 "List all available subtitles formats. If your format is not supported, you "
 "can use ffmpeg or SubtitleEdit to convert the formats. You need to offer fps "
@@ -647,7 +657,7 @@ msgstr ""
 "SubtitleEdit来对其进行转换。如果输出格式是\"sub\"且输入文件是音频无法获取到视"
 "频帧率时，你需要提供fps选项指定帧率。（参数个数为0）"
 
-#: autosub/options.py:567
+#: autosub/options.py:569
 msgid ""
 "List all recommended \"-S\"/\"--speech-language\" Google Speech-to-Text "
 "language codes. If no arg is given, list all. Or else will list a group of "
@@ -665,7 +675,7 @@ msgstr ""
 "言）-扩展-私有（https://www.zhihu.com/question/21980689/answer/93615123）（参"
 "数个数为0或1）"
 
-#: autosub/options.py:583
+#: autosub/options.py:585
 msgid ""
 "List all available \"-SRC\"/\"--src-language\" py-googletrans translation "
 "language codes. Or else will list a group of \"good match\" of the arg. Same "
@@ -675,7 +685,7 @@ msgstr ""
 "言代码。否则会给出一个“好的匹配”的清单。同样的参考文档如上。（参数个数为0或"
 "1）"
 
-#: autosub/options.py:593
+#: autosub/options.py:595
 #, python-format
 msgid ""
 "Use py-googletrans to detect a sub file's first line language. And list a "
@@ -706,26 +716,26 @@ msgstr ""
 #~ "googletrans。（参数个数为1）"
 
 #~ msgid ""
-#~ "Number of lines per Google Translate V2 request. (arg_num = 1) (default: "
-#~ "%(default)s)"
+#~ "Number of lines per Google Translate V2 request. (arg_num = 1) (default: %"
+#~ "(default)s)"
 #~ msgstr ""
-#~ "Google Translate V2请求的每行行数。（参数个数为1）（默认参数"
-#~ "为%(default)s）"
+#~ "Google Translate V2请求的每行行数。（参数个数为1）（默认参数为%(default)"
+#~ "s）"
 
 #~ msgid ""
 #~ "Number of concurrent Google translate V2 API requests to make. (arg_num = "
 #~ "1) (default: %(default)s)"
 #~ msgstr ""
-#~ "Google translate V2 API请求的并行数量。（参数个数为1）（默认参数"
-#~ "为%(default)s）"
+#~ "Google translate V2 API请求的并行数量。（参数个数为1）（默认参数为%"
+#~ "(default)s）"
 
 #~ msgid ""
 #~ "Output more files. Available types: regions, src, dst, bilingual, all. (4 "
 #~ ">= arg_num >= 1) (default: %(default)s)"
 #~ msgstr ""
 #~ "输出更多的文件。可选种类：regions, src, dst, bilingual, all.（时间轴，源语"
-#~ "言字幕，目标语言字幕，双语字幕，所有）（参数个数在4和1之间）（默认参数"
-#~ "为%(default)s）"
+#~ "言字幕，目标语言字幕，双语字幕，所有）（参数个数在4和1之间）（默认参数为%"
+#~ "(default)s）"
 
 #~ msgid ""
 #~ "The Google Speech V2 API key to be used. If not provided, use free API "

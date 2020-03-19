@@ -73,9 +73,8 @@ def get_gcsv1p1beta1_transcript(
         if not result_dict:
             # if api returned empty json, don't throw the exception
             return None
-        else:
-            raise exceptions.SpeechToTextException(
-                json.dumps(result_dict, indent=4, ensure_ascii=False))
+        raise exceptions.SpeechToTextException(
+            json.dumps(result_dict, indent=4, ensure_ascii=False))
 
     if 'confidence' in result_dict:
         confidence = \

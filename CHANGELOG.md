@@ -47,6 +47,8 @@ Click up arrow to go back to TOC.
 #### Changed(Unreleased)
 
 - Fix Google Speech-to-Text API empty result response bug. [issue #89](https://github.com/BingLingGroup/autosub/issues/89)
+- Change option `-sml` into `-nsml`.
+- Change defaults for Auditok.
 
 ### [0.5.5-alpha] - 2020-03-04
 

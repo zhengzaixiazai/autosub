@@ -101,6 +101,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                     event = pysubs2.SSAEvent()
                     event.start = src_ssafile.events[i].start
                     event.end = src_ssafile.events[i].end
+                    event.is_comment = src_ssafile.events[i].is_comment
                     event.text = text_list[i]
                     event.style = style_name
                     dst_ssafile.events.append(event)
@@ -114,6 +115,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             text_list[i] + "\\N" + src_ssafile.events[i].text
                         event.style = style_name
@@ -125,6 +127,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             text_list[i] + \
                             "\\N{{\\r{style_name}}}".format(
@@ -142,6 +145,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             src_ssafile.events[i].text + "\\N" + text_list[i]
                         event.style = style_name
@@ -153,6 +157,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             src_ssafile.events[i].text + \
                             "\\N{{\\r{style_name}}}".format(

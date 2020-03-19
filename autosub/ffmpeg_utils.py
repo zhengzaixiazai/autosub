@@ -147,8 +147,7 @@ def ffprobe_check_file(filename):
     print(command)
     ffprobe_bytes = subprocess.check_output(
         constants.cmd_conversion(command),
-        stdin=open(os.devnull),
-        shell=False)
+        stdin=open(os.devnull))
     ffprobe_str = ffprobe_bytes.decode(sys.stdout.encoding)
     print(ffprobe_str)
     bitrate_idx = ffprobe_str.find('bit_rate')
