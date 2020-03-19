@@ -244,9 +244,9 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
 
     if is_ass_input:
         print(_("Input is a subtitles file."))
-        return 1
+        return 0
 
-    return 0
+    return 1
 
 
 def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
@@ -527,8 +527,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                 _("Error: Translation source language is the same as the destination language."))
 
     else:
-        raise exceptions.AutosubException(
-            _("Error: Translation source language is not provided."))
+        return 0
 
     if args.styles == ' ':
         # when args.styles is used but without option
@@ -538,6 +537,8 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                 _("Error: External speech regions file not provided."))
 
         args.styles = args.ext_regions
+
+    return 1
 
 
 def fix_args(args):
@@ -584,6 +585,49 @@ def get_timed_text(
     return timed_text
 
 
+def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+        args,
+        input_m=input,
+        fps=30.0):
+    """
+    Give args and convert a subtitles file.
+    """
+    src_sub = pysubs2.SSAFile.load(args.input)
+    try:
+        args.output_files.remove("dst-lf-src")
+        new_sub = sub_utils.merge_bilingual_assfile(
+            subtitles=src_sub
+        )
+        sub_string = core.ssafile_to_sub_str(
+            ssafile=new_sub,
+            fps=fps,
+            subtitles_file_format=args.format)
+
+        if args.format == 'mpl2':
+            extension = 'mpl2.txt'
+        else:
+            extension = args.format
+
+        sub_name = "{base}.{nt}.{extension}".format(
+            base=args.output,
+            nt="combination",
+            extension=extension)
+
+        subtitles_file_path = core.str_to_file(
+            str_=sub_string,
+            output=sub_name,
+            input_m=input_m)
+        # subtitles string to file
+        print(_("\"dst-lf-src\" subtitles file "
+                "created at \"{}\".").format(subtitles_file_path))
+
+        if not args.output_files:
+            raise exceptions.AutosubException(_("\nAll works done."))
+
+    except KeyError:
+        pass
+
+
 def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         args,
         input_m=input,
@@ -592,11 +636,6 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
     """
     Give args and translate a subtitles file.
     """
-    if not args.output_files:
-        raise exceptions.AutosubException(
-            _("\nNo works done."
-              " Check your \"-of\"/\"--output-files\" option."))
-
     src_sub = pysubs2.SSAFile.load(args.input)
     text_list = []
 

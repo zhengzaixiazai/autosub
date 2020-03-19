@@ -78,9 +78,9 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             input_m = None
 
         styles_list = []
-        validate_result = cmdline_utils.validate_io(args, styles_list)
+        result = cmdline_utils.validate_io(args, styles_list)
 
-        if validate_result == 0:
+        if result:
             if not constants.FFMPEG_CMD:
                 raise exceptions.AutosubException(
                     _("Error: Dependency ffmpeg"
@@ -160,13 +160,20 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                                               input_m=input_m,
                                               styles_list=styles_list)
 
-        elif validate_result == 1:
-            cmdline_utils.validate_sp_args(args)
+        else:
+            result = cmdline_utils.validate_sp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
-            cmdline_utils.sub_trans(args,
-                                    input_m=input_m,
-                                    fps=fps,
-                                    styles_list=None)
+            if result:
+                cmdline_utils.sub_trans(args,
+                                        input_m=input_m,
+                                        fps=fps,
+                                        styles_list=None)
+            else:
+                cmdline_utils.sub_conversion(
+                    args,
+                    input_m=input_m,
+                    fps=fps
+                )
 
         raise exceptions.AutosubException(_("\nAll works done."))
 
