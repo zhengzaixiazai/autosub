@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's core functionality.
 """
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import os
 import multiprocessing
 import time
@@ -20,7 +19,7 @@ import googletrans
 import wcwidth
 
 # Any changes to the path and your own modules
-from autosub import google_speech_api
+from autosub import google_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
@@ -36,11 +35,7 @@ CORE_TEXT = gettext.translation(domain=__name__,
                                 languages=[constants.CURRENT_LOCALE],
                                 fallback=True)
 
-try:
-    _ = CORE_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = CORE_TEXT.gettext
+_ = CORE_TEXT.gettext
 
 
 def extension_to_encoding(
@@ -226,7 +221,7 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
     text_list = []
     pool = multiprocessing.Pool(concurrency)
 
-    recognizer = google_speech_api.GoogleSpeechV2(
+    recognizer = google_api.GoogleSpeechV2(
         api_url=api_url,
         headers=headers,
         min_confidence=min_confidence,
@@ -255,7 +250,7 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
                 if result:
                     result_list.append(result)
                     transcript = \
-                        google_speech_api.get_google_speech_v2_transcript(min_confidence, result)
+                        google_api.get_google_speech_v2_transcript(min_confidence, result)
                     if transcript:
                         text_list.append(transcript)
                         continue
@@ -322,10 +317,9 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 config = {
                     "encoding": extension_to_encoding(audio_fragments[0]),
                     "sampleRateHertz": sample_rate,
-                    "languageCode": src_language,
-                }
+                    "languageCode": src_language}
 
-            recognizer = google_speech_api.GCSV1P1Beta1URL(
+            recognizer = google_api.GCSV1P1Beta1URL(
                 config=config,
                 api_url=api_url,
                 headers=headers,
@@ -346,7 +340,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
                     if result:
                         result_list.append(result)
-                        transcript = google_speech_api.get_gcsv1p1beta1_transcript(
+                        transcript = google_api.get_gcsv1p1beta1_transcript(
                             min_confidence,
                             result)
                         if transcript:
@@ -370,11 +364,9 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 config = {
                     "encoding": extension_to_encoding(
                         extension=audio_fragments[0],
-                        is_string=False
-                    ),
+                        is_string=False),
                     "sample_rate_hertz": sample_rate,
-                    "language_code": src_language,
-                }
+                    "language_code": src_language}
 
             i = 0
             tasks = []
@@ -382,7 +374,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 # google cloud speech-to-text client can't use multiprocessing.pool
                 # based on class call, otherwise will receive pickling error
                 tasks.append(pool.apply_async(
-                    google_speech_api.gcsv1p1beta1_service_client,
+                    google_api.gcsv1p1beta1_service_client,
                     args=(filename, is_keep, config, min_confidence,
                           result_list is not None)))
                 gc.collect(0)
@@ -401,7 +393,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     i = i + 1
                     result = task.get()
                     result_list.append(result)
-                    transcript = google_speech_api.get_gcsv1p1beta1_transcript(
+                    transcript = google_api.get_gcsv1p1beta1_transcript(
                         min_confidence,
                         result)
                     if transcript:

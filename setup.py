@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import unicode_literals
-
+#!/usr/bin/env python3
 import os
 
 try:
@@ -38,9 +36,10 @@ setup(
         'progressbar2>=3.34.3',
         'auditok>=0.1.5',
         'googletrans>=2.4.0',
-        'langcodes-py2>=1.2.0',
+        'langcodes>=1.2.0',
         'wcwidth>=0.1.7',
-        'google-cloud-speech>=1.3.1'
+        'google-cloud-speech>=1.3.1',
+        'websocket-client>=0.56.0'
     ],
     license=open(os.path.join(here, "LICENSE")).read()
 )

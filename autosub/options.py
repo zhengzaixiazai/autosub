@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's command line options.
@@ -25,13 +25,8 @@ META_TEXT = gettext.translation(domain=metadata.__name__,
                                 languages=[constants.CURRENT_LOCALE],
                                 fallback=True)
 
-try:
-    _ = OPTIONS_TEXT.ugettext
-    M_ = META_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = OPTIONS_TEXT.gettext
-    M_ = META_TEXT.gettext
+_ = OPTIONS_TEXT.gettext
+M_ = META_TEXT.gettext
 
 
 def get_cmd_parser():  # pylint: disable=too-many-statements

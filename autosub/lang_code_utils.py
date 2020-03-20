@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's lang codes functionality.
 """
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import gettext
 
 # Import third-party modules
@@ -19,11 +18,7 @@ LANG_CODE_TEXT = gettext.translation(domain=__name__,
                                      languages=[constants.CURRENT_LOCALE],
                                      fallback=True)
 
-try:
-    _ = LANG_CODE_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = LANG_CODE_TEXT.gettext
+_ = LANG_CODE_TEXT.gettext
 
 
 def better_match(desired_language,

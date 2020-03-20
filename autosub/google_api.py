@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Defines google speech api used by autosub.
+Defines Google API used by autosub.
 """
 # Import built-in modules
-from __future__ import absolute_import, unicode_literals
 import os
 import base64
 import json
@@ -94,7 +93,7 @@ def get_gcsv1p1beta1_transcript(
     return result
 
 
-class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
+class GoogleSpeechV2:  # pylint: disable=too-few-public-methods
     """
     Class for performing speech-to-text using Google Speech V2 API for an input FLAC file.
     """
@@ -176,9 +175,9 @@ def gcsv1p1beta1_service_client(
         # https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult
         client = speech_v1p1beta1.SpeechClient()
         audio_dict = {"content": audio_data}
-        recognize_reponse = client.recognize(config, audio_dict)
+        recognize_response = client.recognize(config, audio_dict)
         result_dict = MessageToDict(
-            recognize_reponse,
+            recognize_response,
             preserving_proto_field_name=True)
 
         if not is_full_result:
@@ -189,7 +188,7 @@ def gcsv1p1beta1_service_client(
         return None
 
 
-class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
+class GCSV1P1Beta1URL:  # pylint: disable=too-few-public-methods
     """
     Class for performing Speech-to-Text
     using Google Cloud Speech-to-Text V1P1Beta1 API URL for an input FLAC file.

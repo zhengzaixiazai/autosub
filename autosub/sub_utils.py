@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines subtitle formatters used by autosub.
 """
 # Import built-in modules
-from __future__ import absolute_import, unicode_literals
 import wave
 import json
 

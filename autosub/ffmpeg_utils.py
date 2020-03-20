@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines ffmpeg command line calling functionality.
 """
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import subprocess
 import tempfile
 import re
@@ -24,14 +23,10 @@ FFMPEG_UTILS_TEXT = gettext.translation(domain=__name__,
                                         languages=[constants.CURRENT_LOCALE],
                                         fallback=True)
 
-try:
-    _ = FFMPEG_UTILS_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = FFMPEG_UTILS_TEXT.gettext
+_ = FFMPEG_UTILS_TEXT.gettext
 
 
-class SplitIntoAudioPiece(object):  # pylint: disable=too-few-public-methods
+class SplitIntoAudioPiece:  # pylint: disable=too-few-public-methods
     """
     Class for converting a region of an input audio or video file into a short-term audio file
     """

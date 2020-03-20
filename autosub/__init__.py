@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's commandline entry point functionality.
 """
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import os
 import gettext
 import sys
@@ -25,11 +24,7 @@ INIT_TEXT = gettext.translation(domain=__name__,
                                 languages=[constants.CURRENT_LOCALE],
                                 fallback=True)
 
-try:
-    _ = INIT_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = INIT_TEXT.gettext
+_ = INIT_TEXT.gettext
 
 
 def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
@@ -39,17 +34,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
     is_pause = False
 
-    try:
-        input_main = raw_input
-    except NameError:
-        input_main = input
-
+    # todo1: move into constants to support locale and dependency input
     option_parser = options.get_cmd_parser()
     if len(sys.argv) > 1:
         args = option_parser.parse_args()
     else:
         option_parser.print_help()
-        new_argv = input_main(_("\nInput args(without \"autosub\"): "))
+        new_argv = input(_("\nInput args(without \"autosub\"): "))
         args = option_parser.parse_args(shlex.split(new_argv))
         is_pause = True
 
@@ -73,7 +64,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             raise exceptions.AutosubException(_("\nAll works done."))
 
         if not args.yes:
-            input_m = input_main
+            input_m = input
         else:
             input_m = None
 
@@ -185,5 +176,5 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         print(err_msg)
 
     if is_pause:
-        input_main(_("Press Enter to exit..."))
+        input(_("Press Enter to exit..."))
     return 0

@@ -1,12 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's metadata.
 """
-# Import built-in modules
-from __future__ import unicode_literals
-
-# Any changes to the path and your own modules
 
 _ = str
 # For gettext po files

@@ -1,12 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's command line functionality.
 """
 # pylint: disable=too-many-lines
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
-
 import gettext
 import os
 import subprocess
@@ -33,11 +31,7 @@ CMDLINE_UTILS_TEXT = gettext.translation(domain=__name__,
                                          languages=[constants.CURRENT_LOCALE],
                                          fallback=True)
 
-try:
-    _ = CMDLINE_UTILS_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = CMDLINE_UTILS_TEXT.gettext
+_ = CMDLINE_UTILS_TEXT.gettext
 
 
 def list_args(args):

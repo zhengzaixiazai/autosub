@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines constants used by autosub.
 """
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import os
 import sys
 import shlex
@@ -57,6 +56,7 @@ else:
 GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
 GOOGLE_SPEECH_V2_API_URL = \
     "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"
+XFYUN_SPEECH_WEBAPI_URL = "iat-api.xfyun.cn"
 
 if multiprocessing.cpu_count() > 3:
     DEFAULT_CONCURRENCY = multiprocessing.cpu_count() >> 1
