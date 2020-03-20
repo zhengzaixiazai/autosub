@@ -7,6 +7,8 @@ Defines autosub's commandline entry point functionality.
 from __future__ import absolute_import, print_function, unicode_literals
 import os
 import gettext
+import sys
+import shlex
 
 # Import third-party modules
 import pysubs2
@@ -35,7 +37,21 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
     Run autosub as a command-line program.
     """
 
-    args = options.get_cmd_args()
+    is_pause = False
+
+    try:
+        input_main = raw_input
+    except NameError:
+        input_main = input
+
+    option_parser = options.get_cmd_parser()
+    if len(sys.argv) > 1:
+        args = option_parser.parse_args()
+    else:
+        option_parser.print_help()
+        new_argv = input_main(_("\nInput args(without \"autosub\"): "))
+        args = option_parser.parse_args(shlex.split(new_argv))
+        is_pause = True
 
     if args.https_proxy:
         os.environ['https_proxy'] = args.https_proxy
@@ -57,17 +73,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             raise exceptions.AutosubException(_("\nAll works done."))
 
         if not args.yes:
-            try:
-                input_m = raw_input
-            except NameError:
-                input_m = input
+            input_m = input_main
         else:
             input_m = None
 
         styles_list = []
-        validate_result = cmdline_utils.validate_io(args, styles_list)
+        result = cmdline_utils.validate_io(args, styles_list)
 
-        if validate_result == 0:
+        if result:
             if not constants.FFMPEG_CMD:
                 raise exceptions.AutosubException(
                     _("Error: Dependency ffmpeg"
@@ -147,23 +160,30 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                                               input_m=input_m,
                                               styles_list=styles_list)
 
-        elif validate_result == 1:
-            cmdline_utils.validate_sp_args(args)
+        else:
+            result = cmdline_utils.validate_sp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
-            cmdline_utils.sub_trans(args,
-                                    input_m=input_m,
-                                    fps=fps,
-                                    styles_list=None)
+            if result:
+                cmdline_utils.sub_trans(args,
+                                        input_m=input_m,
+                                        fps=fps,
+                                        styles_list=None)
+            else:
+                cmdline_utils.sub_conversion(
+                    args,
+                    input_m=input_m,
+                    fps=fps
+                )
+
+        raise exceptions.AutosubException(_("\nAll works done."))
 
     except KeyboardInterrupt:
         print(_("\nKeyboardInterrupt. Works stopped."))
-        return 1
     except pysubs2.exceptions.Pysubs2Error:
         print(_("\nError: pysubs2.exceptions. Check your file format."))
-        return 1
     except exceptions.AutosubException as err_msg:
         print(err_msg)
-        return 0
 
-    print(_("\nAll works done."))
+    if is_pause:
+        input_main(_("Press Enter to exit..."))
     return 0

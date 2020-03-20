@@ -34,9 +34,9 @@ except AttributeError:
     M_ = META_TEXT.gettext
 
 
-def get_cmd_args():  # pylint: disable=too-many-statements
+def get_cmd_parser():  # pylint: disable=too-many-statements
     """
-    Get command-line arguments.
+    Get command-line parser.
     """
 
     parser = argparse.ArgumentParser(
@@ -125,7 +125,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
 
     input_group.add_argument(
         '-sn', '--styles-name',
-        nargs='*', metavar=_('style-name'),
+        nargs='*', metavar=_('style_name'),
         help=_("Valid when your output format is \"ass\"/\"ssa\" "
                "and \"-sty\"/\"--styles\" is given. "
                "Adds \"ass\"/\"ssa\" styles to your events. "
@@ -513,7 +513,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-mnrs', '--min-region-size',
         metavar=_('second'),
         type=float,
-        default=constants.MIN_REGION_SIZE,
+        default=constants.DEFAULT_MIN_REGION_SIZE,
         help=_("Minimum region size. "
                "Same docs above. "
                "(arg_num = 1) (default: %(default)s)"))
@@ -522,7 +522,7 @@ def get_cmd_args():  # pylint: disable=too-many-statements
         '-mxrs', '--max-region-size',
         metavar=_('second'),
         type=float,
-        default=constants.MAX_REGION_SIZE,
+        default=constants.DEFAULT_MAX_REGION_SIZE,
         help=_("Maximum region size. "
                "Same docs above. "
                "(arg_num = 1) (default: %(default)s)"))
@@ -537,9 +537,11 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "(arg_num = 1) (default: %(default)s)"))
 
     auditok_group.add_argument(
-        '-sml', '--strict-min-length',
+        '-nsml', '--not-strict-min-length',
         action='store_true',
-        help=_("Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
+        help=_("If not input this option, "
+               "it will keep all regions strictly follow the minimum region limit. "
+               "Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
                "(arg_num = 0)"))
 
     auditok_group.add_argument(
@@ -596,4 +598,4 @@ def get_cmd_args():  # pylint: disable=too-many-statements
                "Ref: https://cloud.google.com/speech-to-text/docs/languages "
                "(arg_num = 1) (default: %(default)s)"))
 
-    return parser.parse_args()
+    return parser

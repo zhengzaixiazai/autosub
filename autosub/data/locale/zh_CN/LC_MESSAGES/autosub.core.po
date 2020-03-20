@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-04 21:37+0800\n"
+"POT-Creation-Date: 2020-03-08 21:50+0800\n"
 "PO-Revision-Date: 2020-02-03 16:38+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -37,11 +37,11 @@ msgstr ""
 "\n"
 "将短片段语音发送给Google Speech V2 API并得到识别结果。"
 
-#: autosub/core.py:237 autosub/core.py:303
+#: autosub/core.py:237 autosub/core.py:306
 msgid "Speech-to-Text: "
 msgstr "语音转文字中： "
 
-#: autosub/core.py:275 autosub/core.py:418
+#: autosub/core.py:278 autosub/core.py:424
 msgid ""
 "Error: Connection error happened too many times.\n"
 "All works done."
@@ -49,7 +49,7 @@ msgstr ""
 "错误：过多连接错误。\n"
 "做完了。"
 
-#: autosub/core.py:301
+#: autosub/core.py:304
 msgid ""
 "\n"
 "Sending short-term fragments to Google Cloud Speech V1P1Beta1 API and "
@@ -58,11 +58,11 @@ msgstr ""
 "\n"
 "将短片段语音发送给Google Cloud Speech V1P1Beta1 API并得到识别结果。"
 
-#: autosub/core.py:426
+#: autosub/core.py:432
 msgid "Receive something unexpected:"
 msgstr "收到未预期数据："
 
-#: autosub/core.py:449
+#: autosub/core.py:455
 msgid ""
 "\n"
 "Translating text from \"{0}\" to \"{1}\"."
@@ -70,24 +70,24 @@ msgstr ""
 "\n"
 "从\"{0}\"翻译为\"{1}\"。"
 
-#: autosub/core.py:499
+#: autosub/core.py:505
 msgid "Translation: "
 msgstr "翻译中： "
 
-#: autosub/core.py:562
+#: autosub/core.py:568
 msgid "Cancelling translation."
 msgstr "取消翻译。"
 
-#: autosub/core.py:635 autosub/core.py:694
+#: autosub/core.py:641 autosub/core.py:700
 msgid "Format \"{fmt}\" not supported. Use \"{default_fmt}\" instead."
 msgstr "不支持格式\"{fmt}\"。改用\"{default_fmt}\"。"
 
-#: autosub/core.py:767
+#: autosub/core.py:773
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/core.py:770
+#: autosub/core.py:776
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 

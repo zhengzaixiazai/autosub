@@ -76,6 +76,7 @@ Autosub是一个字幕自动生成工具。它能使用Auditok来自动检测语
 Autosub依赖于这些第三方的软件或者Python的site-packages。非常感谢以下这些项目的工作。
 
 - [ffmpeg](https://ffmpeg.org/)
+- [ffprobe](https://ffmpeg.org/ffprobe.html)
 - [auditok](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
 - [py-googletrans](https://github.com/ssut/py-googletrans)
@@ -95,6 +96,13 @@ Autosub依赖于这些第三方的软件或者Python的site-packages。非常感
 在autosub-0.4.0之后，所有的代码都是Python3和Python2.7兼容的。所以后面的安装指令中的Python版本你可以随便改。
 
 至于依赖的安装，如果你是通过pip来安装的autosub，那么ffmpeg和ffmpeg-normalize不会被一块儿安装，不像site-packages那样列在`setup.py`或者`requirements.txt`里面自动安装了。你需要分别安装它们。当然安装是可选的，如果你只是翻译字幕，不需要安装这两个软件。
+
+ffmpeg, ffprobe, ffmpeg-normalize需要被放在以下位置之一来让autosub检测并使用。以下代码都在[constants.py](autosub/constants.py)里。优先级按照先后顺序确定。
+
+1. 在运行程序前设置以下环境变量：`FFMPEG_PATH`，`FFPROBE_PATH`和 `FFMPEG_NORMALIZE_PATH`。它会替代环境变量`PATH`里的值。如果你不想使用`PATH`里的值，那么这会帮到你。
+2. 把它们加入环境变量`PATH`。如果使用的是包管理器进行的安装，那么就不需要关心这件事。用管理器进行安装是指使用pip安装ffmpeg-normalize或者chocolatey安装ffmpeg。
+3. 把它们放在和autosub的可执行文件的同一个目录下。
+4. 把它们放在当前命令行工作的文件夹下。
 
 至于git的安装，如果你不想通过pip的[VCS](https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support)支持来安装python包或者只是不想碰git的环境变量这些东西，你可以手动点击clone and download来下载源码并在[本地](https://pip.pypa.io/en/stable/reference/pip_install/#description)进行安装。指令如下。
 
@@ -157,8 +165,10 @@ pip install autosub
 
 建议：`Shift - 右键`是打开当前目录Powershell的快捷键。Powershell打开当前目录的exe需要输入这样的格式`.\autosub`。
 
+或者你也可以直接打开它并手动输入参数，尽管我并不建议这样做，因为效率比较低。
+
 - 发布包里没有pyinstaller后缀的是Nuitka编译的。它比pyinstaller的版本快，因为它是编译的，不同于pyinstaller只是把程序进行了打包。
-- ffmpeg和ffmpeg-normalize也在发布包内。原本ffmpeg-normalize没有独立运行的版本。这个独立运行的ffmpeg-normalize是另外构建的。代码在[这里]((https://github.com/BingLingGroup/ffmpeg-normalize))。
+- ffmpeg和ffmpeg-normalize也在发布包内。原本ffmpeg-normalize没有独立运行的版本。这个独立运行的ffmpeg-normalize是另外构建的。代码在[这里](https://github.com/BingLingGroup/ffmpeg-normalize)。
 - 如果在使用发布包时遇到任何问题，或者包的大小太大或者遇到了什么烦人的事情，你依然可以采用下方所说的通过pip的方法进行安装。
 
 或者通过choco来安装Python环境（如果你还没有），然后安装这个包。
@@ -266,7 +276,7 @@ Autosub使用Auditok来检测语音区域。通过语音区域来分割并转换
 
 - 尽管你可以输入任何你想输入的语言代码，需要指出的是如果你使用了不在清单上的语言代码但是API接受了，[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)可能会按照你的IP地址机型个性化识别，而这是不受你控制的。这是一个已知的问题，我已经在原仓库申请了[拉取请求](https://github.com/agermanidis/autosub/pull/136)。
 
-- 另外一方面，[py-googletrans](https://github.com/ssut/py-googletrans)更加严格。当它收到了一个不在它清单内的语言代码，它会直接抛出异常。当然这可以设计成一个抛出-捕获的代码块，并允许用户再次输入语言代码，不过我目前还没加入这个支持，所以不适合的翻译语言代码会终止程序运行，除非你使用前面提到的最佳匹配功能。
+- 另外一方面，[py-googletrans](https://github.com/ssut/py-googletrans)更加严格。当它收到了一个不在它清单内的语言代码，它会直接抛出异常。
 
 - 除了用户输入的部分，另外一个显著的更改是我将`-S`选项分为了两部分，一个是`-S`一个是`-SRC`。`-S`选项是给语音识别的语言代码使用的。`-SRC`则是给翻译源语言代码使用的。如果不输入`-SRC`的参数时，autosub会使用[langcodes](https://github.com/LuminosoInsight/langcodes)来匹配`-S`的参数来获得其在翻译支持的语言代码清单中的最佳匹配，尽管[py-googletrans](https://github.com/ssut/py-googletrans)可以自动检测翻译源语言。当然你可以手动配置`-SRC`选项。而`-D`还是给目标翻译语言使用的，和之前一样。
 
@@ -297,6 +307,7 @@ OUTPUT_FORMAT = {
 DEFAULT_MODE_SET = {
     'regions',
     'src',
+    'full-src',
     'dst',
     'bilingual',
     'dst-lf-src',

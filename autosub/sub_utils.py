@@ -18,7 +18,7 @@ from autosub import constants
 def sub_to_speech_regions(
         audio_wav,
         sub_file,
-        ext_max_size_ms=constants.MAX_EXT_REGION_SIZE * 1000):
+        ext_max_size_ms=constants.MAX_REGION_SIZE_LIMIT * 1000):
     """
     Give an input audio_wav file and subtitles file and generate proper speech regions.
     """
@@ -101,6 +101,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                     event = pysubs2.SSAEvent()
                     event.start = src_ssafile.events[i].start
                     event.end = src_ssafile.events[i].end
+                    event.is_comment = src_ssafile.events[i].is_comment
                     event.text = text_list[i]
                     event.style = style_name
                     dst_ssafile.events.append(event)
@@ -114,6 +115,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             text_list[i] + "\\N" + src_ssafile.events[i].text
                         event.style = style_name
@@ -125,6 +127,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             text_list[i] + \
                             "\\N{{\\r{style_name}}}".format(
@@ -142,6 +145,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             src_ssafile.events[i].text + "\\N" + text_list[i]
                         event.style = style_name
@@ -153,6 +157,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
                         event = pysubs2.SSAEvent()
                         event.start = src_ssafile.events[i].start
                         event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
                         event.text = \
                             src_ssafile.events[i].text + \
                             "\\N{{\\r{style_name}}}".format(
@@ -289,3 +294,146 @@ def assfile_to_txt_str(subtitles):
     Serialize ASSFile as a newline-delimited string.
     """
     return '\n'.join(event.text for event in subtitles.events)
+
+
+def merge_bilingual_assfile(  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        subtitles,
+        order=1):
+    """
+    Merge a bilingual subtitles file's events automatically.
+    """
+    style_events = {}
+    event_pos = {}
+
+    i = 0
+    for event in subtitles.events:
+        if event.style not in style_events:
+            style_events[event.style] = [event]
+            event_pos[event.style] = i
+        else:
+            style_events[event.style].append(event)
+        i = i + 1
+
+    sorted_events_list = sorted(style_events.values(), key=len)
+    events_1 = sorted_events_list.pop()
+    events_2 = sorted_events_list.pop()
+
+    dst_ssafile = pysubs2.SSAFile()
+    src_ssafile = pysubs2.SSAFile()
+
+    if event_pos[events_1[0].style] > event_pos[events_2[0].style] and order:
+        # destination language events are behind source language events in a bilingual subtitles
+        dst_ssafile.events = events_1
+        src_ssafile.events = events_2
+    else:
+        dst_ssafile.events = events_2
+        src_ssafile.events = events_1
+
+    dst_ssafile.sort()
+    src_ssafile.sort()
+
+    new_ssafile = pysubs2.SSAFile()
+    new_ssafile.styles = subtitles.styles
+    new_ssafile.info = subtitles.info
+
+    # default in dst-lf-src order
+    dst_length = len(dst_ssafile.events)
+    src_length = len(src_ssafile.events)
+    i = 0
+    j = 0
+
+    start = 0
+    end = 0
+
+    events_0 = []
+    while i < dst_length and j < src_length:
+        if dst_ssafile.events[i].is_comment != src_ssafile.events[j].is_comment:
+            if dst_ssafile.events[i].is_comment:
+                events_0.append(dst_ssafile.events[i])
+                i = i + 1
+                continue
+            events_0.append(src_ssafile.events[j])
+            j = j + 1
+            continue
+        if dst_ssafile.events[i].start == src_ssafile.events[j].start or \
+                dst_ssafile.events[i].end == src_ssafile.events[j].end:
+            start = dst_ssafile.events[i].start
+            end = dst_ssafile.events[i].end
+        elif dst_ssafile.events[i].start >= src_ssafile.events[j].end:
+            events_0.append(src_ssafile.events[j])
+            j = j + 1
+            continue
+        elif src_ssafile.events[j].start >= dst_ssafile.events[i].end:
+            events_0.append(dst_ssafile.events[i])
+            i = i + 1
+            continue
+        elif src_ssafile.events[j].start < dst_ssafile.events[i].start:
+            event = pysubs2.SSAEvent()
+            event.start = src_ssafile.events[j].start
+            event.end = dst_ssafile.events[i].start
+            event.is_comment = src_ssafile.events[j].is_comment
+            event.text = src_ssafile.events[j].text
+            event.style = src_ssafile.events[j].style
+            events_0.append(event)
+            start = dst_ssafile.events[i].start
+
+            if src_ssafile.events[j].end > dst_ssafile.events[i].end:
+                event = pysubs2.SSAEvent()
+                event.start = dst_ssafile.events[i].end
+                event.end = src_ssafile.events[j].end
+                event.is_comment = src_ssafile.events[j].is_comment
+                event.text = src_ssafile.events[j].text
+                event.style = src_ssafile.events[j].style
+                events_0.append(event)
+                end = dst_ssafile.events[i].end
+            else:
+                end = src_ssafile.events[j].end
+
+        elif dst_ssafile.events[i].start < src_ssafile.events[j].start:
+            event = pysubs2.SSAEvent()
+            event.start = dst_ssafile.events[i].start
+            event.end = src_ssafile.events[j].start
+            event.is_comment = dst_ssafile.events[i].is_comment
+            event.text = dst_ssafile.events[i].text
+            event.style = dst_ssafile.events[i].style
+            events_0.append(event)
+            start = src_ssafile.events[j].start
+
+            if dst_ssafile.events[i].end > src_ssafile.events[j].end:
+                event = pysubs2.SSAEvent()
+                event.start = src_ssafile.events[j].end
+                event.end = dst_ssafile.events[i].end
+                event.is_comment = dst_ssafile.events[i].is_comment
+                event.text = dst_ssafile.events[i].text
+                event.style = dst_ssafile.events[i].style
+                events_0.append(event)
+                end = src_ssafile.events[j].end
+            else:
+                end = dst_ssafile.events[i].end
+
+        event = pysubs2.SSAEvent()
+        event.start = start
+        event.end = end
+        event.is_comment = dst_ssafile.events[i].is_comment
+        event.text = \
+            dst_ssafile.events[i].text + \
+            "\\N{{\\r{style_name}}}".format(
+                style_name=src_ssafile.events[j].style) + \
+            src_ssafile.events[j].text
+        event.style = dst_ssafile.events[i].style
+        new_ssafile.events.append(event)
+        i = i + 1
+        j = j + 1
+
+    if i < dst_length:
+        new_ssafile.events = new_ssafile.events + events_0 + dst_ssafile.events[i:]
+    else:
+        new_ssafile.events = new_ssafile.events + events_0 + src_ssafile.events[j:]
+
+    for events in sorted_events_list:
+        if event_pos[events[0].style] > event_pos[new_ssafile.events[0].style]:
+            new_ssafile.events = new_ssafile.events + events
+        else:
+            new_ssafile.events = events + new_ssafile.events
+
+    return new_ssafile

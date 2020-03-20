@@ -27,8 +27,6 @@ SUPPORTED_LOCALE = {
 }
 # Ref: https://www.gnu.org/software/gettext/manual/html_node/Locale-Names.html#Locale-Names
 
-ENCODING = 'UTF-8'
-
 if getattr(sys, 'frozen', False):
     # If the application is run as a bundle, the pyInstaller bootloader
     # extends the sys module by a flag frozen=True and sets the app
@@ -66,11 +64,12 @@ else:
     DEFAULT_CONCURRENCY = 2
 
 DEFAULT_SRC_LANGUAGE = 'en-US'
-DEFAULT_ENERGY_THRESHOLD = 45
-MAX_REGION_SIZE = 6.0
-MIN_REGION_SIZE = 0.5
-DEFAULT_CONTINUOUS_SILENCE = 0.3
-MAX_EXT_REGION_SIZE = 10
+DEFAULT_ENERGY_THRESHOLD = 50
+DEFAULT_MAX_REGION_SIZE = 6.0
+DEFAULT_MIN_REGION_SIZE = 0.8
+MIN_REGION_SIZE_LIMIT = 0.6
+MAX_REGION_SIZE_LIMIT = 12.0
+DEFAULT_CONTINUOUS_SILENCE = 0.2
 # Maximum speech to text region length in milliseconds
 # when using external speech region control
 
@@ -402,10 +401,20 @@ def get_cmd(program_name):
     return ""
 
 
-FFMPEG_CMD = get_cmd("ffmpeg")
-FFPROBE_CMD = get_cmd("ffprobe")
-FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
+if 'FFMPEG_PATH' in os.environ:
+    FFMPEG_CMD = os.environ['FFMPEG_PATH']
+else:
+    FFMPEG_CMD = get_cmd("ffmpeg")
 
+if 'FFPROBE_PATH' in os.environ:
+    FFPROBE_CMD = os.environ['FFPROBE_PATH']
+else:
+    FFPROBE_CMD = get_cmd("ffprobe")
+
+if 'FFMPEG_NORMALIZE_PATH' in os.environ:
+    FFMPEG_NORMALIZE_CMD = os.environ['FFMPEG_NORMALIZE_PATH']
+else:
+    FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
 
 DEFAULT_AUDIO_PRCS = [
     FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\

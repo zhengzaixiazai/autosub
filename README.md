@@ -76,6 +76,7 @@ This repo has a different license from [the original repo](https://github.com/ag
 Autosub depends on these third party softwares or Python site-packages. Much appreciation to all of these projects.
 
 - [ffmpeg](https://ffmpeg.org/)
+- [ffprobe](https://ffmpeg.org/ffprobe.html)
 - [auditok](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
 - [py-googletrans](https://github.com/ssut/py-googletrans)
@@ -95,6 +96,13 @@ Except the PyPI version, others include non-original codes not from the original
 After autosub-0.4.0, all of the codes is compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
 
 About the dependencies installation. If you install autosub by pip, ffmpeg and ffmpeg-normalize won't be installed together not like the Python site-packages already listed on the `setup.py` or `requirements.txt`. You need to install them separately. But of course they are optional. They aren't necessary if you only use autosub to translate your subtitles.
+
+ffmpeg, ffprobe, ffmpeg-normalize need to be put on one of these places to let the autosub detect and use them. The following codes are in the [constants.py](autosub/constants.py). Priority is determined in order.
+
+1. Set the following environment variables before running the program: `FFMPEG_PATH`, `FFPROBE_PATH` and `FFMPEG_NORMALIZE_PATH`. It will override the ones located at the environment variable `PATH`. This will be helpful if you don't want to use the one in the `PATH`.
+2. Add them to the environment variable `PATH`. No need to worry about if using package manager to install such as using pip to install ffmpeg-normalize and using chocolatey to install ffmpeg.
+3. Add them to the same directory as the autosub executable.
+4. Add them to the current command line working directory.
 
 About the git installation. If you don't want to install git to use pip [VCS](https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support) support to install python package or just confused with git environment variables, you can manually click that clone and download button to download the source code and use pip to install the source code [locally](https://pip.pypa.io/en/stable/reference/pip_install/#description) by input these commands.
 
@@ -156,6 +164,8 @@ Recommend using `python3` and `python-pip3` instead of `python` and `python-pip`
 You can just go to the [release page](https://github.com/BingLingGroup/autosub/releases) and download the latest release for Windows. The click-and-run batches are also in the package. You can manually edit by using Notepad++. Or add the executable files' directory to system environment variables so you can use it as a universal command everywhere in the system if permission is Ok.
 
 Tips: `Shift - Right Click` is the keyboard shortcut for opening a Powershell on current directory. To open an exe at current directory, the format is like `.\autosub`.
+
+Or you can just directly open it and input the args manually though I don't recommend doing this due to its less efficiency.
 
 - The one without pyinstaller suffix is compiled by Nuitka. It's faster than the pyinstaller due to its compiling feature different from pyinstaller which just bundles the application.
 - ffmpeg and ffmpeg-normalize are also in the package. The original ffmpeg-normalize doesn't have a standalone version. The standalone version of ffmpeg-normalize is built separately. Codes are [here](https://github.com/BingLingGroup/ffmpeg-normalize).
@@ -260,13 +270,13 @@ To solve this problem, autosub uses [langcodes](https://github.com/LuminosoInsig
 
 To manually match or see the full list of the lang codes, run the utility with the argument `-lsc`/`--list-speech-codes` and `-ltc`/ `--list-translation-codes`. Or open [constants.py](autosub/constants.py) and check.
 
-To get a subtitles first line language, you can use `-dsl` to detect.
+To get the language of the first line of the subtitles file, you can use `-dsl` to detect.
 
 - Currently, autosub allows to send the lang codes not from the `--list-speech-codes`, which means in this case the program won't stop.
 
 - Though you can input the speech lang code whatever you want, need to point out that if not using the codes on the list but somehow the API accept it, [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2) recognizes your audio in the ways that depend on your IP address which is uncontrollable by yourself. This is a known issue and I ask for a [pull request](https://github.com/agermanidis/autosub/pull/136) in the original repo.
 
-- On the other hand, [py-googletrans](https://github.com/ssut/py-googletrans) is stricter. When it receive a lang code not on its list, it will throw an exception. Of course it can be designed as a throw-catch code block and ask user to input once again but currently I don't add this support so an improper translation lang code input will stop the program running unless you use the best match method mentioned above.
+- On the other hand, [py-googletrans](https://github.com/ssut/py-googletrans) is stricter. When it receive a lang code not on its list, it will throw an exception and stop translation.
 
 - Apart from the user input, another notable change is I split the `-S` option into two parts, `-S` and `-SRC`. `-S` option is for speech recognition lang code. `-SRC` is for translation source language. When not offering the arg of `-SRC`, autosub will automatically match the `-S` arg by using [langcodes](https://github.com/LuminosoInsight/langcodes) and get a best-match lang code for translation source language though [py-googletrans](https://github.com/ssut/py-googletrans) can auto-detect source language. Of course you can manually specify one by input `-SRC` option. `-D` is for translation destination language, still the same as before.
 

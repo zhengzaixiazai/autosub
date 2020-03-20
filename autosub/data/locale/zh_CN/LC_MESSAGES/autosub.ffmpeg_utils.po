@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-03 21:36+0800\n"
+"POT-Creation-Date: 2020-03-19 10:17+0800\n"
 "PO-Revision-Date: 2020-02-03 21:37+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -47,22 +47,22 @@ msgstr ""
 "\n"
 "使用ffprobe来检查转换结果。"
 
-#: autosub/ffmpeg_utils.py:174
+#: autosub/ffmpeg_utils.py:173
 msgid ""
 "Warning: Dependency ffmpeg-normalize not found on this machine. Try default "
 "method."
 msgstr ""
 "警告：依赖ffmpeg-normalize未在这台电脑上找到。尝试默认的方法去转换格式。"
 
-#: autosub/ffmpeg_utils.py:186
+#: autosub/ffmpeg_utils.py:185
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/ffmpeg_utils.py:189
+#: autosub/ffmpeg_utils.py:188
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 
-#: autosub/ffmpeg_utils.py:206 autosub/ffmpeg_utils.py:238
+#: autosub/ffmpeg_utils.py:205 autosub/ffmpeg_utils.py:237
 msgid "Audio pre-processing failed. Try default method."
 msgstr "音频预处理失败。尝试默认的方法去转换格式。"
