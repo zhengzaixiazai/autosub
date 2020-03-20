@@ -11,28 +11,34 @@
 - [未发布](#未发布)
   - [添加](#添加未发布)
   - [改动](#修改未发布)
+- [0.5.6-alpha - 2020-03-20](#056-alpha---2020-03-20)
+  - [添加](#添加056-alpha)
+  - [即将删除](#即将删除056-alpha)
+  - [修复](#修复056-alpha)
 - [0.5.5-alpha - 2020-03-04](#055-alpha---2020-03-04)
   - [添加](#添加055-alpha)
-  - [改动](#改动055-alpha)
+  - [修复](#修复055-alpha)
 - [0.5.4-alpha - 2020-01-31](#054-alpha---2020-01-31)
   - [添加](#添加054-alpha)
-  - [改动](#改动054-alpha)
+  - [删除](#删除054-alpha)
+  - [修复](#修复054-alpha)
 - [0.5.3-alpha - 2019-12-30](#053-alpha---2019-12-30)
-  - [改动](#改动053-alpha)
+  - [修复](#修复053-alpha)
 - [0.5.2-alpha - 2019-11-05](#052-alpha---2019-11-05)
   - [添加](#添加052-alpha)
-  - [改动](#改动052-alpha)
+  - [修复](#修复052-alpha)
 - [0.5.1-alpha - 2019-08-02](#051-alpha---2019-08-02)
   - [添加](#添加051-alpha)
-  - [改动](#改动051-alpha)
+  - [修复](#修复051-alpha)
 - [0.5.0-alpha - 2019-07-27](#050-alpha---2019-07-27)
   - [添加](#添加050-alpha)
   - [改动](#改动050-alpha)
+  - [修复](#修复050-alpha)
 - [0.4.1-alpha - 2019-07-11](#041-alpha---2019-07-11)
   - [添加](#添加041-alpha)
   - [改动](#改动041-alpha)
 - [0.4.0-alpha - 2019-02-17](#040-alpha---2019-02-17)
-  - [改动](#改动040-alpha)
+  - [修复](#修复040-alpha)
 
 点击上箭头以返回目录。
 
@@ -40,11 +46,21 @@
 
 #### 添加(未发布)
 
+#### 改动(未发布)
+
+### [0.5.6-alpha] - 2020-03-20
+
+#### 添加(0.5.6-alpha)
+
 - 添加额外的环境变量检查在查找依赖时。[issue #91](https://github.com/BingLingGroup/autosub/issues/91)
 - 添加无参数启动时的请求输入参数解析功能。[issue #92](https://github.com/BingLingGroup/autosub/issues/92)
 - 添加字幕处理功能，当不输入`-SRC`选项时。
 
-#### 改动(未发布)
+#### 即将删除(0.5.6-alpha)
+
+- 即将删除Python 2.7支持。
+
+#### 修复(0.5.6-alpha)
 
 - 修复Google Speech-to-Text API空结果返回bug。[issue #89](https://github.com/BingLingGroup/autosub/issues/89)
 - 修改选项`-sml`为`-nsml`。
@@ -59,11 +75,13 @@
 - 添加[Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)识别错误的异常。
 - 添加Nuitka兼容性代码，使得Nuitka编译版在使用Google Cloud服务账号凭据时终止运行。[Nuitka pkg_resources.DistributionNotFound错误](https://github.com/Nuitka/Nuitka/issues/146)
 
-#### 改动(0.5.5-alpha)
+#### 修复(0.5.5-alpha)
 
 - 修复部分高内存占用，通过终结子进程，减少默认多进程数量，使用`gc.collect(0)`。[issue #67](https://github.com/BingLingGroup/autosub/issues/67)，[issue #74](https://github.com/BingLingGroup/autosub/issues/74)
 - 修复依赖查找问题。[issue #82](https://github.com/BingLingGroup/autosub/issues/82)
 - 修复ass标签翻译问题。[issue #79](https://github.com/BingLingGroup/autosub/issues/79)
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.4-alpha] - 2020-01-31
 
@@ -72,16 +90,19 @@
 - 添加Google Cloud Speech-to-Text基础支持。[issue #10](https://github.com/BingLingGroup/autosub/issues/10)
 - 添加更多格式的双语字幕输出支持。[issue #72](https://github.com/BingLingGroup/autosub/issues/72)
 
-#### 改动(0.5.4-alpha)
+#### 删除(0.5.4-alpha)
+
+- 删除gtransv2支持。
+
+#### 修复(0.5.4-alpha)
 
 - 修复输入是字幕文件时的输出格式限制。
-- 删除gtransv2支持。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.3-alpha] - 2019-12-30
 
-#### 改动(0.5.3-alpha)
+#### 修复(0.5.3-alpha)
 
 - 修复ffmpeg参数导致的过长转码时间问题。[pull request #66](https://github.com/BingLingGroup/autosub/pull/66)
 - 修复Auditok选项问题。[issue #70](https://github.com/BingLingGroup/autosub/issues/70)
@@ -95,7 +116,7 @@
 
 - 添加问题模板。
 
-#### 改动(0.5.2-alpha)
+#### 修复(0.5.2-alpha)
 
 - 修复最后一排空翻译丢行问题。[issue #62](https://github.com/BingLingGroup/autosub/issues/62)
 - 修复当前运行路径的可执行文件检测问题。
@@ -108,7 +129,7 @@
 
 - 添加翻译源语言代码自动匹配功能。
 
-#### 改动(0.5.1-alpha)
+#### 修复(0.5.1-alpha)
 
 - 修复方法list_to_googletrans的列表越界bug。[issue #48](https://github.com/BingLingGroup/autosub/issues/48)
 - 修复unix subprocess.check_output的兼容性问题。[issue #47](https://github.com/BingLingGroup/autosub/issues/47)
@@ -163,13 +184,16 @@
 - 修改内部音频处理的时间单位为毫秒。[issue #23](https://github.com/BingLingGroup/autosub/issues/23)
 - 修改内部时间轴/分句处理为auditok。[issue #27](https://github.com/BingLingGroup/autosub/issues/27)
 - 重构内部函数generate_subtitles为3个独立的部分。[issue #24](https://github.com/BingLingGroup/autosub/issues/24)
+- 重构内部函数api_gen_text为两部分。一个是speech_to_text。另一个是text_translation。[issue #33](https://github.com/BingLingGroup/autosub/issues/33)
+- 重构txt输出，现在可以用txt输出时间码。
+- 重构方法list_to_sub_str。[issue #37](https://github.com/BingLingGroup/autosub/issues/37)
+
+#### 修复(0.5.0-alpha)
+
 - [issue #8](https://github.com/BingLingGroup/autosub/issues/8)
   - 修复python3兼容性问题。
   - 修复Nuitka构建问题（Nuitka更新至0.6.4后解决，环境Anaconda2 python3.5）。
-- 重构内部函数api_gen_text为两部分。一个是speech_to_text。另一个是text_translation。[issue #33](https://github.com/BingLingGroup/autosub/issues/33)
-- 重构txt输出，现在可以用txt输出时间码。
 - 修复vtt输出模块替换所有逗号到句号的问题。
-- 重构方法list_to_sub_str。[issue #37](https://github.com/BingLingGroup/autosub/issues/37)
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
@@ -183,14 +207,17 @@
 
 #### 改动(0.4.1-alpha)
 
-- 修复因不确切的语言代码导致的错误识别结果。[agermanidis/autosub pull request #136](https://github.com/agermanidis/autosub/pull/136)
 - 修改文档。
+
+#### 修复(0.4.1-alpha)
+
+- 修复因不确切的语言代码导致的错误识别结果。[agermanidis/autosub pull request #136](https://github.com/agermanidis/autosub/pull/136)
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.4.0-alpha] - 2019-02-17
 
-#### 改动(0.4.0-alpha)
+#### 修复(0.4.0-alpha)
 
 - 修复多个问题。[agermanidis/autosub pull request #128](https://github.com/agermanidis/autosub/pull/128) by [@iWangJiaxiang](https://github.com/iWangJiaxiang)
   - 修复Windows上ffmpeg依赖不存在问题。
@@ -200,7 +227,8 @@
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
-[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.5-alpha...HEAD
+[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.6-alpha...HEAD
+[0.5.6-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.5-alpha...0.5.6-alpha
 [0.5.5-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...0.5.5-alpha
 [0.5.4-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...0.5.4-alpha
 [0.5.3-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.2-alpha...0.5.3-alpha
