@@ -4,6 +4,7 @@
 Defines Xun Fei Yun API used by autosub.
 """
 # Import built-in modules
+import os
 import datetime
 import hashlib
 import base64
@@ -15,6 +16,7 @@ from email.utils import formatdate
 import time
 from datetime import datetime
 from time import mktime
+import gettext
 
 # Import third-party modules
 import websocket
@@ -23,6 +25,14 @@ import _thread
 # Any changes to the path and your own modules
 from autosub import constants
 from autosub import exceptions
+
+
+XFYUN_API_TEXT = gettext.translation(domain=__name__,
+                                     localedir=constants.LOCALE_PATH,
+                                     languages=[constants.CURRENT_LOCALE],
+                                     fallback=True)
+
+_ = XFYUN_API_TEXT.gettext
 
 
 def create_xfyun_url(
@@ -97,12 +107,14 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
                  api_secret,
                  api_address,
                  business_args,
+                 is_keep=False,
                  is_full_result=False):
         self.common_args = {"app_id": app_id}
         self.api_key = api_key
         self.api_secret = api_secret
         self.api_address = api_address
         self.business_args = business_args
+        self.is_keep = is_keep
         self.is_full_result = is_full_result
         self.data = {"status": 0,
                      "format": "audio/L16;rate=16000",
@@ -130,6 +142,8 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
             on_close=lambda web_socket: self.on_close(web_socket),
             on_open=lambda web_socket: self.on_open(web_socket))
         self.web_socket_app.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+        if not self.is_keep:
+            os.remove(filename)
         if self.is_full_result:
             return self.result_list
         return self.transcript
@@ -153,11 +167,11 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
         """
         raise exceptions.SpeechToTextException(error)
 
-    def on_close(self, web_socket):  # pylint: disable=no-self-use
+    def on_close(self, web_socket):  # pylint: disable=no-self-use, unused-argument
         """
         Process the connection close from WebSocket.
         """
-        raise exceptions.XfyunWebSocketClosedException("")
+        return
 
     def on_open(self, web_socket):
         """
@@ -216,7 +230,8 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
 #         business_args={"language": "zh_cn",
 #                        "domain": "iat",
 #                        "accent": "mandarin"},
-#         is_full_result=False)
+#         is_full_result=False,
+#         is_keep=True)
 #
 #     print(web_socket_result_obj(filename=r"C:\userfile\Video\autosub\test\temp.pcm"))
 #     time2 = datetime.now()

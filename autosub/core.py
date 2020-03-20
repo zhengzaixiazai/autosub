@@ -20,6 +20,7 @@ import wcwidth
 
 # Any changes to the path and your own modules
 from autosub import google_api
+from autosub import xfyun_api
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
@@ -402,6 +403,93 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                         text_list.append("")
                     pbar.update(i)
 
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+
+    except (KeyboardInterrupt, AttributeError) as error:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+
+        if error == AttributeError:
+            print(
+                _("Error: Connection error happened too many times.\nAll works done."))
+
+        return None
+
+    except exceptions.SpeechToTextException as err_msg:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+        print(_("Receive something unexpected:"))
+        print(err_msg)
+        return None
+
+    return text_list
+
+
+def xfyun_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements, too-many-nested-blocks
+        audio_fragments,
+        config,
+        concurrency=constants.DEFAULT_CONCURRENCY,
+        is_keep=False,
+        result_list=None):
+    """
+    Give a list of short-term audio fragment files
+    and generate text_list from Google cloud speech-to-text V1P1Beta1 api.
+    """
+
+    text_list = []
+
+    if "api_address" in config:
+        api_address = config["api_address"]
+    else:
+        api_address = constants.XFYUN_SPEECH_WEBAPI_URL
+
+    pool = multiprocessing.Pool(concurrency)
+
+    print(_("\nSending short-term fragments to Xun Fei Yun WebSocket API"
+            " and getting result."))
+    widgets = [_("Speech-to-Text: "),
+               progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(audio_fragments)).start()
+
+    try:
+        recognizer = xfyun_api.XfyunWebSocketAPI(
+            app_id=config["app_id"],
+            api_key=config["api_key"],
+            api_secret=config["api_secret"],
+            api_address=api_address,
+            business_args=config["business"],
+            is_keep=is_keep,
+            is_full_result=result_list is not None)
+
+        # get transcript
+        if result_list is None:
+            for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                pbar.update(i)
+        # get full result and transcript
+        else:
+            for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
+                if result:
+                    result_list.append(result)
+                    transcript = ""
+                    for item in result:
+                        transcript = transcript + xfyun_api.get_xfyun_transcript(item)
+                    if transcript:
+                        text_list.append(transcript)
+                        continue
+                else:
+                    result_list.append("")
+                text_list.append("")
+                pbar.update(i)
         pbar.finish()
         pool.terminate()
         pool.join()

@@ -40,9 +40,3 @@ class SpeechToTextException(AutosubException):
     """
     Raised when speech-to-text failed.
     """
-
-
-class XfyunWebSocketClosedException(AutosubException):
-    """
-    Raised when xfyun speech-to-text websocket closed.
-    """

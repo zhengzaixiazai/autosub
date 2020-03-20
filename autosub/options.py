@@ -246,17 +246,20 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         '-sapi', '--speech-api',
         metavar=_('API_code'),
         default='gsv2',
+        choices=["gsv2", "gcsv1", "xfyun"],
         help=_("Choose which Speech-to-Text API to use. "
                "Currently support: "
                "gsv2: Google Speech V2 (https://github.com/gillesdemey/google-speech-v2). "
                "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
                "(https://cloud.google.com/speech-to-text/docs). "
+               "xfyun: Xun Fei Yun Speech-to-Text WebSocket API "
+               "(https://www.xfyun.cn/doc/asr/voicedictation/API.html)."
                "(arg_num = 1) (default: %(default)s)"))
 
     speech_group.add_argument(
         '-skey', '--speech-key',
         metavar='key',
-        help=_("The API key for Speech-to-Text API. (arg_num = 1) "
+        help=_("The API key for Google Speech-to-Text API. (arg_num = 1) "
                "Currently support: "
                "gsv2: The API key for gsv2. (default: Free API key) "
                "gcsv1: The API key for gcsv1. "
@@ -279,6 +282,8 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "https://googleapis.dev/python/speech/latest"
                "/gapic/v1/types.html"
                "#google.cloud.speech_v1.types.RecognitionConfig "
+               "xfyun: Xun Fei Yun Speech-to-Text WebSocket API "
+               "(https://console.xfyun.cn/services/iat). "
                "If arg_num is 0, use const path. "
                "(arg_num = 0 or 1) (const: %(const)s)")
     )
@@ -288,7 +293,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         metavar='float',
         type=float,
         default=0.0,
-        help=_("API response for text confidence. "
+        help=_("Google Speech-to-Text API response for text confidence. "
                "A float value between 0 and 1. "
                "Confidence bigger means the result is better. "
                "Input this argument will drop any result below it. "

@@ -254,49 +254,87 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
                 config_dict = json.load(config_file)
             except ValueError:
                 raise exceptions.AutosubException(
-                    _("Error: Can't decode config file \"{filename}\".").format(
+                    _("Error: Can't decode speech config file \"{filename}\".").format(
                         filename=args.speech_config))
     else:
         raise exceptions.AutosubException(
-            _("Error: Config file \"{filename}\" doesn't exist.").format(
+            _("Error: Speech config file \"{filename}\" doesn't exist.").format(
                 filename=args.speech_config))
 
-    if "encoding" in config_dict and config_dict["encoding"]:
-        # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
-        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-        if config_dict["encoding"] == "FLAC":
-            args.api_suffix = ".flac"
-        elif config_dict["encoding"] == "MP3":
-            args.api_suffix = ".mp3"
-        elif config_dict["encoding"] == "LINEAR16":
-            args.api_suffix = ".wav"
-        elif config_dict["encoding"] == "OGG_OPUS":
-            args.api_suffix = ".ogg"
-    else:
-        # it's necessary to set default encoding
-        config_dict["encoding"] = core.extension_to_encoding(args.api_suffix)
+    if args.speech_api == "gcsv1":
+        if "encoding" in config_dict and config_dict["encoding"]:
+            # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
+            # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+            if config_dict["encoding"] == "FLAC":
+                args.api_suffix = ".flac"
+            elif config_dict["encoding"] == "MP3":
+                args.api_suffix = ".mp3"
+            elif config_dict["encoding"] == "LINEAR16":
+                args.api_suffix = ".wav"
+            elif config_dict["encoding"] == "OGG_OPUS":
+                args.api_suffix = ".ogg"
+        else:
+            # it's necessary to set default encoding
+            config_dict["encoding"] = core.extension_to_encoding(args.api_suffix)
 
-    # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
-    # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
-    # In practice, the client API only accept the Snake case naming variable
-    # but the URL API accept the both
-    if "sample_rate_hertz" in config_dict and config_dict["sample_rate_hertz"]:
-        args.api_sample_rate = config_dict["sample_rate_hertz"]
-    elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
-        args.api_sample_rate = config_dict["sampleRateHertz"]
-    else:
-        # it's necessary to set sample_rate_hertz from option --api-sample-rate
-        config_dict["sample_rate_hertz"] = args.api_sample_rate
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
+        # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
+        # In practice, the client API only accept the Snake case naming variable
+        # but the URL API accept the both
+        if "sample_rate_hertz" in config_dict and config_dict["sample_rate_hertz"]:
+            args.api_sample_rate = config_dict["sample_rate_hertz"]
+        elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
+            args.api_sample_rate = config_dict["sampleRateHertz"]
+        else:
+            # it's necessary to set sample_rate_hertz from option --api-sample-rate
+            config_dict["sample_rate_hertz"] = args.api_sample_rate
 
-    if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
-        args.api_audio_channel = config_dict["audio_channel_count"]
-    elif "audioChannelCount" in config_dict and config_dict["audioChannelCount"]:
-        args.api_audio_channel = config_dict["audioChannelCount"]
+        if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
+            args.api_audio_channel = config_dict["audio_channel_count"]
+        elif "audioChannelCount" in config_dict and config_dict["audioChannelCount"]:
+            args.api_audio_channel = config_dict["audioChannelCount"]
 
-    if "language_code" in config_dict and config_dict["language_code"]:
-        args.speech_language = config_dict["language_code"]
-    elif "languageCode" in config_dict and config_dict["languageCode"]:
-        args.speech_language = config_dict["languageCode"]
+        if "language_code" in config_dict and config_dict["language_code"]:
+            args.speech_language = config_dict["language_code"]
+        elif "languageCode" in config_dict and config_dict["languageCode"]:
+            args.speech_language = config_dict["languageCode"]
+
+    elif args.speech_api == "xfyun":
+        args.api_suffix = ".pcm"
+        args.api_sample_rate = 16000
+        if "business" not in config_dict:
+            config_dict["business"] = {
+                "language": "zh_cn",
+                "domain": "iat",
+                "accent": "mandarin"}
+
+        if "APPID" in config_dict:
+            config_dict["app_id"] = config_dict["APPID"]
+        elif "app_id" not in config_dict:
+            raise exceptions.AutosubException(
+                _("Error: No \"app_id\" found in speech config file \"{filename}\"."
+                  ).format(filename=args.speech_config))
+
+        if "APIKey" in config_dict:
+            config_dict["api_key"] = config_dict["APIKey"]
+        elif "api_key" not in config_dict:
+            raise exceptions.AutosubException(
+                _("Error: No \"api_key\" found in speech config file \"{filename}\"."
+                  ).format(filename=args.speech_config))
+
+        if "APISecret" in config_dict:
+            config_dict["api_secret"] = config_dict["APISecret"]
+        elif "api_secret" not in config_dict:
+            raise exceptions.AutosubException(
+                _("Error: No \"api_secret\" found in speech config file \"{filename}\"."
+                  ).format(filename=args.speech_config))
+
+        if "language" not in config_dict["business"]:
+            raise exceptions.AutosubException(
+                _("Error: No \"language\" found in speech config file \"{filename}\"."
+                  ).format(filename=args.speech_config))
+
+        args.speech_language = config_dict["business"]["language"]
 
     args.speech_config = config_dict
 
@@ -340,9 +378,11 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                 raise exceptions.AutosubException(
                     _("Error: The arg of \"-mnc\"/\"--min-confidence\" isn't legal."))
 
-        else:
-            raise exceptions.AutosubException(
-                _("Error: Wrong API code."))
+        elif args.speech_api == "xfyun":
+            if not args.speech_config:
+                raise exceptions.AutosubException(
+                    _("Error: You must provide \"-sconf\", \"--speech-config\" option "
+                      "when using Xun Fei Yun API."))
 
         if args.dst_language is None:
             print(_("Translation destination language not provided. "
@@ -1119,6 +1159,15 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     print(_("No available GOOGLE_APPLICATION_CREDENTIALS. "
                             "Use \"-sa\"/\"--service-account\" to set one."))
                     text_list = None
+
+        elif args.speech_api == "xfyun":
+            # Xun Fei Yun Speech-to-Text WebSocket API
+            text_list = core.xfyun_to_text(
+                audio_fragments=audio_fragments,
+                config=args.speech_config,
+                concurrency=constants.DEFAULT_CONCURRENCY,
+                is_keep=False,
+                result_list=result_list)
         else:
             text_list = None
 

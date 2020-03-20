@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-01-31 16:05+0800\n"
+"POT-Creation-Date: 2020-03-20 20:42+0800\n"
 "PO-Revision-Date: 2020-01-31 16:06+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,11 +17,11 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.2.4\n"
 
-#: autosub/metadata.py:16
+#: autosub/metadata.py:12
 msgid "Auto-generate subtitles for video/audio/subtitles file."
 msgstr "为视频/音频/字幕文件自动生成字幕。"
 
-#: autosub/metadata.py:18
+#: autosub/metadata.py:14
 msgid ""
 "Autosub is an automatic subtitles generating utility. It can detect speech "
 "regions automatically by using Auditok, split the audio files according to "
@@ -29,5 +29,5 @@ msgid ""
 "translate the subtitles' text by using py-googletrans."
 msgstr ""
 "Autosub是一个字幕自动生成工具。它能使用Auditok来自动检测语音区域，通过ffmpeg"
-"根据语音区域来切割音频，通过多种API将语音转为文字，以及通过py-googletrans将"
-"字幕文本翻译。"
+"根据语音区域来切割音频，通过多种API将语音转为文字，以及通过py-googletrans将字"
+"幕文本翻译。"

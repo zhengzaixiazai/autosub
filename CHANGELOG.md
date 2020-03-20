@@ -49,6 +49,8 @@ Click up arrow to go back to TOC.
 
 #### Added(Unreleased)
 
+- Add support for Xun Fei Yun Speech-to-Text WebSocket API.
+
 #### Changed(Unreleased)
 
 ### [0.5.6-alpha] - 2020-03-20

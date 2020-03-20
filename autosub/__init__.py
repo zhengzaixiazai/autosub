@@ -143,6 +143,12 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         args.audio_split_cmd.replace(
                             "-vn",
                             "-vn -c:a libopus")
+                elif args.api_suffix == ".pcm":
+                    # raw pcm
+                    args.audio_split_cmd = \
+                        args.audio_split_cmd.replace(
+                            "-vn",
+                            "-vn -c:a pcm_s16le -f s16le")
 
             cmdline_utils.validate_aovp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)

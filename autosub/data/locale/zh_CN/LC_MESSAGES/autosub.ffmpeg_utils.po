@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-19 10:17+0800\n"
+"POT-Creation-Date: 2020-03-20 20:42+0800\n"
 "PO-Revision-Date: 2020-02-03 21:37+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,12 +17,12 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.2.4\n"
 
-#: autosub/ffmpeg_utils.py:98
+#: autosub/ffmpeg_utils.py:93
 msgid ""
 "Error: ffmpeg can't split your file. Check your audio processing options."
 msgstr "错误：ffmpeg无法分割你的文件。检查一下你的音频处理选项。"
 
-#: autosub/ffmpeg_utils.py:122
+#: autosub/ffmpeg_utils.py:117
 msgid ""
 "ffprobe can't get video fps.\n"
 "It is necessary when output is \".sub\"."
@@ -30,16 +30,16 @@ msgstr ""
 "ffprobe无法获取到视频的帧率。\n"
 "当输出格式是\".sub\"时，需要获取帧率。"
 
-#: autosub/ffmpeg_utils.py:125
+#: autosub/ffmpeg_utils.py:120
 msgid ""
 "Input your video fps. Any illegal input will regard as \".srt\" instead.\n"
 msgstr "输入你视频的帧率。任何非法的值会被当作\".srt\"格式处理。\n"
 
-#: autosub/ffmpeg_utils.py:132
+#: autosub/ffmpeg_utils.py:127
 msgid "Use \".srt\" instead."
 msgstr "改用\".srt\"格式。"
 
-#: autosub/ffmpeg_utils.py:145
+#: autosub/ffmpeg_utils.py:140
 msgid ""
 "\n"
 "Use ffprobe to check conversion result."
@@ -47,22 +47,22 @@ msgstr ""
 "\n"
 "使用ffprobe来检查转换结果。"
 
-#: autosub/ffmpeg_utils.py:173
+#: autosub/ffmpeg_utils.py:168
 msgid ""
 "Warning: Dependency ffmpeg-normalize not found on this machine. Try default "
 "method."
 msgstr ""
 "警告：依赖ffmpeg-normalize未在这台电脑上找到。尝试默认的方法去转换格式。"
 
-#: autosub/ffmpeg_utils.py:185
+#: autosub/ffmpeg_utils.py:180
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/ffmpeg_utils.py:188
+#: autosub/ffmpeg_utils.py:183
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 
-#: autosub/ffmpeg_utils.py:205 autosub/ffmpeg_utils.py:237
+#: autosub/ffmpeg_utils.py:200 autosub/ffmpeg_utils.py:232
 msgid "Audio pre-processing failed. Try default method."
 msgstr "音频预处理失败。尝试默认的方法去转换格式。"
