@@ -41,8 +41,10 @@
      - 6.1.4 [语音转录为字幕](#语音转录为字幕)
        - 6.1.4.1 [Google Speech V2](#google-speech-v2)
        - 6.1.4.2 [Google Cloud Speech-to-Text](#google-cloud-speech-to-text)
-       - 6.1.4.3 [语音识别配置](#语音识别配置)
+       - 6.1.4.3 [Google语音识别配置](#Google语音识别配置)
        - 6.1.4.4 [输出API完整响应](#输出API完整响应)
+       - 6.1.4.5 [讯飞云语音识别配置](#讯飞云语音识别配置)
+       - 6.1.4.6 [百度语音识别配置](#百度语音识别配置)
      - 6.1.5 [翻译字幕](#翻译字幕)
    - 6.2 [选项](#选项)
    - 6.3 [国际化](#国际化)
@@ -79,13 +81,16 @@ Autosub依赖于这些第三方的软件或者Python的site-packages。非常感
 - [ffprobe](https://ffmpeg.org/ffprobe.html)
 - [auditok](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
-- [py-googletrans](https://github.com/ssut/py-googletrans)
+- [wcwidth](https://github.com/jquast/wcwidth)
 - [langcodes](https://github.com/LuminosoInsight/langcodes)
+- [progressbar2](https://github.com/WoLpH/python-progressbar)
+- [websocket-client](https://github.com/websocket-client/websocket-client)
+- [py-googletrans](https://github.com/ssut/py-googletrans)
 - [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
 
-其他的依赖项目参见：[requirements.txt](requirements.txt)。
+[requirements.txt](requirements.txt)。
 
-以及如何安装这些依赖，参见[下载和安装](#下载和安装)。
+如何安装这些依赖，参见[下载和安装](#下载和安装)。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
@@ -229,6 +234,11 @@ PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法�
   - MP3
   - 16bit/单声道 PCM
 
+[讯飞语音听写（流式版）WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[百度短语音识别/短语音识别极速版API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+
+- 支持
+  - 16bit/16000Hz/单声道 PCM
+
 你也可以使用自带的音频预处理功能，尽管谷歌并不[如此推荐](https://cloud.google.com/speech-to-text/docs/best-practices)。实话讲，如果你音频的音量没有被标准化，譬如音量太大或者太小，建议你使用一些工具或者只是自带的音频预处理功能去将其音量标准化。默认的[音频预处理指令](https://github.com/agermanidis/autosub/issues/40)同时依赖于ffmpeg和ffmpeg-normalize。这些命令包含三个子命令。[第一个](https://trac.ffmpeg.org/wiki/AudioChannelManipulation)是用来把双声道的音频转换为单声道的。[第二个](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg)是通过人声的频率范围来过滤噪音的。第三个则是正常化音频的音量来确保它的音量不是太大或者太小。如果你对默认指令的效果不满意，你也可以通过输入`-apc`选项来自行修改。当然，它仍然只支持24bit/44100Hz/单声道 FLAC格式。
 
 如果输入是字幕文件，同时你提供的参数适合，程序仅会将其通过py-googletrans来翻译。
@@ -240,13 +250,17 @@ PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法�
 [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)
 
 - 不超过[10到15秒](https://github.com/gillesdemey/google-speech-v2#caveats)。
-- 在autosub里面，按照[10秒](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61)来限制。
+- 在autosub里面，按照[60秒](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L74)来限制。
 
 [Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding)
 
 - 不超过[1分钟](https://cloud.google.com/speech-to-text/docs/sync-recognize)。
-- 在autosub里面，同样按照[10秒](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61)来限制。
+- 在autosub里面，同样按照[60秒](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L74)来限制。
 - 现在只支持同步语言识别意味着只支持短语音识别。
+
+[讯飞语音听写（流式版）WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[百度短语音识别/短语音识别极速版API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+
+- 限制同上。
 
 Autosub使用Auditok来检测语音区域。通过语音区域来分割并转换视频/音频为许多短语音片段。每个区域对应一个片段一个API请求。所有这些片段都是直接从输入转换的，避免任何多余的损失。
 
@@ -263,6 +277,8 @@ Autosub使用Auditok来检测语音区域。通过语音区域来分割并转换
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 #### 语音转文字/翻译语言支持
+
+以下是Google API的预言代码说明，关于其他API的使用方法，详见：[讯飞云语音识别配置](#讯飞云语音识别配置)，[百度语音识别配置](#百度语音识别配置)。
 
 语音转文字的语言代码和翻译的语言代码是不一样的，因为这俩API并不相同。当然啦，这些语言代码的格式是*谷歌化*的，和iso标准不一样，会导致用户使用时很迷惑。
 
@@ -436,7 +452,7 @@ autosub -i 输入文件 -sapi gcsv1 -asf .mp3 ...(其他选项)
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
-###### 语音识别配置
+###### Google语音识别配置
 
 使用定制的[语音识别配置文件](https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig)来发送请求给Google Cloud Speech API。如果使用配置文件，就会替代这些选项：`-S`, `-asr`, `-asf`。
 
@@ -483,7 +499,7 @@ autosub -i 输入文件 -sconf json格式配置文件 -bm all -sapi gcsv1 -skey 
 
 ###### 输出API完整响应
 
-现在autosub不能处理API返回的语音识别结果里的很多[高级领域](https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult)，特别是从Google Cloud Speech-to-Text API中返回的。配合复杂的[语音识别配置](#speech-config)输入和选项`-of full-src`，语音识别结果就会被输出到json格式的文件中，所以你能定制化并在autosub外部处理这些数据。
+现在autosub不能处理API返回的语音识别结果里的很多[高级属性](https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult)，特别是从Google Cloud Speech-to-Text API中返回的。配合复杂的[语音识别配置](#speech-config)输入和选项`-of full-src`，语音识别结果就会被输出到json格式的文件中，所以你能定制化并在autosub外部处理这些数据。
 
 示例json格式输出：
 
@@ -517,6 +533,68 @@ autosub -i 输入文件 -sconf json格式配置文件 -bm all -sapi gcsv1 -skey 
 ```
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
+
+##### 讯飞云语音识别配置
+
+对于讯飞开放平台语音听写（流式版）WebAPI的使用，用户必须输入它的语音识别配置文件。
+
+示例语音识别配置文件：
+
+```json
+{
+    "app_id": "",
+    "api_secret": "",
+    "api_key": "",
+    "business": {
+        "language": "zh_cn",
+        "domain": "iat",
+        "accent": "mandarin"
+    }
+}
+```
+
+`"business"`属性和[讯飞文档](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E4%B8%9A%E5%8A%A1%E5%8F%82%E6%95%B0)里所说的一样。
+
+当文件中不包含`"business"`属性时，autosub会使用如上的默认内容。
+
+命令:
+
+```
+autosub -sapi xfyun -i 输入文件 -sconf 讯飞云语音配置文件 ...(其他选项)
+```
+
+##### 百度语音识别配置
+
+对于百度短语音识别/短语音识别极速版的使用，用户必须输入它的语音识别配置文件。
+
+示例语音识别配置文件：
+
+```json
+{
+    "AppID": "",
+    "API key": "",
+    "Secret Key": "",
+    "config": {
+        "format": "pcm",
+        "rate": 16000,
+        "channel": 1,
+        "cuid": "python",
+        "dev_pid": 1537
+    }
+}
+```
+
+`"config"`属性和[百度短语音识别文档](https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u)里所说的一样。
+
+如果你要使用短语音识别极速版，把`"cuid"`改为`80001`即可。
+
+如果文件中不包含`"config"`属性，autosub会使用如上的默认内容。
+
+命令：
+
+```
+autosub -sapi baidu -i 输入文件 -sconf 百度语音配置文件 ...(其他选项)
+```
 
 ##### 翻译字幕
 
@@ -624,11 +702,14 @@ usage:
                         （https://github.com/gillesdemey/google-speech-v2）。
                         gcsv1：Google Cloud Speech-to-Text V1P1Beta1
                         （https://cloud.google.com/speech-to-
-                        text/docs）。（参数个数为1）（默认参数为gsv2）
+                        text/docs）。xfyun：讯飞开放平台语音听写（流式版）WebSocket API（https://
+                        www.xfyun.cn/doc/asr/voicedictation/API.html）。baidu:
+                        百度短语音识别/短语音识别极速版（https://ai.baidu.com/ai-
+                        doc/SPEECH/Vk38lxily）（参数个数为1）（默认参数为gsv2）
   -skey key, --speech-key key
-                        Speech-to-Text API的密钥。（参数个数为1）当前支持：gsv2：gsv2的API密钥。（默认
-                        参数为免费API密钥）gcsv1：gcsv1的API密钥。（如果使用了，可以覆盖 "-sa"/"--
-                        service-account"提供的服务账号凭据）
+                        Google Speech-to-Text API的密钥。（参数个数为1）当前支持：gsv2：gsv2的AP
+                        I密钥。（默认参数为免费API密钥）gcsv1：gcsv1的API密钥。（如果使用了，可以覆盖
+                        "-sa"/"--service-account"提供的服务账号凭据）
   -sconf [路径], --speech-config [路径]
                         使用语音转文字识别配置文件来发送请求。取代以下选项："-S", "-asr",
                         "-asf"。目前支持：gcsv1：Google Cloud Speech-to-Text
@@ -637,12 +718,16 @@ usage:
                         text/docs/reference/rest/v1p1beta1/RecognitionConfig 服
                         务账号配置参考：https://googleapis.dev/python/speech/latest/ga
                         pic/v1/types.html#google.cloud.speech_v1.types.Recogni
-                        tionConfig
-                        。如果参数个数是0，使用const路径。（参数个数为0或1）（const为config.json）
+                        tionConfig 。xfyun：讯飞开放平台语音听写（流式版）WebSocket
+                        API（https://console.xfyun.cn/services/iat）。baidu:
+                        百度短语音识别/短语音识别极速版（https://ai.baidu.com/ai-doc/SPEECH/ek
+                        38lxj1u）。如果参数个数是0，使用const路径。（参数个数为0或1）（const为config.js
+                        on）
   -mnc float, --min-confidence float
-                        API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信度越高意味着结果越好。输入这个参数会导致所有
-                        低于这个结果的识别结果被删除。参考：https://github.com/BingLingGroup/goo
-                        gle-speech-v2#response（参数个数为1）（默认参数为0.0）
+                        Google Speech-to-Text API用于识别可信度的回应参数。一个介于0和1之间的浮点数。可信
+                        度越高意味着结果越好。输入这个参数会导致所有低于这个结果的识别结果被删除。参考：https://github
+                        .com/BingLingGroup/google-
+                        speech-v2#response（参数个数为1）（默认参数为0.0）
   -der, --drop-empty-regions
                         删除所有没有语音识别结果的空轴。（参数个数为0）
   -sc integer, --speech-concurrency integer
@@ -702,7 +787,7 @@ py-googletrans选项:
                         first_pts=0,[a]amix" -ac 1 -f flac "{out_}" |
                         c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
                         -i "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
-                        C:\Python27\Scripts\ffmpeg-normalize.exe -v "{in_}"
+                        C:\Python37\Scripts\ffmpeg-normalize.exe -v "{in_}"
                         -ar 44100 -ofmt flac -c:a flac -pr -p -o "{out_}"（参考：h
                         ttps://github.com/stevenj/autosub/blob/master/scripts/
                         subgen.sh https://ffmpeg.org/ffmpeg-
@@ -736,17 +821,17 @@ Auditok的选项:
   -et 能量（相对值）, --energy-threshold 能量（相对值）
                         用于检测是否是语音区域的能量水平。参考：https://auditok.readthedocs.io/en/
                         latest/apitutorial.html#examples-using-real-audio-
-                        data（参数个数为1）（默认参数为45）
+                        data（参数个数为1）（默认参数为50）
   -mnrs 秒, --min-region-size 秒
-                        最小语音区域大小。同样的参考文档如上。（参数个数为1）（默认参数为0.5）
+                        最小语音区域大小。同样的参考文档如上。（参数个数为1）（默认参数为0.8）
   -mxrs 秒, --max-region-size 秒
                         最大音频区域大小。同样的参考文档如上。（参数个数为1）（默认参数为6.0）
   -mxcs 秒, --max-continuous-silence 秒
                         在一段有效的音频活动区域中可以容忍的最大（连续）安静区域。同样的参考文档如上。（参数个数为1）（默认参数为0
-                        .3）
-  -sml, --strict-min-length
-                        参考：https://auditok.readthedocs.io/en/latest/core.html#
-                        class-summary（参数个数为0）
+                        .2）
+  -nsml, --not-strict-min-length
+                        如果不输入这个选项，它会严格控制所有语音区域的最小大小。参考：https://auditok.readthe
+                        docs.io/en/latest/core.html#class-summary（参数个数为0）
   -dts, --drop-trailing-silence
                         参考：https://auditok.readthedocs.io/en/latest/core.html#
                         class-summary（参数个数为0）

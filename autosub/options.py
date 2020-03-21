@@ -286,6 +286,8 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "#google.cloud.speech_v1.types.RecognitionConfig "
                "xfyun: Xun Fei Yun Speech-to-Text WebSocket API "
                "(https://console.xfyun.cn/services/iat). "
+               "baidu: Baidu Automatic Speech Recognition API "
+               "(https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u). "
                "If arg_num is 0, use const path. "
                "(arg_num = 0 or 1) (const: %(const)s)")
     )

@@ -41,8 +41,10 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
      - 6.1.4 [Transcribe Audio To Subtitles](#transcribe-audio-to-subtitles)
        - 6.1.4.1 [Google Speech V2](#google-speech-v2)
        - 6.1.4.2 [Google Cloud Speech-to-Text](#google-cloud-speech-to-text)
-       - 6.1.4.3 [Speech config](#speech-config)
+       - 6.1.4.3 [Google speech config](#google-speech-config)
        - 6.1.4.4 [Output API full response](#output-api-full-response)
+       - 6.1.4.5 [Xfyun speech config](#xfyun-speech-config)
+       - 6.1.4.6 [Baidu speech config](#baidu-speech-config)
      - 6.1.5 [Translate Subtitles](#translate-subtitles)
    - 6.2 [Options](#Options)
    - 6.3 [Internationalization](#internationalization)
@@ -79,11 +81,15 @@ Autosub depends on these third party softwares or Python site-packages. Much app
 - [ffprobe](https://ffmpeg.org/ffprobe.html)
 - [auditok](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
-- [py-googletrans](https://github.com/ssut/py-googletrans)
+- [wcwidth](https://github.com/jquast/wcwidth)
+- [requests](https://github.com/psf/requests)
 - [langcodes](https://github.com/LuminosoInsight/langcodes)
+- [progressbar2](https://github.com/WoLpH/python-progressbar)
+- [websocket-client](https://github.com/websocket-client/websocket-client)
+- [py-googletrans](https://github.com/ssut/py-googletrans)
 - [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
 
-Others see: [requirements.txt](requirements.txt).
+[requirements.txt](requirements.txt).
 
 About how to install these dependencies, see [Download and Installation](#download-and-installation).
 
@@ -229,6 +235,11 @@ Supported formats below:
   - MP3
   - 16bit/mono PCM
 
+[Xfyun Speech-to-Text WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[Baidu ASR API/Baidu ASR Pro API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+
+- Supported
+  - 16bit/16000Hz/mono PCM
+
 Also, you can use the built-in audio pre-processing function though Google [doesn't recommend](https://cloud.google.com/speech-to-text/docs/best-practices) doing this. Honestly speaking, if your audio volume is not been standardized like too loud or too quiet, it's recommended to use some tools or just the built-in function to standardize it. The default [pre-processing commands](https://github.com/agermanidis/autosub/issues/40#issuecomment-509928060) depend on the ffmpeg-normalize and ffmpeg. The commands include three commands. The [first](https://trac.ffmpeg.org/wiki/AudioChannelManipulation) is for converting stereo to mono. The [second](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg) is for filtering out the sound not in the frequency of speech. The third is to normalize the audio to make sure it is not too loud or too quiet. If you are not satisfied with the default commands, you can also modified them yourself by input `-apc` option. Still, it currently only supports 24bit/44100Hz/mono FLAC format.
 
 If it is a subtitles file and you give the proper arguments, only translate it by py-googletrans.
@@ -240,13 +251,17 @@ Audio length limits:
 [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)
 
 - No longer than [10 to 15 seconds](https://github.com/gillesdemey/google-speech-v2#caveats).
-- In autosub it is set as the [10-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61).
+- In autosub it is set as the [60-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L74).
 
 [Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding)
 
 - No longer than [1 minute](https://cloud.google.com/speech-to-text/docs/sync-recognize).
-- In autosub it is currently set the same as the [10-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61).
+- In autosub it is currently set the same as the [60-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L74).
 - Currently only support sync-recognize means only short-term audio supported.
+
+[Xfyun Speech-to-Text WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[Baidu ASR API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+
+- Same limit above.
 
 Autosub uses Auditok to detect speech regions. And then use them to split as well as convert the video/audio into many audio fragments. Each fragment per region per API request. All these audio fragments are converted directly from input to avoid any extra quality loss.
 
@@ -263,6 +278,8 @@ After Speech-to-Text, translates them to a different language. Combining multipl
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 #### Speech-to-Text/Translation language support
+
+Below is only for Google API language codes description. About other API: [Xfyun speech config](#xfyun-speech-config), [baidu speech config](#baidu-speech-config).
 
 The Speech-to-Text lang codes are different from the Translation lang codes due to the difference between these two APIs. And of course, they are in *Google* formats, not following the iso standards, making users more confused to use.
 
@@ -436,7 +453,7 @@ autosub -i input_file -sapi gcsv1 -asf .mp3 ...(other options)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
-###### Speech config
+###### Google Speech config
 
 Use customized [speech config file](https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig) to send request to Google Cloud Speech API. If using the config file, override these options: `-S`, `-asr`, `-asf`.
 
@@ -518,6 +535,70 @@ autosub -i input_file -sconf config_json_file -bm all -sapi gcsv1 -skey API_key 
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
+##### Xfyun speech config
+
+For Xfyun Speech-to-Text WebSocket API usage, user must input its speech config.
+
+Example speech config file:
+
+```json
+{
+    "app_id": "",
+    "api_secret": "",
+    "api_key": "",
+    "business": {
+        "language": "zh_cn",
+        "domain": "iat",
+        "accent": "mandarin"
+    }
+}
+```
+
+`"business"` field is the same as the [xfyun document](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E4%B8%9A%E5%8A%A1%E5%8F%82%E6%95%B0) mentioned.
+
+When the file doesn't include the `"business"` field, autosub will use the above default content instead.
+
+command:
+
+```
+autosub -sapi xfyun -i input_file -sconf xfyun_speech_config ...(other options)
+```
+
+##### Baidu speech config
+
+For Baidu ASR API usage, user must input its speech config.
+
+Example speech config file:
+
+```json
+{
+    "AppID": "",
+    "API key": "",
+    "Secret Key": "",
+    "config": {
+        "format": "pcm",
+        "rate": 16000,
+        "channel": 1,
+        "cuid": "python",
+        "dev_pid": 1537
+    }
+}
+```
+
+`"config"` field is the same as the [Baidu ASR document](https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u) mentioned.
+
+If you want to use the Pro ASR API, change the value of `"cuid"` into `80001`.
+
+When the file doesn't include the `"config"` field, autosub will use the above default content instead.
+
+command:
+
+```
+autosub -sapi baidu -i input_file -sconf baidu_speech_config ...(other options)
+```
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
 ##### Translate Subtitles
 
 Translate subtitles to another language.
@@ -571,7 +652,7 @@ Input Options:
                         for your output. If the arg_num is 0, it will use the
                         styles from the : "-esr"/"--external-speech-regions".
                         More info on "-sn"/"--styles-name". (arg_num = 0 or 1)
-  -sn [style-name [style-name ...]], --styles-name [style-name [style-name ...]]
+  -sn [style_name [style_name ...]], --styles-name [style_name [style_name ...]]
                         Valid when your output format is "ass"/"ssa" and
                         "-sty"/"--styles" is given. Adds "ass"/"ssa" styles to
                         your events. If not provided, events will use the
@@ -609,10 +690,10 @@ Language Options:
                         language". (3 >= arg_num >= 1)
   -mns integer, --min-score integer
                         An integer between 0 and 100 to control the good match
-                        group of "-lsc"/"--list-speech-codes" or "-ltc
-                        "/"--list-translation-codes" or the match result in
-                        "-bm"/"--best-match". Result will be a group of "good
-                        match" whose score is above this arg. (arg_num = 1)
+                        group of "-lsc"/"--list-speech-codes" or "-ltc"/"--
+                        list-translation-codes" or the match result in "-bm"/"
+                        --best-match". Result will be a group of "good match"
+                        whose score is above this arg. (arg_num = 1)
 
 Output Options:
   Options to control output.
@@ -640,7 +721,7 @@ Output Options:
                         language in the same event. And dst is ahead of src.
                         src-lf-dst: src language and dst language in the same
                         event. And src is ahead of dst. (6 >= arg_num >= 1)
-                        (default: [u'dst'])
+                        (default: ['dst'])
   -fps float, --sub-fps float
                         Valid when your output format is "sub". If input, it
                         will override the fps check on the input file. Ref:
@@ -656,14 +737,18 @@ Speech Options:
                         support: gsv2: Google Speech V2
                         (https://github.com/gillesdemey/google-speech-v2).
                         gcsv1: Google Cloud Speech-to-Text V1P1Beta1
-                        (https://cloud.google.com/speech-to-text/docs).
+                        (https://cloud.google.com/speech-to-text/docs). xfyun:
+                        Xun Fei Yun Speech-to-Text WebSocket API (https://www.
+                        xfyun.cn/doc/asr/voicedictation/API.html). baidu:
+                        Baidu Automatic Speech Recognition API
+                        (https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
                         (arg_num = 1) (default: gsv2)
   -skey key, --speech-key key
-                        The API key for Speech-to-Text API. (arg_num = 1)
-                        Currently support: gsv2: The API key for gsv2.
+                        The API key for Google Speech-to-Text API. (arg_num =
+                        1) Currently support: gsv2: The API key for gsv2.
                         (default: Free API key) gcsv1: The API key for gcsv1.
-                        (If used, override the credentials given by"-sa
-                        "/"--service-account")
+                        (If used, override the credentials given by"-sa"/"--
+                        service-account")
   -sconf [path], --speech-config [path]
                         Use Speech-to-Text recognition config file to send
                         request. Override these options below: "-S", "-asr",
@@ -673,14 +758,19 @@ Speech Options:
                         text/docs/reference/rest/v1p1beta1/RecognitionConfig
                         Service account config reference: https://googleapis.d
                         ev/python/speech/latest/gapic/v1/types.html#google.clo
-                        ud.speech_v1.types.RecognitionConfig If arg_num is 0,
-                        use const path. (arg_num = 0 or 1) (const:
-                        config.json)
+                        ud.speech_v1.types.RecognitionConfig xfyun: Xun Fei
+                        Yun Speech-to-Text WebSocket API
+                        (https://console.xfyun.cn/services/iat). baidu: Baidu
+                        Automatic Speech Recognition API
+                        (https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u). If
+                        arg_num is 0, use const path. (arg_num = 0 or 1)
+                        (const: config.json)
   -mnc float, --min-confidence float
-                        API response for text confidence. A float value
-                        between 0 and 1. Confidence bigger means the result is
-                        better. Input this argument will drop any result below
-                        it. Ref: https://github.com/BingLingGroup/google-
+                        Google Speech-to-Text API response for text
+                        confidence. A float value between 0 and 1. Confidence
+                        bigger means the result is better. Input this argument
+                        will drop any result below it. Ref:
+                        https://github.com/BingLingGroup/google-
                         speech-v2#response (arg_num = 1) (default: 0.0)
   -der, --drop-empty-regions
                         Drop any regions without speech recognition result.
@@ -758,7 +848,7 @@ Audio Processing Options:
                         a]amix" -ac 1 -f flac "{out_}" |
                         c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
                         -i "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
-                        C:\Python27\Scripts\ffmpeg-normalize.exe -v "{in_}"
+                        C:\Python37\Scripts\ffmpeg-normalize.exe -v "{in_}"
                         -ar 44100 -ofmt flac -c:a flac -pr -p -o "{out_}"
                         (Ref: https://github.com/stevenj/autosub/blob/master/s
                         cripts/subgen.sh https://ffmpeg.org/ffmpeg-
@@ -804,25 +894,25 @@ Auditok Options:
                         The energy level which determines the region to be
                         detected. Ref: https://auditok.readthedocs.io/en/lates
                         t/apitutorial.html#examples-using-real-audio-data
-                        (arg_num = 1) (default: 45)
+                        (arg_num = 1) (default: 50)
   -mnrs second, --min-region-size second
                         Minimum region size. Same docs above. (arg_num = 1)
-                        (default: 0.5)
+                        (default: 0.8)
   -mxrs second, --max-region-size second
                         Maximum region size. Same docs above. (arg_num = 1)
                         (default: 6.0)
   -mxcs second, --max-continuous-silence second
                         Maximum length of a tolerated silence within a valid
                         audio activity. Same docs above. (arg_num = 1)
-                        (default: 0.3)
-  -sml, --strict-min-length
-                        Ref:
-                        https://auditok.readthedocs.io/en/latest/core.html
-                        #class-summary (arg_num = 0)
+                        (default: 0.2)
+  -nsml, --not-strict-min-length
+                        If not input this option, it will keep all regions
+                        strictly follow the minimum region limit. Ref: https:/
+                        /auditok.readthedocs.io/en/latest/core.html#class-
+                        summary (arg_num = 0)
   -dts, --drop-trailing-silence
-                        Ref:
-                        https://auditok.readthedocs.io/en/latest/core.html
-                        #class-summary (arg_num = 0)
+                        Ref: https://auditok.readthedocs.io/en/latest/core.htm
+                        l#class-summary (arg_num = 0)
 
 List Options:
   List all available arguments.
@@ -851,9 +941,9 @@ List Options:
                         Use py-googletrans to detect a sub file's first line
                         language. And list a group of matched language in
                         recommended "-S"/"--speech-language" Google Speech-to-
-                        Text language codes. Ref: https://cloud.google.com
-                        /speech-to-text/docs/languages (arg_num = 1) (default:
-                        None)
+                        Text language codes. Ref:
+                        https://cloud.google.com/speech-to-text/docs/languages
+                        (arg_num = 1) (default: None)
 
 Make sure the argument with space is in quotes.
 The default value is used
