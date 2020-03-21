@@ -105,7 +105,7 @@ Autosub依赖于这些第三方的软件或者Python的site-packages。非常感
 ffmpeg, ffprobe, ffmpeg-normalize需要被放在以下位置之一来让autosub检测并使用。以下代码都在[constants.py](autosub/constants.py)里。优先级按照先后顺序确定。
 
 1. 在运行程序前设置以下环境变量：`FFMPEG_PATH`，`FFPROBE_PATH`和 `FFMPEG_NORMALIZE_PATH`。它会替代环境变量`PATH`里的值。如果你不想使用`PATH`里的值，那么这会帮到你。
-2. 把它们加入环境变量`PATH`。如果使用的是包管理器进行的安装，那么就不需要关心这件事。用管理器进行安装是指使用pip安装ffmpeg-normalize或者chocolatey安装ffmpeg。
+2. 把它们加入环境变量`PATH`。如果使用的是包管理器进行的安装，那么就不需要关心这件事。用包管理器进行安装是指使用pip安装ffmpeg-normalize或者chocolatey安装ffmpeg。
 3. 把它们放在和autosub的可执行文件的同一个目录下。
 4. 把它们放在当前命令行工作的文件夹下。
 
@@ -557,11 +557,15 @@ autosub -i 输入文件 -sconf json格式配置文件 -bm all -sapi gcsv1 -skey 
 
 当文件中不包含`"business"`属性时，autosub会使用如上的默认内容。
 
+如果在配置文件中添加`"delete_chars": "，。"`（逗号和句号是需要删除的标点符号），autosub会在接收到识别结果时自动将指定符号替换为空格，并消除每句末尾空格。
+
 命令:
 
 ```
 autosub -sapi xfyun -i 输入文件 -sconf 讯飞云语音配置文件 ...(其他选项)
 ```
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ##### 百度语音识别配置
 
@@ -590,11 +594,17 @@ autosub -sapi xfyun -i 输入文件 -sconf 讯飞云语音配置文件 ...(其�
 
 如果文件中不包含`"config"`属性，autosub会使用如上的默认内容。
 
+同样可以使用上文所说的`"delete_chars"`功能。
+
+实测由于百度短语音识别/短语音识别极速版默认不允许并发，所以并发会被限制为1，如果需要解除限制，请在配置文件中添加`"disable_qps_limit": true,`，解除后并发即为选项`-sc`所设置的。
+
 命令：
 
 ```
 autosub -sapi baidu -i 输入文件 -sconf 百度语音配置文件 ...(其他选项)
 ```
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ##### 翻译字幕
 

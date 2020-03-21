@@ -31,6 +31,9 @@ _ = API_BAIDU_TEXT.gettext
 def baidu_dev_pid_to_lang_code(
         dev_pid
 ):
+    """
+    Get lang code from a baidu_dev_pid.
+    """
     if dev_pid == 1737:
         return "en"
     return "zh-cn"
@@ -128,8 +131,10 @@ class BaiduASRAPI:  # pylint: disable=too-few-public-methods
 
                 if not self.is_full_result:
                     if self.delete_chars:
-                        return get_baidu_transcript(result_dict).translate(
-                            str.maketrans("", "", self.delete_chars))
+                        transcript = get_baidu_transcript(result_dict).translate(
+                            str.maketrans(self.delete_chars, " " * len(self.delete_chars)))
+                        transcript = transcript.rstrip(" ")
+                        return transcript
                     return get_baidu_transcript(result_dict)
                 return result_dict
 

@@ -142,7 +142,9 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
         if self.is_full_result:
             return self.result_list
         if self.delete_chars:
-            self.transcript.translate(str.maketrans("", "", self.delete_chars))
+            self.transcript.translate(
+                str.maketrans(self.delete_chars, " " * len(self.delete_chars)))
+            self.transcript = self.transcript.rstrip(" ")
         return self.transcript
 
     def on_message(self, web_socket, result):  # pylint: disable=unused-argument

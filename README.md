@@ -259,7 +259,7 @@ Audio length limits:
 - In autosub it is currently set the same as the [60-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L74).
 - Currently only support sync-recognize means only short-term audio supported.
 
-[Xfyun Speech-to-Text WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[Baidu ASR API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+[Xfyun Speech-to-Text WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[Baidu ASR API/Baidu ASR Pro API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
 
 - Same limit above.
 
@@ -558,6 +558,8 @@ Example speech config file:
 
 When the file doesn't include the `"business"` field, autosub will use the above default content instead.
 
+If you add `"delete_chars": "，。"` in the configuration file (In this example, full-width comma and period are the punctuations to be deleted), autosub will automatically replace the specific punctuation with a space when receiving the transcript, and strip the space at the end of each sentence.
+
 command:
 
 ```
@@ -590,6 +592,10 @@ Example speech config file:
 If you want to use the Pro ASR API, change the value of `"cuid"` into `80001`.
 
 When the file doesn't include the `"config"` field, autosub will use the above default content instead.
+
+Same `"delete_chars"` function above.
+
+Practical speaking, since Baidu ASR/ASR Pro API doesn't allow concurrency by default, concurrency will be limited to 1. If you need to lift the limit, please add `"disable_qps_limit": true,` to the config file. If so, the concurrency will be set by the option `-sc`.
 
 command:
 

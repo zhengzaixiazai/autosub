@@ -356,17 +356,15 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
                 }
 
             if "dev_pid" in config_dict["config"]:
-                args.speech_language = api_baidu.baidu_dev_pid_to_lang_code(config_dict["config"]["dev_pid"])
+                args.speech_language = \
+                    api_baidu.baidu_dev_pid_to_lang_code(config_dict["config"]["dev_pid"])
             else:
                 config_dict["config"]["dev_pid"] = 1537
 
             if "disable_qps_limit" not in config_dict \
                     or config_dict["disable_qps_limit"] is not True:
                 # Queries per second limit
-                if config_dict["config"]["dev_pid"] == 80001:
-                    args.speech_concurrency = 1
-                else:
-                    args.speech_concurrency = 1
+                args.speech_concurrency = 1
 
     args.speech_config = config_dict
 
