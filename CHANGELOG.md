@@ -50,6 +50,7 @@ Click up arrow to go back to TOC.
 #### Added(Unreleased)
 
 - Add support for Xun Fei Yun Speech-to-Text WebSocket API.
+- Add support for Baidu Automatic Speech Recognition API. [issue #68](https://github.com/BingLingGroup/autosub/issues/68)
 - Add chars filter for the transcript result in XfyunWebSocketAPI.
 
 #### Changed(Unreleased)

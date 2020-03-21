@@ -16,7 +16,6 @@ from email.utils import formatdate
 import time
 from datetime import datetime
 from time import mktime
-import gettext
 
 # Import third-party modules
 import websocket
@@ -25,14 +24,6 @@ import _thread
 # Any changes to the path and your own modules
 from autosub import constants
 from autosub import exceptions
-
-
-XFYUN_API_TEXT = gettext.translation(domain=__name__,
-                                     localedir=constants.LOCALE_PATH,
-                                     languages=[constants.CURRENT_LOCALE],
-                                     fallback=True)
-
-_ = XFYUN_API_TEXT.gettext
 
 
 def create_xfyun_url(
@@ -239,6 +230,6 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
 #         is_full_result=False,
 #         is_keep=True)
 #
-#     print(web_socket_result_obj(filename=r"C:\userfile\Video\autosub\test\temp.pcm"))
+#     print(web_socket_result_obj(filename=r".pcm"))
 #     time2 = datetime.now()
 #     print(time2 - time1)

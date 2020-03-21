@@ -47,6 +47,7 @@
 #### 添加(未发布)
 
 - 添加讯飞开放平台语音听写(流式版)WebSocket API支持。
+- 添加百度智能云语音识别/极速语音识别API支持。[issue #68](https://github.com/BingLingGroup/autosub/issues/68)
 - 添加字符过滤器用于讯飞开放平台语音听写。
 
 #### 改动(未发布)

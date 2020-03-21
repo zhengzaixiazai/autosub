@@ -57,6 +57,9 @@ GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
 GOOGLE_SPEECH_V2_API_URL = \
     "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"
 XFYUN_SPEECH_WEBAPI_URL = "iat-api.xfyun.cn"
+BAIDU_ASR_URL = "http://vop.baidu.com/server_api"
+BAIDU_PRO_ASR_URL = "http://vop.baidu.com/pro_api"
+BAIDU_TOKEN_URL = "http://openapi.baidu.com/oauth/2.0/token"
 
 if multiprocessing.cpu_count() > 3:
     DEFAULT_CONCURRENCY = multiprocessing.cpu_count() >> 1

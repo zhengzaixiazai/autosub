@@ -25,6 +25,8 @@ from autosub import exceptions
 from autosub import ffmpeg_utils
 from autosub import lang_code_utils
 from autosub import sub_utils
+from autosub import api_google
+from autosub import api_baidu
 
 CMDLINE_UTILS_TEXT = gettext.translation(domain=__name__,
                                          localedir=constants.LOCALE_PATH,
@@ -265,10 +267,10 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
         if "encoding" in config_dict and config_dict["encoding"]:
             # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
             # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-            args.api_suffix = core.encoding_to_extension(config_dict["encoding"])
+            args.api_suffix = api_google.google_enc_to_ext(config_dict["encoding"])
         else:
             # it's necessary to set default encoding
-            config_dict["encoding"] = core.extension_to_encoding(args.api_suffix)
+            config_dict["encoding"] = api_google.google_ext_to_enc(args.api_suffix)
 
         # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
         # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
@@ -292,17 +294,16 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
         elif "languageCode" in config_dict and config_dict["languageCode"]:
             args.speech_language = config_dict["languageCode"]
 
-    elif args.speech_api == "xfyun":
+    else:
         args.api_suffix = ".pcm"
         args.api_sample_rate = 16000
-        if "business" not in config_dict:
-            config_dict["business"] = {
-                "language": "zh_cn",
-                "domain": "iat",
-                "accent": "mandarin"}
 
         if "APPID" in config_dict:
             config_dict["app_id"] = config_dict["APPID"]
+            del config_dict["APPID"]
+        elif "AppID" in config_dict:
+            config_dict["app_id"] = config_dict["AppID"]
+            del config_dict["AppID"]
         elif "app_id" not in config_dict:
             raise exceptions.AutosubException(
                 _("Error: No \"app_id\" found in speech config file \"{filename}\"."
@@ -310,6 +311,10 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
 
         if "APIKey" in config_dict:
             config_dict["api_key"] = config_dict["APIKey"]
+            del config_dict["APIKey"]
+        elif "API key" in config_dict:
+            config_dict["api_key"] = config_dict["API key"]
+            del config_dict["API key"]
         elif "api_key" not in config_dict:
             raise exceptions.AutosubException(
                 _("Error: No \"api_key\" found in speech config file \"{filename}\"."
@@ -317,17 +322,51 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
 
         if "APISecret" in config_dict:
             config_dict["api_secret"] = config_dict["APISecret"]
+            del config_dict["APISecret"]
+        elif "Secret Key" in config_dict:
+            config_dict["api_secret"] = config_dict["Secret Key"]
+            del config_dict["Secret Key"]
         elif "api_secret" not in config_dict:
             raise exceptions.AutosubException(
                 _("Error: No \"api_secret\" found in speech config file \"{filename}\"."
                   ).format(filename=args.speech_config))
 
-        if "language" not in config_dict["business"]:
-            raise exceptions.AutosubException(
-                _("Error: No \"language\" found in speech config file \"{filename}\"."
-                  ).format(filename=args.speech_config))
+        if args.speech_api == "xfyun":
+            if "business" not in config_dict:
+                config_dict["business"] = {
+                    "language": "zh_cn",
+                    "domain": "iat",
+                    "accent": "mandarin"}
 
-        args.speech_language = config_dict["business"]["language"]
+            if "language" not in config_dict["business"]:
+                raise exceptions.AutosubException(
+                    _("Error: No \"language\" found in speech config file \"{filename}\"."
+                      ).format(filename=args.speech_config))
+
+            args.speech_language = config_dict["business"]["language"]
+
+        elif args.speech_api == "baidu":
+            if "config" not in config_dict:
+                config_dict["config"] = {
+                    "format": "pcm",
+                    "rate": 16000,
+                    "channel": 1,
+                    "cuid": "python",
+                    "dev_pid": 1537
+                }
+
+            if "dev_pid" in config_dict["config"]:
+                args.speech_language = api_baidu.baidu_dev_pid_to_lang_code(config_dict["config"]["dev_pid"])
+            else:
+                config_dict["config"]["dev_pid"] = 1537
+
+            if "disable_qps_limit" not in config_dict \
+                    or config_dict["disable_qps_limit"] is not True:
+                # Queries per second limit
+                if config_dict["config"]["dev_pid"] == 80001:
+                    args.speech_concurrency = 1
+                else:
+                    args.speech_concurrency = 1
 
     args.speech_config = config_dict
 
@@ -1158,7 +1197,15 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             text_list = core.xfyun_to_text(
                 audio_fragments=audio_fragments,
                 config=args.speech_config,
-                concurrency=constants.DEFAULT_CONCURRENCY,
+                concurrency=args.speech_concurrency,
+                is_keep=False,
+                result_list=result_list)
+        elif args.speech_api == "baidu":
+            # Baidu ASR API
+            text_list = core.baidu_to_text(
+                audio_fragments=audio_fragments,
+                config=args.speech_config,
+                concurrency=args.speech_concurrency,
                 is_keep=False,
                 result_list=result_list)
         else:
@@ -1166,7 +1213,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
 
         gc.collect(0)
 
-        if result_list is not None:
+        if result_list and result_list is not None:
             timed_result = get_timed_text(
                 is_empty_dropped=False,
                 regions=regions,

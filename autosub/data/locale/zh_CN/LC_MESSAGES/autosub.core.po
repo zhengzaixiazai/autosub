@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-21 09:55+0800\n"
-"PO-Revision-Date: 2020-03-20 20:46+0800\n"
+"POT-Creation-Date: 2020-03-21 15:37+0800\n"
+"PO-Revision-Date: 2020-03-21 15:41+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.3\n"
 
-#: autosub/core.py:188
+#: autosub/core.py:99
 msgid ""
 "\n"
 "Converting speech regions to short-term fragments."
@@ -25,11 +25,11 @@ msgstr ""
 "\n"
 "按照语音区域将音频转换为多个短语音片段。"
 
-#: autosub/core.py:189
+#: autosub/core.py:100
 msgid "Converting: "
 msgstr "转换中： "
 
-#: autosub/core.py:234
+#: autosub/core.py:145
 msgid ""
 "\n"
 "Sending short-term fragments to Google Speech V2 API and getting result."
@@ -37,11 +37,13 @@ msgstr ""
 "\n"
 "将短片段语音发送给Google Speech V2 API并得到识别结果。"
 
-#: autosub/core.py:235 autosub/core.py:304 autosub/core.py:461
+#: autosub/core.py:146 autosub/core.py:215 autosub/core.py:373
+#: autosub/core.py:485
 msgid "Speech-to-Text: "
 msgstr "语音转文字中： "
 
-#: autosub/core.py:276 autosub/core.py:419 autosub/core.py:512
+#: autosub/core.py:187 autosub/core.py:330 autosub/core.py:425
+#: autosub/core.py:532
 msgid ""
 "Error: Connection error happened too many times.\n"
 "All works done."
@@ -49,7 +51,7 @@ msgstr ""
 "错误：过多连接错误。\n"
 "做完了。"
 
-#: autosub/core.py:302
+#: autosub/core.py:213
 msgid ""
 "\n"
 "Sending short-term fragments to Google Cloud Speech V1P1Beta1 API and "
@@ -58,11 +60,11 @@ msgstr ""
 "\n"
 "将短片段语音发送给Google Cloud Speech V1P1Beta1 API并得到识别结果。"
 
-#: autosub/core.py:427 autosub/core.py:520
+#: autosub/core.py:338 autosub/core.py:433 autosub/core.py:540
 msgid "Receive something unexpected:"
 msgstr "收到未预期数据："
 
-#: autosub/core.py:459
+#: autosub/core.py:371
 msgid ""
 "\n"
 "Sending short-term fragments to Xun Fei Yun WebSocket API and getting result."
@@ -70,7 +72,35 @@ msgstr ""
 "\n"
 "将短片段语音发送给讯飞云WebSocket API并得到识别结果。"
 
-#: autosub/core.py:543
+#: autosub/core.py:457
+msgid ""
+"\n"
+"Sending short-term fragments to Baidu PRO ASR API and getting result."
+msgstr ""
+"\n"
+"将短片段语音发送给百度短语音识别极速版API并得到识别结果。"
+
+#: autosub/core.py:460
+msgid ""
+"\n"
+"Sending short-term fragments to Baidu ASR API and getting result."
+msgstr ""
+"\n"
+"将短片段语音发送给百度短语音识别API并得到识别结果。"
+
+#: autosub/core.py:471
+msgid "Get the token online."
+msgstr "在线获取token。"
+
+#: autosub/core.py:476
+msgid "Use the token from the config."
+msgstr "使用配置文件中的token。"
+
+#: autosub/core.py:479
+msgid "Failed to get the token. Error message:"
+msgstr "无法获取token。错误信息："
+
+#: autosub/core.py:563
 msgid ""
 "\n"
 "Translating text from \"{0}\" to \"{1}\"."
@@ -78,24 +108,24 @@ msgstr ""
 "\n"
 "从\"{0}\"翻译为\"{1}\"。"
 
-#: autosub/core.py:593
+#: autosub/core.py:613
 msgid "Translation: "
 msgstr "翻译中： "
 
-#: autosub/core.py:656
+#: autosub/core.py:676
 msgid "Cancelling translation."
 msgstr "取消翻译。"
 
-#: autosub/core.py:729 autosub/core.py:788
+#: autosub/core.py:749 autosub/core.py:808
 msgid "Format \"{fmt}\" not supported. Use \"{default_fmt}\" instead."
 msgstr "不支持格式\"{fmt}\"。改用\"{default_fmt}\"。"
 
-#: autosub/core.py:861
+#: autosub/core.py:881
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/core.py:864
+#: autosub/core.py:884
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 

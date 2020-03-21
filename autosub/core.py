@@ -19,17 +19,13 @@ import googletrans
 import wcwidth
 
 # Any changes to the path and your own modules
-from autosub import google_api
-from autosub import xfyun_api
+from autosub import api_baidu
+from autosub import api_google
+from autosub import api_xfyun
 from autosub import sub_utils
 from autosub import constants
 from autosub import ffmpeg_utils
 from autosub import exceptions
-
-if constants.IS_GOOGLECLOUDCLIENT:
-    from google.cloud.speech_v1p1beta1 import enums
-else:
-    enums = None  # pylint: disable=invalid-name
 
 CORE_TEXT = gettext.translation(domain=__name__,
                                 localedir=constants.LOCALE_PATH,
@@ -37,91 +33,6 @@ CORE_TEXT = gettext.translation(domain=__name__,
                                 fallback=True)
 
 _ = CORE_TEXT.gettext
-
-
-def extension_to_encoding(
-        extension,
-        is_string=True):
-    """
-    File extension to audio encoding.
-    """
-    ext = extension.lower()
-    if is_string:
-        if ext.endswith(".flac"):
-            encoding = "FLAC"
-        elif ext.endswith(".mp3"):
-            encoding = "MP3"
-        elif ext.endswith(".wav")\
-                or ext.endswith(".pcm"):
-            # regard WAV as PCM
-            encoding = "LINEAR16"
-        elif ext.endswith(".ogg"):
-            encoding = "OGG_OPUS"
-        else:
-            encoding = ""
-
-    else:
-        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-        if ext.endswith(".flac"):
-            encoding = \
-                enums.RecognitionConfig.AudioEncoding.FLAC
-            # encoding = 2
-        elif ext.endswith(".mp3"):
-            encoding = \
-                enums.RecognitionConfig.AudioEncoding.MP3
-            # encoding = 8
-        elif ext.endswith(".wav")\
-                or extension.lower().endswith(".pcm"):
-            # regard WAV as PCM
-            encoding = \
-                enums.RecognitionConfig.AudioEncoding.LINEAR16
-            # encoding = 1
-        elif ext.endswith(".ogg"):
-            encoding = \
-                enums.RecognitionConfig.AudioEncoding.OGG_OPUS
-            # encoding = 6
-        else:
-            encoding = \
-                enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
-            # encoding = 0
-
-    return encoding
-
-
-def encoding_to_extension(  # pylint: disable=too-many-branches
-        encoding):
-    """
-    Audio encoding to file extension.
-    """
-    if isinstance(encoding, str):
-        if encoding == "FLAC":
-            extension = ".flac"
-        elif encoding == "MP3":
-            extension = ".mp3"
-        elif encoding == "LINEAR16":
-            extension = ".wav"
-        elif encoding == "OGG_OPUS":
-            extension = ".ogg"
-        else:
-            extension = ".flac"
-
-    elif isinstance(encoding, int):
-        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-        if encoding == 2:
-            extension = ".flac"
-        elif encoding == 8:
-            extension = ".mp3"
-        elif encoding == 1:
-            extension = ".wav"
-        elif encoding == 6:
-            extension = ".ogg"
-        else:
-            extension = ".flac"
-
-    else:
-        extension = ".flac"
-
-    return extension
 
 
 def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
@@ -224,7 +135,7 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
     text_list = []
     pool = multiprocessing.Pool(concurrency)
 
-    recognizer = google_api.GoogleSpeechV2(
+    recognizer = api_google.GoogleSpeechV2(
         api_url=api_url,
         headers=headers,
         min_confidence=min_confidence,
@@ -253,7 +164,7 @@ def gsv2_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many
                 if result:
                     result_list.append(result)
                     transcript = \
-                        google_api.get_google_speech_v2_transcript(min_confidence, result)
+                        api_google.get_google_speech_v2_transcript(min_confidence, result)
                     if transcript:
                         text_list.append(transcript)
                         continue
@@ -318,11 +229,11 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     config["language_code"] = src_language
             else:
                 config = {
-                    "encoding": extension_to_encoding(audio_fragments[0]),
+                    "encoding": api_google.google_ext_to_enc(audio_fragments[0]),
                     "sampleRateHertz": sample_rate,
                     "languageCode": src_language}
 
-            recognizer = google_api.GCSV1P1Beta1URL(
+            recognizer = api_google.GCSV1P1Beta1URL(
                 config=config,
                 api_url=api_url,
                 headers=headers,
@@ -343,7 +254,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
                     if result:
                         result_list.append(result)
-                        transcript = google_api.get_gcsv1p1beta1_transcript(
+                        transcript = api_google.get_gcsv1p1beta1_transcript(
                             min_confidence,
                             result)
                         if transcript:
@@ -358,14 +269,14 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
             # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
             if config:
                 # Use the fixed arguments
-                config["encoding"] = extension_to_encoding(
+                config["encoding"] = api_google.google_ext_to_enc(
                     extension=audio_fragments[0],
                     is_string=False
                 )
                 config["language_code"] = src_language
             else:
                 config = {
-                    "encoding": extension_to_encoding(
+                    "encoding": api_google.google_ext_to_enc(
                         extension=audio_fragments[0],
                         is_string=False),
                     "sample_rate_hertz": sample_rate,
@@ -377,7 +288,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                 # google cloud speech-to-text client can't use multiprocessing.pool
                 # based on class call, otherwise will receive pickling error
                 tasks.append(pool.apply_async(
-                    google_api.gcsv1p1beta1_service_client,
+                    api_google.gcsv1p1beta1_service_client,
                     args=(filename, is_keep, config, min_confidence,
                           result_list is not None)))
                 gc.collect(0)
@@ -396,7 +307,7 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     i = i + 1
                     result = task.get()
                     result_list.append(result)
-                    transcript = google_api.get_gcsv1p1beta1_transcript(
+                    transcript = api_google.get_gcsv1p1beta1_transcript(
                         min_confidence,
                         result)
                     if transcript:
@@ -431,7 +342,8 @@ def gcsv1_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
     return text_list
 
 
-def xfyun_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements, too-many-nested-blocks
+def xfyun_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
+        # pylint: disable=too-many-branches, too-many-statements, too-many-nested-blocks
         audio_fragments,
         config,
         concurrency=constants.DEFAULT_CONCURRENCY,
@@ -465,7 +377,7 @@ def xfyun_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(audio_fragments)).start()
 
     try:
-        recognizer = xfyun_api.XfyunWebSocketAPI(
+        recognizer = api_xfyun.XfyunWebSocketAPI(
             app_id=config["app_id"],
             api_key=config["api_key"],
             api_secret=config["api_secret"],
@@ -490,9 +402,117 @@ def xfyun_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
                     result_list.append(result)
                     transcript = ""
                     for item in result:
-                        transcript = transcript + xfyun_api.get_xfyun_transcript(item)
+                        transcript = transcript + api_xfyun.get_xfyun_transcript(item)
                     if transcript:
                         text_list.append(transcript)
+                        pbar.update(i)
+                        continue
+                else:
+                    result_list.append("")
+                text_list.append("")
+                pbar.update(i)
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+
+    except (KeyboardInterrupt, AttributeError) as error:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+
+        if error == AttributeError:
+            print(
+                _("Error: Connection error happened too many times.\nAll works done."))
+
+        return None
+
+    except exceptions.SpeechToTextException as err_msg:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+        print(_("Receive something unexpected:"))
+        print(err_msg)
+        return None
+
+    return text_list
+
+
+def baidu_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
+        # pylint: disable=too-many-branches, too-many-statements, too-many-nested-blocks
+        audio_fragments,
+        config,
+        concurrency=constants.DEFAULT_CONCURRENCY,
+        is_keep=False,
+        result_list=None):
+    """
+    Give a list of short-term audio fragment files
+    and generate text_list from Google cloud speech-to-text V1P1Beta1 api.
+    """
+
+    text_list = []
+
+    if config["config"]["dev_pid"] == 80001:
+        # pro edition of baidu asr
+        api_url = constants.BAIDU_PRO_ASR_URL
+        print(_("\nSending short-term fragments to Baidu PRO ASR API"
+                " and getting result."))
+    else:
+        print(_("\nSending short-term fragments to Baidu ASR API"
+                " and getting result."))
+        api_url = constants.BAIDU_ASR_URL
+
+    if "delete_chars" in config:
+        delete_chars = config["delete_chars"]
+    else:
+        delete_chars = None
+
+    try:
+        if "token" not in config["config"]:
+            print(_("Get the token online."))
+            config["config"]["token"] = \
+                api_baidu.get_baidu_token(api_secret=config["api_secret"],
+                                          api_key=config["api_key"])
+        else:
+            print(_("Use the token from the config."))
+
+    except exceptions.SpeechToTextException as err_msg:
+        print(_("Failed to get the token. Error message:"))
+        print(err_msg)
+        return None
+
+    pool = multiprocessing.Pool(concurrency)
+
+    widgets = [_("Speech-to-Text: "),
+               progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(audio_fragments)).start()
+
+    try:
+        recognizer = api_baidu.BaiduASRAPI(
+            config=config["config"],
+            api_url=api_url,
+            is_keep=is_keep,
+            is_full_result=result_list is not None,
+            delete_chars=delete_chars)
+
+        # get transcript
+        if result_list is None:
+            for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                pbar.update(i)
+        # get full result and transcript
+        else:
+            for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
+                if result:
+                    result_list.append(result)
+                    transcript = api_baidu.get_baidu_transcript(result)
+                    if transcript:
+                        text_list.append(transcript)
+                        pbar.update(i)
                         continue
                 else:
                     result_list.append("")
