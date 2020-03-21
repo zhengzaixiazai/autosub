@@ -50,8 +50,12 @@ Click up arrow to go back to TOC.
 #### Added(Unreleased)
 
 - Add support for Xun Fei Yun Speech-to-Text WebSocket API.
+- Add chars filter for the transcript result in XfyunWebSocketAPI.
 
 #### Changed(Unreleased)
+
+- Change the replacement condition of the audio_split_cmd only when the user doesn't modify it.
+- Change the MAX_REGION_SIZE_LIMIT into 60 seconds.
 
 ### [0.5.6-alpha] - 2020-03-20
 

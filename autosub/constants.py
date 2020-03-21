@@ -68,7 +68,7 @@ DEFAULT_ENERGY_THRESHOLD = 50
 DEFAULT_MAX_REGION_SIZE = 6.0
 DEFAULT_MIN_REGION_SIZE = 0.8
 MIN_REGION_SIZE_LIMIT = 0.6
-MAX_REGION_SIZE_LIMIT = 12.0
+MAX_REGION_SIZE_LIMIT = 60.0
 DEFAULT_CONTINUOUS_SILENCE = 0.2
 # Maximum speech to text region length in milliseconds
 # when using external speech region control

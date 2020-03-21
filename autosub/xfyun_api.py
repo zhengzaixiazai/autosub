@@ -108,7 +108,8 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
                  api_address,
                  business_args,
                  is_keep=False,
-                 is_full_result=False):
+                 is_full_result=False,
+                 delete_chars=None):
         self.common_args = {"app_id": app_id}
         self.api_key = api_key
         self.api_secret = api_secret
@@ -116,6 +117,7 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
         self.business_args = business_args
         self.is_keep = is_keep
         self.is_full_result = is_full_result
+        self.delete_chars = delete_chars
         self.data = {"status": 0,
                      "format": "audio/L16;rate=16000",
                      "encoding": "raw",
@@ -132,6 +134,8 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
             self.transcript = ""
         self.filename = filename
         websocket.enableTrace(False)
+        # Ref: https://stackoverflow.com/questions/26980966
+        # /using-a-websocket-client-as-a-class-in-python
         self.web_socket_app = websocket.WebSocketApp(
             create_xfyun_url(
                 api_key=self.api_key,
@@ -146,6 +150,8 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
             os.remove(filename)
         if self.is_full_result:
             return self.result_list
+        if self.delete_chars:
+            self.transcript.translate(str.maketrans("", "", self.delete_chars))
         return self.transcript
 
     def on_message(self, web_socket, result):  # pylint: disable=unused-argument

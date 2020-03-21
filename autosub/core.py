@@ -45,36 +45,38 @@ def extension_to_encoding(
     """
     File extension to audio encoding.
     """
-
+    ext = extension.lower()
     if is_string:
-        if extension.lower().endswith(".flac"):
+        if ext.endswith(".flac"):
             encoding = "FLAC"
-        elif extension.lower().endswith(".mp3"):
+        elif ext.endswith(".mp3"):
             encoding = "MP3"
-        elif extension.lower().endswith(".wav"):
+        elif ext.endswith(".wav")\
+                or ext.endswith(".pcm"):
             # regard WAV as PCM
             encoding = "LINEAR16"
-        elif extension.lower().endswith(".ogg"):
+        elif ext.endswith(".ogg"):
             encoding = "OGG_OPUS"
         else:
             encoding = ""
 
     else:
         # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-        if extension.lower().endswith(".flac"):
+        if ext.endswith(".flac"):
             encoding = \
                 enums.RecognitionConfig.AudioEncoding.FLAC
             # encoding = 2
-        elif extension.lower().endswith(".mp3"):
+        elif ext.endswith(".mp3"):
             encoding = \
                 enums.RecognitionConfig.AudioEncoding.MP3
             # encoding = 8
-        elif extension.lower().endswith(".wav"):
+        elif ext.endswith(".wav")\
+                or extension.lower().endswith(".pcm"):
             # regard WAV as PCM
             encoding = \
                 enums.RecognitionConfig.AudioEncoding.LINEAR16
             # encoding = 1
-        elif extension.lower().endswith(".ogg"):
+        elif ext.endswith(".ogg"):
             encoding = \
                 enums.RecognitionConfig.AudioEncoding.OGG_OPUS
             # encoding = 6
@@ -101,7 +103,7 @@ def encoding_to_extension(  # pylint: disable=too-many-branches
         elif encoding == "OGG_OPUS":
             extension = ".ogg"
         else:
-            extension = ""
+            extension = ".flac"
 
     elif isinstance(encoding, int):
         # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
@@ -114,10 +116,10 @@ def encoding_to_extension(  # pylint: disable=too-many-branches
         elif encoding == 6:
             extension = ".ogg"
         else:
-            extension = ""
+            extension = ".flac"
 
     else:
-        extension = ""
+        extension = ".flac"
 
     return extension
 
@@ -447,6 +449,11 @@ def xfyun_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
     else:
         api_address = constants.XFYUN_SPEECH_WEBAPI_URL
 
+    if "delete_chars" in config:
+        delete_chars = config["delete_chars"]
+    else:
+        delete_chars = None
+
     pool = multiprocessing.Pool(concurrency)
 
     print(_("\nSending short-term fragments to Xun Fei Yun WebSocket API"
@@ -465,7 +472,8 @@ def xfyun_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-man
             api_address=api_address,
             business_args=config["business"],
             is_keep=is_keep,
-            is_full_result=result_list is not None)
+            is_full_result=result_list is not None,
+            delete_chars=delete_chars)
 
         # get transcript
         if result_list is None:

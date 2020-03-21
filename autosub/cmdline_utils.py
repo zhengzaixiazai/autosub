@@ -265,14 +265,7 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
         if "encoding" in config_dict and config_dict["encoding"]:
             # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
             # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-            if config_dict["encoding"] == "FLAC":
-                args.api_suffix = ".flac"
-            elif config_dict["encoding"] == "MP3":
-                args.api_suffix = ".mp3"
-            elif config_dict["encoding"] == "LINEAR16":
-                args.api_suffix = ".wav"
-            elif config_dict["encoding"] == "OGG_OPUS":
-                args.api_suffix = ".ogg"
+            args.api_suffix = core.encoding_to_extension(config_dict["encoding"])
         else:
             # it's necessary to set default encoding
             config_dict["encoding"] = core.extension_to_encoding(args.api_suffix)

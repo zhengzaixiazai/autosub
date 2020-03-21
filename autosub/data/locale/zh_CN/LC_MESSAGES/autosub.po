@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-20 20:43+0800\n"
+"POT-Creation-Date: 2020-03-21 09:55+0800\n"
 "PO-Revision-Date: 2020-03-12 17:25+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -25,7 +25,7 @@ msgstr ""
 "\n"
 "输入参数(不包含\"autosub\"): "
 
-#: autosub/__init__.py:64 autosub/__init__.py:175
+#: autosub/__init__.py:64 autosub/__init__.py:177
 msgid ""
 "\n"
 "All works done."
@@ -73,7 +73,7 @@ msgstr ""
 msgid "Audio pre-processing complete."
 msgstr "音频预处理已完成。"
 
-#: autosub/__init__.py:178
+#: autosub/__init__.py:180
 msgid ""
 "\n"
 "KeyboardInterrupt. Works stopped."
@@ -81,7 +81,7 @@ msgstr ""
 "\n"
 "键盘中断。操作终止。"
 
-#: autosub/__init__.py:180
+#: autosub/__init__.py:182
 msgid ""
 "\n"
 "Error: pysubs2.exceptions. Check your file format."
@@ -89,7 +89,7 @@ msgstr ""
 "\n"
 "错误：pysubs2异常。检查你的文件格式。"
 
-#: autosub/__init__.py:185
+#: autosub/__init__.py:187
 msgid "Press Enter to exit..."
 msgstr "按回车以退出..."
 
