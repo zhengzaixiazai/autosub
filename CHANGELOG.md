@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Unreleased](#unreleased)
   - [Added](#addedunreleased)
   - [Changed](#changedunreleased)
+  - [Fixed](#fixedunreleased)
 - [0.5.6-alpha - 2020-03-20](#056-alpha---2020-03-20)
   - [Added](#added056-alpha)
   - [Changed](#changed056-alpha)
@@ -57,6 +58,14 @@ Click up arrow to go back to TOC.
 
 - Change the replacement condition of the audio_split_cmd only when the user doesn't modify it.
 - Change the MAX_REGION_SIZE_LIMIT into 60 seconds.
+
+#### Fixed(Unreleased)
+
+- Fix the size count bug when the last line been split in list_to_googletrans.
+
+#### Removed(Unreleased)
+
+- Remove Python 2.7 support.
 
 ### [0.5.6-alpha] - 2020-03-20
 

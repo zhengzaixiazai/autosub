@@ -569,14 +569,15 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
     partial_index = []
     valid_index = []
     is_last = ""
-    for text in text_list:
-        if text:
+    text_list_length = len(text_list)
+    while i < text_list_length:
+        if text_list[i]:
             if not is_last:
-                is_last = text
+                is_last = text_list[i]
                 valid_index.append(i)
                 # valid_index for valid text position start
-            wcswidth_text = wcwidth.wcswidth(text)
-            if wcswidth_text * 10 / len(text) >= 10:
+            wcswidth_text = wcwidth.wcswidth(text_list[i])
+            if wcswidth_text * 10 / len(text_list[i]) >= 10:
                 # If text contains full-wide char,
                 # count its length about 4 times than the ordinary text.
                 # Avoid weird problem when text has full-wide char.
@@ -586,17 +587,21 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                 # Causing a googletrans internal jsondecode error.
                 size = size + wcswidth_text * 2
             else:
-                size = size + len(text)
+                size = size + len(text_list[i])
             if size > size_per_trans:
                 # use size_per_trans to split the list
                 partial_index.append(i)
                 size = 0
+                continue
+                # stay at this line of text
+                # in case if it's the last one
         else:
             if is_last:
-                is_last = text
+                is_last = text_list[i]
                 valid_index.append(i)
                 # valid_index for valid text position end
         i = i + 1
+
     if size:
         partial_index.append(i)
         # python sequence
@@ -633,7 +638,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
             translation = translator.translate(text=content_to_trans,
                                                dest=dst_language,
                                                src=src_language)
-            result_text = translation.text.replace('’', '\'')
+            result_text = translation.text.translate(str.maketrans('’', '\''))
             result_list = result_text.split('\n')
             k = 0
             len_result_list = len(result_list)
@@ -649,7 +654,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                     # and then continue
                     translated_text.append("")
                     i = i + 1
-                    pbar.update(i)
+                    if i % 20 == 5:
+                        pbar.update(i)
                     continue
                 if i < valid_index[j + 1]:
                     # if text is valid, append it
@@ -658,7 +664,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                     i = i + 1
                 else:
                     j = j + 2
-                pbar.update(i)
+                if i % 20 == 5:
+                    pbar.update(i)
             if len(partial_index) > 1:
                 time.sleep(sleep_seconds)
 
