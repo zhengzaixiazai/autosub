@@ -349,6 +349,15 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "Only affect the translation result. "
                "(arg_num = 0)"))
 
+    pygt_group.add_argument(
+        '-gt-dc', '--gt-delete-chars',
+        nargs='?', metavar="chars",
+        const="，。！",
+        help=_("Replace the specific chars with a space after translation, "
+               "and strip the space at the end of each sentence. "
+               "Only affect the translation result. "
+               "(arg_num = 0 or 1) (const: %(const)s)"))
+
     network_group.add_argument(
         '-hsa', '--http-speech-api',
         action='store_true',

@@ -53,15 +53,18 @@ Click up arrow to go back to TOC.
 - Add support for Xun Fei Yun Speech-to-Text WebSocket API.
 - Add support for Baidu Automatic Speech Recognition API. [issue #68](https://github.com/BingLingGroup/autosub/issues/68)
 - Add chars filter for the transcript result in XfyunWebSocketAPI.
+- Add delete_chars in method list_to_googletrans.
 
 #### Changed(Unreleased)
 
 - Change the replacement condition of the audio_split_cmd only when the user doesn't modify it.
 - Change the MAX_REGION_SIZE_LIMIT into 60 seconds.
+- Change all text file input decoding into "utf-8".
 
 #### Fixed(Unreleased)
 
 - Fix the size count bug when the last line been split in list_to_googletrans.
+- Fix delete_chars issue when using `-of full-src`.
 
 #### Removed(Unreleased)
 

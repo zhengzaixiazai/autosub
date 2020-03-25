@@ -12,7 +12,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 NAME = "autosub"
 
-with open(os.path.join(here, NAME, "metadata.py")) as metafile:
+with open(os.path.join(here, NAME, "metadata.py"), encoding='utf-8') as metafile:
     exec(metafile.read(), metadata)
 
 setup(

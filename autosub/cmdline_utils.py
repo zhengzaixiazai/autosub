@@ -251,7 +251,7 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
     for audio or video processing.
     """
     if os.path.isfile(args.speech_config):
-        with open(args.speech_config, 'r') as config_file:
+        with open(args.speech_config, encoding='utf-8') as config_file:
             try:
                 config_dict = json.load(config_file)
             except ValueError:
@@ -726,7 +726,8 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         sleep_seconds=args.sleep_seconds,
         user_agent=args.user_agent,
         service_urls=args.service_urls,
-        drop_override_codes=args.drop_override_codes)
+        drop_override_codes=args.drop_override_codes,
+        delete_chars=args.gt_delete_chars)
 
     if not translated_text or len(translated_text) != len(text_list):
         raise exceptions.AutosubException(
@@ -736,6 +737,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("bilingual")
         bilingual_sub = pysubs2.SSAFile()
         bilingual_sub.styles = src_sub.styles
+        bilingual_sub.info = src_sub.info
         bilingual_sub.events = src_sub.events[:]
         if args.styles and \
                 len(styles_list) == 2 and \
@@ -787,6 +789,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("dst-lf-src")
         bilingual_sub = pysubs2.SSAFile()
         bilingual_sub.styles = src_sub.styles
+        bilingual_sub.info = src_sub.info
         if args.styles and \
                 len(styles_list) == 2 and \
                 (args.format == 'ass' or
@@ -839,6 +842,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("src-lf-dst")
         bilingual_sub = pysubs2.SSAFile()
         bilingual_sub.styles = src_sub.styles
+        bilingual_sub.info = src_sub.info
         if args.styles and \
                 len(styles_list) == 2 and \
                 (args.format == 'ass' or
@@ -891,6 +895,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("dst")
         dst_sub = pysubs2.SSAFile()
         dst_sub.styles = src_sub.styles
+        dst_sub.info = src_sub.info
         if len(styles_list) == 2:
             sub_utils.pysubs2_ssa_event_add(
                 src_ssafile=src_sub,
@@ -1281,7 +1286,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 sleep_seconds=args.sleep_seconds,
                 user_agent=args.user_agent,
                 service_urls=args.service_urls,
-                drop_override_codes=args.drop_override_codes)
+                drop_override_codes=args.drop_override_codes,
+                delete_chars=args.gt_delete_chars)
 
             if not translated_text or len(translated_text) != len(regions):
                 raise exceptions.AutosubException(

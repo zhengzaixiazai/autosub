@@ -73,7 +73,7 @@ if __name__ == "__main__":
         os.makedirs(dist_path)
 
     metadata = {}
-    with open(os.path.join(here, package_name, "metadata.py")) as metafile:
+    with open(os.path.join(here, package_name, "metadata.py"), encoding='utf-8') as metafile:
         exec(metafile.read(), metadata)
 
     target = os.path.join(here, ".release", package_name)

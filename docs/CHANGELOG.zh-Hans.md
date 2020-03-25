@@ -51,15 +51,18 @@
 - 添加讯飞开放平台语音听写(流式版)WebSocket API支持。
 - 添加百度智能云语音识别/极速语音识别API支持。[issue #68](https://github.com/BingLingGroup/autosub/issues/68)
 - 添加字符过滤器用于讯飞开放平台语音听写。
+- 添加delete_chars功能到方法list_to_googletrans里。
 
 #### 改动(未发布)
 
 - 修改音频分割指令的更换条件为仅当用户不修改它时。
 - 修改最长语音区域限制为60秒。
+- 修改所有文本文件输入编码为"utf-8"。
 
 #### 修复(未发布)
 
 - 修复list_to_googletrans中当最后一行是需要被分割时的长度计算问题。
+- 修复delete_chars问题当使用`-of full-src`时。
 
 #### 删除(未发布)
 

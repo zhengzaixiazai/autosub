@@ -40,7 +40,8 @@ def baidu_dev_pid_to_lang_code(
 
 
 def get_baidu_transcript(
-        result_dict):
+        result_dict,
+        delete_chars=None):
     """
     Function for getting transcript from Baidu ASR API result dictionary.
     Reference: https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u
@@ -50,6 +51,10 @@ def get_baidu_transcript(
         if err_no != 0:
             raise exceptions.SpeechToTextException(
                 json.dumps(result_dict, indent=4, ensure_ascii=False))
+        if delete_chars:
+            result = result_dict["result"][0].translate(
+                str.maketrans(delete_chars, " " * len(delete_chars)))
+            return result.rstrip(" ")
         return result_dict["result"][0]
     except (KeyError, TypeError):
         return ""
@@ -130,12 +135,7 @@ class BaiduASRAPI:  # pylint: disable=too-few-public-methods
                     continue
 
                 if not self.is_full_result:
-                    if self.delete_chars:
-                        transcript = get_baidu_transcript(result_dict).translate(
-                            str.maketrans(self.delete_chars, " " * len(self.delete_chars)))
-                        transcript = transcript.rstrip(" ")
-                        return transcript
-                    return get_baidu_transcript(result_dict)
+                    return get_baidu_transcript(result_dict, self.delete_chars)
                 return result_dict
 
         except KeyboardInterrupt:

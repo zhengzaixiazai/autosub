@@ -402,7 +402,9 @@ def xfyun_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
                     result_list.append(result)
                     transcript = ""
                     for item in result:
-                        transcript = transcript + api_xfyun.get_xfyun_transcript(item)
+                        transcript = transcript + api_xfyun.get_xfyun_transcript(
+                            result_dict=item,
+                            delete_chars=delete_chars)
                     if transcript:
                         text_list.append(transcript)
                         pbar.update(i)
@@ -509,7 +511,8 @@ def baidu_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
             for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
                 if result:
                     result_list.append(result)
-                    transcript = api_baidu.get_baidu_transcript(result)
+                    transcript = api_baidu.get_baidu_transcript(
+                        result, delete_chars)
                     if transcript:
                         text_list.append(transcript)
                         pbar.update(i)
@@ -552,7 +555,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
         sleep_seconds=constants.DEFAULT_SLEEP_SECONDS,
         user_agent=None,
         service_urls=None,
-        drop_override_codes=False):
+        drop_override_codes=False,
+        delete_chars=None):
     """
     Give a text list, generate translated text list from GoogleTranslatorV2 api.
     """
@@ -659,6 +663,10 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                     continue
                 if i < valid_index[j + 1]:
                     # if text is valid, append it
+                    if delete_chars:
+                        result_list[k] = result_list[k].translate(
+                            str.maketrans(delete_chars, " " * len(delete_chars)))
+                        result_list[k] = result_list[k].rstrip(" ")
                     translated_text.append(result_list[k])
                     k = k + 1
                     i = i + 1

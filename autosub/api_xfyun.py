@@ -67,7 +67,8 @@ def create_xfyun_url(
 
 
 def get_xfyun_transcript(
-        result_dict):
+        result_dict,
+        delete_chars=None):
     """
     Function for getting transcript from Xun Fei Yun Speech-to-Text Websocket API result dictionary.
     Reference: https://www.xfyun.cn/doc/asr/voicedictation/API.html
@@ -80,6 +81,10 @@ def get_xfyun_transcript(
         result = ""
         for item in result_dict["data"]["result"]["ws"]:
             result = result + item["cw"][0]["w"]
+        if delete_chars:
+            result = result.translate(
+                str.maketrans(delete_chars, " " * len(delete_chars)))
+            return result.rstrip(" ")
         return result
     except (KeyError, TypeError):
         return ""
@@ -141,10 +146,6 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
             os.remove(filename)
         if self.is_full_result:
             return self.result_list
-        if self.delete_chars:
-            self.transcript.translate(
-                str.maketrans(self.delete_chars, " " * len(self.delete_chars)))
-            self.transcript = self.transcript.rstrip(" ")
         return self.transcript
 
     def on_message(self, web_socket, result):  # pylint: disable=unused-argument
@@ -156,7 +157,10 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
         except ValueError:
             return
         if not self.is_full_result:
-            self.transcript = self.transcript + get_xfyun_transcript(web_socket_result)
+            self.transcript = self.transcript + \
+                              get_xfyun_transcript(
+                                  result_dict=web_socket_result,
+                                  delete_chars=self.delete_chars)
         else:
             self.result_list.append(web_socket_result)
 
