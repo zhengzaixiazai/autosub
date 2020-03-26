@@ -52,6 +52,7 @@
 - 添加百度智能云语音识别/极速语音识别API支持。[issue #68](https://github.com/BingLingGroup/autosub/issues/68)
 - 添加字符过滤器用于讯飞开放平台语音听写。
 - 添加delete_chars功能到方法list_to_googletrans里。
+- 添加方法merge_src_assfile。
 
 #### 改动(未发布)
 

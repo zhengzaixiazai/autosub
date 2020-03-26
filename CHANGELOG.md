@@ -54,6 +54,7 @@ Click up arrow to go back to TOC.
 - Add support for Baidu Automatic Speech Recognition API. [issue #68](https://github.com/BingLingGroup/autosub/issues/68)
 - Add chars filter for the transcript result in XfyunWebSocketAPI.
 - Add delete_chars in method list_to_googletrans.
+- Add merge_src_assfile method.
 
 #### Changed(Unreleased)
 

@@ -6,12 +6,21 @@ Defines subtitle formatters used by autosub.
 # Import built-in modules
 import wave
 import json
+import gettext
 
 # Import third-party modules
 import pysubs2
 
 # Any changes to the path and your own modules
 from autosub import constants
+
+
+SUB_UTILS_TEXT = gettext.translation(domain=__name__,
+                                     localedir=constants.LOCALE_PATH,
+                                     languages=[constants.CURRENT_LOCALE],
+                                     fallback=True)
+
+_ = SUB_UTILS_TEXT.gettext
 
 
 def sub_to_speech_regions(
@@ -434,5 +443,70 @@ def merge_bilingual_assfile(  # pylint: disable=too-many-locals, too-many-branch
             new_ssafile.events = new_ssafile.events + events
         else:
             new_ssafile.events = events + new_ssafile.events
+
+    return new_ssafile
+
+
+def merge_src_assfile(
+        subtitles,
+        max_join_size=constants.DEFAULT_MAX_SIZE_PER_EVENT,
+        max_delta_time=int(constants.DEFAULT_CONTINUOUS_SILENCE * 1000),
+        delimiters=constants.DEFAULT_EVENT_DELIMITER
+):
+    """
+    Merge a source subtitles file's events automatically.
+    """
+    new_ssafile = pysubs2.SSAFile()
+    new_ssafile.styles = subtitles.styles
+    new_ssafile.info = subtitles.info
+    style_events = {}
+
+    for event in subtitles.events:
+        if event.style not in style_events:
+            style_events[event.style] = [event]
+        else:
+            style_events[event.style].append(event)
+
+    sorted_events_list = sorted(style_events.values(), key=len)
+    events_1 = sorted_events_list.pop()
+
+    temp_ssafile = pysubs2.SSAFile()
+    temp_ssafile.events = events_1
+    temp_ssafile.sort()
+
+    sub_length = len(temp_ssafile.events)
+    i = 0
+    j = 0
+
+    while i < sub_length - 1:
+        if len(temp_ssafile.events[i].text) < max_join_size:
+            if not temp_ssafile.events[i].is_comment and not temp_ssafile.events[i + 1].is_comment:
+                if len(temp_ssafile.events[i].text) + \
+                        len(temp_ssafile.events[i + 1].text) < max_join_size \
+                        and temp_ssafile.events[i].style == temp_ssafile.events[i + 1].style \
+                        and temp_ssafile.events[i].text.rstrip(" ")[-1] not in delimiters \
+                        and temp_ssafile.events[i + 1].start - \
+                        temp_ssafile.events[i].end < max_delta_time:
+                    event = pysubs2.SSAEvent()
+                    event.start = temp_ssafile.events[i].start
+                    event.end = temp_ssafile.events[i + 1].end
+                    if temp_ssafile.events[i].text[-1] != " ":
+                        event.text = temp_ssafile.events[i].text + " " + \
+                                     temp_ssafile.events[i + 1].text
+                    else:
+                        event.text = temp_ssafile.events[i].text + temp_ssafile.events[i + 1].text
+                    event.style = temp_ssafile.events[i].style
+                    new_ssafile.events.append(event)
+                    i = i + 2
+                    j = j + 1
+                    continue
+
+        new_ssafile.events.append(temp_ssafile.events[i])
+        i = i + 1
+
+    for events in sorted_events_list:
+        new_ssafile.events = events + new_ssafile.events
+
+    print(_("Merge {count} lines of events.").format(count=j))
 
     return new_ssafile

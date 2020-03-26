@@ -163,6 +163,11 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             result = cmdline_utils.validate_sp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
             if result:
+                args.output_files = args.output_files & \
+                                    constants.DEFAULT_SUB_MODE_SET
+                if not args.output_files:
+                    raise exceptions.AutosubException(
+                        _("Error: No valid \"-of\"/\"--output-files\" arguments."))
                 cmdline_utils.sub_trans(args,
                                         input_m=input_m,
                                         fps=fps,

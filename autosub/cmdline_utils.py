@@ -223,12 +223,6 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             if not args.output_files:
                 raise exceptions.AutosubException(
                     _("Error: No valid \"-of\"/\"--output-files\" arguments."))
-        else:
-            args.output_files = args.output_files & \
-                                constants.DEFAULT_SUB_MODE_SET
-            if not args.output_files:
-                raise exceptions.AutosubException(
-                    _("Error: No valid \"-of\"/\"--output-files\" arguments."))
 
     if args.best_match:
         args.best_match = {k.lower() for k in args.best_match}
@@ -691,6 +685,78 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
     except KeyError:
         pass
 
+    try:
+        args.output_files.remove("src-lf-dst")
+        new_sub = sub_utils.merge_bilingual_assfile(
+            subtitles=src_sub,
+            order=0
+        )
+        sub_string = core.ssafile_to_sub_str(
+            ssafile=new_sub,
+            fps=fps,
+            subtitles_file_format=args.format)
+
+        if args.format == 'mpl2':
+            extension = 'mpl2.txt'
+        else:
+            extension = args.format
+
+        sub_name = "{base}.{nt}.{extension}".format(
+            base=args.output,
+            nt="combination.2",
+            extension=extension)
+
+        subtitles_file_path = core.str_to_file(
+            str_=sub_string,
+            output=sub_name,
+            input_m=input_m)
+        # subtitles string to file
+        print(_("\"src-lf-dst\" subtitles file "
+                "created at \"{}\".").format(subtitles_file_path))
+
+        if not args.output_files:
+            raise exceptions.AutosubException(_("\nAll works done."))
+
+    except KeyError:
+        pass
+
+    try:
+        args.output_files.remove("join-events")
+        new_sub = sub_utils.merge_src_assfile(
+            subtitles=src_sub,
+            max_join_size=args.max_join_size,
+            max_delta_time=int(args.max_delta_time * 1000),
+            delimiters=args.delimiters
+        )
+        sub_string = core.ssafile_to_sub_str(
+            ssafile=new_sub,
+            fps=fps,
+            subtitles_file_format=args.format)
+
+        if args.format == 'mpl2':
+            extension = 'mpl2.txt'
+        else:
+            extension = args.format
+
+        sub_name = "{base}.{nt}.{extension}".format(
+            base=args.output,
+            nt="join",
+            extension=extension)
+
+        subtitles_file_path = core.str_to_file(
+            str_=sub_string,
+            output=sub_name,
+            input_m=input_m)
+        # subtitles string to file
+        print(_("\"join-events\" subtitles file "
+                "created at \"{}\".").format(subtitles_file_path))
+
+        if not args.output_files:
+            raise exceptions.AutosubException(_("\nAll works done."))
+
+    except KeyError:
+        pass
+
 
 def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         args,
@@ -965,12 +1031,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     """
     Give args and process an input audio or video file.
     """
-
-    if not args.output_files:
-        raise exceptions.AutosubException(
-            _("\nNo works done."
-              " Check your \"-of\"/\"--output-files\" option."))
-
     if args.ext_regions:
         # use external speech regions
         print(_("Use external speech regions."))

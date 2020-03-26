@@ -70,6 +70,9 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         _('Options to control translation. '
           'Default method to translate. '
           'Could be blocked at any time.'))
+    conversion_group = parser.add_argument_group(
+        _('Subtitles Conversion Options'),
+        _('Options to control subtitles conversions.(Experimental)'))
     network_group = parser.add_argument_group(
         _('Network Options'),
         _('Options to control network.'))
@@ -357,6 +360,29 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "and strip the space at the end of each sentence. "
                "Only affect the translation result. "
                "(arg_num = 0 or 1) (const: %(const)s)"))
+
+    conversion_group.add_argument(
+        '-mjs', '--max-join-size',
+        metavar='integer',
+        type=int,
+        default=constants.DEFAULT_MAX_SIZE_PER_EVENT,
+        help=_("(Experimental)Max length to join two events. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-mdt', '--max-delta-time',
+        metavar=_('second'),
+        type=float,
+        default=constants.DEFAULT_CONTINUOUS_SILENCE,
+        help=_("(Experimental)Max delta time to join two events. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-dms', '--delimiters',
+        metavar=_('string'),
+        default=constants.DEFAULT_EVENT_DELIMITER,
+        help=_("(Experimental)Delimiters not to join two events. "
+               "(arg_num = 1) (default: %(default)s)"))
 
     network_group.add_argument(
         '-hsa', '--http-speech-api',
