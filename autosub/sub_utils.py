@@ -447,7 +447,8 @@ def merge_bilingual_assfile(  # pylint: disable=too-many-locals, too-many-branch
     return new_ssafile
 
 
-def merge_src_assfile(
+def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-blocks,
+        # pylint: disable=too-many-statements, too-many-branches
         subtitles,
         max_join_size=constants.DEFAULT_MAX_SIZE_PER_EVENT,
         max_delta_time=int(constants.DEFAULT_CONTINUOUS_SILENCE * 1000),
@@ -475,31 +476,56 @@ def merge_src_assfile(
     temp_ssafile.sort()
 
     sub_length = len(temp_ssafile.events)
-    i = 0
+    i = 1
     j = 0
+    k = 0
+
+    new_ssafile.events.append(temp_ssafile.events[0])
 
     while i < sub_length - 1:
-        if len(temp_ssafile.events[i].text) < max_join_size:
-            if not temp_ssafile.events[i].is_comment and not temp_ssafile.events[i + 1].is_comment:
-                if len(temp_ssafile.events[i].text) + \
-                        len(temp_ssafile.events[i + 1].text) < max_join_size \
-                        and temp_ssafile.events[i].style == temp_ssafile.events[i + 1].style \
-                        and temp_ssafile.events[i].text.rstrip(" ")[-1] not in delimiters \
-                        and temp_ssafile.events[i + 1].start - \
-                        temp_ssafile.events[i].end < max_delta_time:
-                    event = pysubs2.SSAEvent()
-                    event.start = temp_ssafile.events[i].start
-                    event.end = temp_ssafile.events[i + 1].end
-                    if temp_ssafile.events[i].text[-1] != " ":
-                        event.text = temp_ssafile.events[i].text + " " + \
-                                     temp_ssafile.events[i + 1].text
+        if len(new_ssafile.events[-1].text) < max_join_size:
+            if not new_ssafile.events[-1].is_comment and not temp_ssafile.events[i].is_comment\
+                    and new_ssafile.events[-1].style == temp_ssafile.events[i].style\
+                    and temp_ssafile.events[i].start\
+                    - new_ssafile.events[-1].end < max_delta_time \
+                    and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters:
+                if len(new_ssafile.events[-1].text) + \
+                        len(temp_ssafile.events[i].text) < max_join_size:
+                    new_ssafile.events[-1].end = temp_ssafile.events[i].end
+                    if new_ssafile.events[-1].text[-1] != " ":
+                        new_ssafile.events[-1].text = new_ssafile.events[-1].text + " " + \
+                                                      temp_ssafile.events[i].text
                     else:
-                        event.text = temp_ssafile.events[i].text + temp_ssafile.events[i + 1].text
-                    event.style = temp_ssafile.events[i].style
-                    new_ssafile.events.append(event)
-                    i = i + 2
+                        new_ssafile.events[-1].text = \
+                            new_ssafile.events[-1].text + temp_ssafile.events[i].text
                     j = j + 1
-                    continue
+
+                else:
+                    combination = new_ssafile.events[-1].text + " " + temp_ssafile.events[i].text
+                    min_range = int(len(combination) * 0)
+                    max_range = len(combination) - min_range
+                    half_pos = int(len(combination) / 2)
+                    word_dict = get_word_pos_dict(combination)
+                    combination_set = set(word_dict.keys())
+                    stop_word_set = constants.DEFAULT_ENGLISH_STOP_WORDS_SET & combination_set
+                    last_index = 0
+                    last_delta = half_pos - last_index
+                    if stop_word_set:
+                        for stop_word in stop_word_set:
+                            for index in word_dict[stop_word]:
+                                if min_range < index < max_range:
+                                    delta = abs(index - half_pos)
+                                    if delta < last_delta:
+                                        last_index = index
+                                        last_delta = delta
+                    if last_index and last_index < max_join_size:
+                        joint_event = join_event(new_ssafile.events[-1], temp_ssafile.events[i])
+                        new_ssafile.events.pop()
+                        new_ssafile.events.extend(split_event(joint_event, last_index))
+                        k = k + 1
+
+                i = i + 1
+                continue
 
         new_ssafile.events.append(temp_ssafile.events[i])
         i = i + 1
@@ -508,5 +534,67 @@ def merge_src_assfile(
         new_ssafile.events = events + new_ssafile.events
 
     print(_("Merge {count} lines of events.").format(count=j))
+    print(_("Split {count} lines of events.").format(count=k))
+    print(_("Reduce {count} lines of events.").format(count=j - k))
 
     return new_ssafile
+
+
+def get_word_pos_dict(
+        sentence
+):
+    """
+    Get word position dictionary from sentence.
+    """
+    i = 0
+    j = 0
+    result_dict = {}
+    length = len(sentence)
+    while i < length:
+        if sentence[i] == " ":
+            if i != j and sentence[j:i].strip(" "):
+                index = result_dict.get(sentence[j:i])
+                if not index:
+                    result_dict[sentence[j:i]] = [j]
+                else:
+                    result_dict[sentence[j:i]].append(j)
+            j = i + 1
+        i = i + 1
+
+    return result_dict
+
+
+def join_event(
+        event1,
+        event2
+):
+    """
+    Join two events.
+    """
+    joint_event = event1.copy()
+    joint_event.start = event1.start
+    joint_event.end = event2.end
+    joint_event.text = event1.text + " " + event2.text
+
+    return joint_event
+
+
+def split_event(
+        event,
+        position
+):
+    """
+    Split an event based on position.
+    """
+    ratio = position / len(event.text)
+    first_event = event.copy()
+    first_event.start = event.start
+    first_event.end = int((event.end - event.start) * ratio) + event.start
+    first_event.text = event.text[:position].rstrip(" ")
+
+    second_event = event.copy()
+    second_event.end = event.end
+    second_event.start = first_event.end
+    second_event.text = event.text[position:]
+
+    return [first_event, second_event]

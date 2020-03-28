@@ -443,3 +443,12 @@ DEFAULT_VIDEO_FPS_CMD = FFPROBE_CMD + " -v 0 -of csv=p=0 -select_streams " \
                         "v:0 -show_entries stream=r_frame_rate \"{in_}\""
 
 DEFAULT_CHECK_CMD = FFPROBE_CMD + " {in_} -show_format -pretty -loglevel quiet"
+
+DEFAULT_ENGLISH_STOP_WORDS_SET = \
+    {'about', 'above', 'after', 'against', 'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been',
+     'before', 'being', 'below', 'between', 'both', 'but', 'by', 'down', 'during', 'each', 'few',
+     'for', 'from', 'further', 'how', 'if', 'into', 'is', 'just', 'on', 'once', 'only', 'or', 'out',
+     'over', 'so', 'some', 'such', 'than', 'that', 'the', 'then', 'there', 'these', 'this', 'those',
+     'through', 'to', 'under', 'until', 'up', 'was', 'were', 'what', 'when', 'where', 'which',
+     'while', 'who', 'whom', 'why', 'with'}
+# Reference: https://gist.github.com/sebleier/554280
