@@ -56,6 +56,7 @@ Click up arrow to go back to TOC.
 - Add delete_chars in method list_to_googletrans.
 - Add merge_src_assfile, merge_bilingual_assfile methods.
 - Add stop words to split events in merge_src_assfile method.
+- Add punctuations split in merge_src_assfile method.
 
 #### Changed(Unreleased)
 

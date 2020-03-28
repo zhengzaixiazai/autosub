@@ -505,9 +505,12 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                     min_range = int(len(combination) * 0)
                     max_range = len(combination) - min_range
                     half_pos = int(len(combination) / 2)
-                    word_dict = get_word_pos_dict(combination)
-                    combination_set = set(word_dict.keys())
-                    stop_word_set = constants.DEFAULT_ENGLISH_STOP_WORDS_SET & combination_set
+                    word_dict = get_slice_pos_dict(combination, delimiters=delimiters)
+                    # use punctuations to split the sentence first
+                    if len(word_dict) <= 1:
+                        word_dict = get_slice_pos_dict(combination)
+                    word_set = set(word_dict.keys())
+                    stop_word_set = constants.DEFAULT_ENGLISH_STOP_WORDS_SET & word_set
                     last_index = 0
                     last_delta = half_pos - last_index
                     if stop_word_set:
@@ -540,8 +543,9 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
     return new_ssafile
 
 
-def get_word_pos_dict(
-        sentence
+def get_slice_pos_dict(
+        sentence,
+        delimiters=" "
 ):
     """
     Get word position dictionary from sentence.
@@ -551,7 +555,7 @@ def get_word_pos_dict(
     result_dict = {}
     length = len(sentence)
     while i < length:
-        if sentence[i] == " ":
+        if sentence[i] in delimiters:
             if i != j and sentence[j:i].strip(" "):
                 index = result_dict.get(sentence[j:i])
                 if not index:

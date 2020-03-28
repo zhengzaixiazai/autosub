@@ -54,6 +54,7 @@
 - 添加delete_chars功能到方法list_to_googletrans里。
 - 添加方法merge_src_assfile，merge_bilingual_assfile。
 - 添加停用词用于merge_src_assfile方法里的断句。
+- 添加标点符号分割功能在merge_src_assfile方法里。
 
 #### 改动(未发布)
 
