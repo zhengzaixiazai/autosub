@@ -380,9 +380,27 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     conversion_group.add_argument(
         '-dms', '--delimiters',
         metavar=_('string'),
-        default=constants.DEFAULT_EVENT_DELIMITER,
+        default=constants.DEFAULT_EVENT_DELIMITERS,
         help=_("(Experimental)Delimiters not to join two events. "
                "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-sw1', '--stop-words-1',
+        metavar=_('words_delimited_by_space'),
+        help=_("(Experimental)First set of Stop words to split two events. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-sw2', '--stop-words-2',
+        metavar=_('words_delimited_by_space'),
+        help=_("(Experimental)Second set of Stop words to split two events. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-ds', '--dont-split',
+        action='store_true',
+        help=_("(Experimental)Don't Split just merge. "
+               "(arg_num = 0)"))
 
     network_group.add_argument(
         '-hsa', '--http-speech-api',

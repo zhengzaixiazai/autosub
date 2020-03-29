@@ -722,11 +722,25 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
 
     try:
         args.output_files.remove("join-events")
+        if args.stop_words_1:
+            stop_words_1 = args.stop_words_1.split(" ")
+            stop_words_set_1 = set(stop_words_1)
+        else:
+            stop_words_set_1 = constants.DEFAULT_ENGLISH_STOP_WORDS_SET_1
+        if args.stop_words_2:
+            stop_words_2 = args.stop_words_2.split(" ")
+            stop_words_set_2 = set(stop_words_2)
+        else:
+            stop_words_set_2 = constants.DEFAULT_ENGLISH_STOP_WORDS_SET_2
+
         new_sub = sub_utils.merge_src_assfile(
             subtitles=src_sub,
             max_join_size=args.max_join_size,
             max_delta_time=int(args.max_delta_time * 1000),
-            delimiters=args.delimiters
+            delimiters=args.delimiters,
+            stop_words_set_1=stop_words_set_1,
+            stop_words_set_2=stop_words_set_2,
+            avoid_split=args.dont_split
         )
         sub_string = core.ssafile_to_sub_str(
             ssafile=new_sub,
