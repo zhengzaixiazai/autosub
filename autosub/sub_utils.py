@@ -452,7 +452,8 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
         subtitles,
         max_join_size=constants.DEFAULT_MAX_SIZE_PER_EVENT,
         max_delta_time=int(constants.DEFAULT_CONTINUOUS_SILENCE * 1000),
-        delimiters=constants.DEFAULT_EVENT_DELIMITER
+        delimiters=constants.DEFAULT_EVENT_DELIMITER,
+        avoid_split=False
 ):
     """
     Merge a source subtitles file's events automatically.
@@ -476,71 +477,114 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
     temp_ssafile.sort()
 
     sub_length = len(temp_ssafile.events)
-    i = 1
-    j = 0
-    k = 0
+    event_count = 1
+    merge_count = 0
+    split_count = 0
 
     new_ssafile.events.append(temp_ssafile.events[0])
 
-    while i < sub_length - 1:
+    while event_count < sub_length:
         if len(new_ssafile.events[-1].text) < max_join_size:
-            if not new_ssafile.events[-1].is_comment and not temp_ssafile.events[i].is_comment\
-                    and new_ssafile.events[-1].style == temp_ssafile.events[i].style\
-                    and temp_ssafile.events[i].start\
+            if not new_ssafile.events[-1].is_comment \
+                    and not temp_ssafile.events[event_count].is_comment\
+                    and new_ssafile.events[-1].style == temp_ssafile.events[event_count].style\
+                    and temp_ssafile.events[event_count].start\
                     - new_ssafile.events[-1].end < max_delta_time \
                     and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters:
                 if len(new_ssafile.events[-1].text) + \
-                        len(temp_ssafile.events[i].text) < max_join_size:
-                    new_ssafile.events[-1].end = temp_ssafile.events[i].end
+                        len(temp_ssafile.events[event_count].text) < max_join_size:
+                    new_ssafile.events[-1].end = temp_ssafile.events[event_count].end
                     if new_ssafile.events[-1].text[-1] != " ":
                         new_ssafile.events[-1].text = new_ssafile.events[-1].text + " " + \
-                                                      temp_ssafile.events[i].text
+                                                      temp_ssafile.events[event_count].text
                     else:
                         new_ssafile.events[-1].text = \
-                            new_ssafile.events[-1].text + temp_ssafile.events[i].text
-                    j = j + 1
+                            new_ssafile.events[-1].text + temp_ssafile.events[event_count].text
+                    merge_count = merge_count + 1
+                    event_count = event_count + 1
+                    continue
 
-                else:
-                    combination = new_ssafile.events[-1].text + " " + temp_ssafile.events[i].text
-                    min_range = int(len(combination) * 0)
-                    max_range = len(combination) - min_range
-                    half_pos = int(len(combination) / 2)
-                    word_dict = get_slice_pos_dict(combination, delimiters=delimiters)
-                    # use punctuations to split the sentence first
-                    if len(word_dict) <= 1:
-                        word_dict = get_slice_pos_dict(combination)
-                    word_set = set(word_dict.keys())
-                    stop_word_set = constants.DEFAULT_ENGLISH_STOP_WORDS_SET & word_set
-                    last_index = 0
-                    last_delta = half_pos - last_index
-                    if stop_word_set:
-                        for stop_word in stop_word_set:
-                            for index in word_dict[stop_word]:
-                                if min_range < index < max_range:
-                                    delta = abs(index - half_pos)
-                                    if delta < last_delta:
-                                        last_index = index
-                                        last_delta = delta
-                    if last_index and last_index < max_join_size:
-                        joint_event = join_event(new_ssafile.events[-1], temp_ssafile.events[i])
-                        new_ssafile.events.pop()
-                        new_ssafile.events.extend(split_event(joint_event, last_index))
-                        k = k + 1
+                if not avoid_split:
+                    joint_event = join_event(new_ssafile.events[-1],
+                                             temp_ssafile.events[event_count])
+                    event_list = []
+                    while True:
+                        word_dict = get_slice_pos_dict(joint_event.text, delimiters=delimiters)
+                        total_length = len(joint_event.text)
+                        # use punctuations to split the sentence first
+                        if len(word_dict) < 2:
+                            word_dict = get_slice_pos_dict(joint_event.text)
+                            stop_word_set = constants.DEFAULT_ENGLISH_STOP_WORDS_SET & \
+                                set(word_dict.keys())
+                        else:
+                            stop_word_set = set(word_dict.keys())
 
-                i = i + 1
-                continue
+                        last_index = find_split_index(
+                            total_length=total_length,
+                            stop_word_set=stop_word_set,
+                            word_dict=word_dict,
+                            min_range_ratio=0.1,
+                        )
 
-        new_ssafile.events.append(temp_ssafile.events[i])
-        i = i + 1
+                        if 0 < last_index < max_join_size:
+                            if total_length - last_index < max_join_size:
+                                new_ssafile.events.pop()
+                                event_list.extend(split_event(joint_event, last_index))
+                                new_ssafile.events.extend(event_list)
+                                merge_count = merge_count + 1
+                                split_count = split_count + len(event_list)
+                                last_index = -1
+                                break
+                            split_events = split_event(joint_event, last_index)
+                            event_list.append(split_events[0])
+                            joint_event = split_events[1]
+                        else:
+                            break
+
+                    if last_index == -1:
+                        event_count = event_count + 1
+                        continue
+
+        new_ssafile.events.append(temp_ssafile.events[event_count])
+        event_count = event_count + 1
 
     for events in sorted_events_list:
         new_ssafile.events = events + new_ssafile.events
 
-    print(_("Merge {count} lines of events.").format(count=j))
-    print(_("Split {count} lines of events.").format(count=k))
-    print(_("Reduce {count} lines of events.").format(count=j - k))
+    print(_("Merge {count} times.").format(count=merge_count))
+    print(_("Split {count} times.").format(count=split_count))
+    delta = len(subtitles.events) - len(new_ssafile.events)
+    if delta > 0:
+        print(_("Reduce {count} lines of events.").format(count=delta))
+    else:
+        print(_("Add {count} lines of events.").format(count=-delta))
 
     return new_ssafile
+
+
+def find_split_index(
+        total_length,
+        stop_word_set,
+        word_dict,
+        min_range_ratio
+):
+    """
+    Find index to split.
+    """
+    half_pos = int(total_length / 2)
+    min_range = int(min_range_ratio * total_length)
+    max_range = total_length - min_range
+    last_index = 0
+    last_delta = half_pos - last_index
+    if stop_word_set:
+        for stop_word in stop_word_set:
+            for index in word_dict[stop_word]:
+                if min_range < index < max_range:
+                    delta = abs(index - half_pos)
+                    if delta < last_delta:
+                        last_index = index
+                        last_delta = delta
+    return last_index
 
 
 def get_slice_pos_dict(
@@ -557,11 +601,12 @@ def get_slice_pos_dict(
     while i < length:
         if sentence[i] in delimiters:
             if i != j and sentence[j:i].strip(" "):
-                index = result_dict.get(sentence[j:i])
+                slice_ = sentence[j:i].lstrip(" ")
+                index = result_dict.get(slice_)
                 if not index:
-                    result_dict[sentence[j:i]] = [j]
+                    result_dict[slice_] = [j]
                 else:
-                    result_dict[sentence[j:i]].append(j)
+                    result_dict[slice_].append(j)
             j = i + 1
         i = i + 1
 
@@ -585,7 +630,8 @@ def join_event(
 
 def split_event(
         event,
-        position
+        position,
+        without_mark=False
 ):
     """
     Split an event based on position.
@@ -594,11 +640,18 @@ def split_event(
     first_event = event.copy()
     first_event.start = event.start
     first_event.end = int((event.end - event.start) * ratio) + event.start
-    first_event.text = event.text[:position].rstrip(" ")
 
     second_event = event.copy()
     second_event.end = event.end
     second_event.start = first_event.end
-    second_event.text = event.text[position:]
+    if not without_mark:
+        if not first_event.text.startswith("{\\r}"):
+            first_event.text = "{\\r}" + event.text[:position].rstrip(" ")
+        else:
+            first_event.text = event.text[:position].rstrip(" ")
+        if not second_event.text.startswith("{\\r}"):
+            second_event.text = "{\\r}" + event.text[position:].lstrip(" ")
+        else:
+            second_event.text = event.text[position:].lstrip(" ")
 
     return [first_event, second_event]
