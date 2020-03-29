@@ -505,7 +505,9 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                 continue
 
             if not avoid_split:
-                if len(new_ssafile.events[-1].text) > max_join_size * 0.7:
+                if len(new_ssafile.events[-1].text) \
+                        > len(temp_ssafile.events[event_count].text) * 1.4 and \
+                        len(new_ssafile.events[-1].text) > max_join_size * 0.8:
                     joint_event = new_ssafile.events[-1]
                 else:
                     joint_event = join_event(new_ssafile.events[-1],
@@ -515,7 +517,16 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                     word_dict = get_slice_pos_dict(joint_event.text, delimiters=delimiters)
                     total_length = len(joint_event.text)
                     # use punctuations to split the sentence first
-                    if len(word_dict) < 2:
+                    stop_word_set = set(word_dict.keys())
+                    last_index = find_split_index(
+                        total_length=total_length,
+                        stop_word_set=stop_word_set,
+                        word_dict=word_dict,
+                        min_range_ratio=0.1
+                    )
+
+                    if len(word_dict) < 2 or not last_index:
+                        # then use stop words
                         word_dict = get_slice_pos_dict(joint_event.text)
                         stop_word_set = stop_words_set_1 & \
                             set(word_dict.keys())
@@ -535,15 +546,6 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                                 min_range_ratio=0.1
                             )
 
-                    else:
-                        stop_word_set = set(word_dict.keys())
-                        last_index = find_split_index(
-                            total_length=total_length,
-                            stop_word_set=stop_word_set,
-                            word_dict=word_dict,
-                            min_range_ratio=0.1
-                        )
-
                     if 0 < last_index < max_join_size:
                         if total_length - last_index < max_join_size:
                             event_list.extend(split_event(joint_event, last_index))
@@ -555,8 +557,9 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                             if len(event_list) > 2:
                                 count = 0
                                 while count < len(event_list) - 1:
-                                    joint_event = join_event(event_list[count],
-                                                             event_list[count + 1])
+                                    joint_event = join_event(
+                                        event_list[count],
+                                        event_list[count + 1])
                                     if len(joint_event.text) < max_join_size:
                                         del event_list[count + 1]
                                         event_list[count] = joint_event

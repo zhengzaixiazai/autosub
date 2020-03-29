@@ -445,9 +445,9 @@ DEFAULT_VIDEO_FPS_CMD = FFPROBE_CMD + " -v 0 -of csv=p=0 -select_streams " \
 DEFAULT_CHECK_CMD = FFPROBE_CMD + " {in_} -show_format -pretty -loglevel quiet"
 
 DEFAULT_ENGLISH_STOP_WORDS_SET_1 = \
-    {'after', 'and', 'as', 'because', 'before', 'between', 'but', 'for', 'how', 'if', 'or', 'so',
-     'that', "that'll", 'until', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why',
-     'with'}
+    {'after', 'and', 'as', 'because', 'before', 'between', 'but', 'either', 'except', 'for', 'how',
+     'include', 'including', 'includes', 'included', 'if', 'or', 'since', 'so', 'that', "that'll",
+     'until', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'with'}
 
 DEFAULT_ENGLISH_STOP_WORDS_SET_2 = \
     {'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any',
