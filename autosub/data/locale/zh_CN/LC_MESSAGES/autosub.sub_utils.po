@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-29 18:00+0800\n"
+"POT-Creation-Date: 2020-04-02 16:04+0800\n"
 "PO-Revision-Date: 2020-03-29 11:48+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,19 +17,19 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.3\n"
 
-#: autosub/sub_utils.py:588
+#: autosub/sub_utils.py:590
 msgid "Merge {count} times."
 msgstr "合并了{count}次。"
 
-#: autosub/sub_utils.py:589
+#: autosub/sub_utils.py:591
 msgid "Split {count} times."
 msgstr "分割了{count}次。"
 
-#: autosub/sub_utils.py:592
+#: autosub/sub_utils.py:594
 msgid "Reduce {count} lines of events."
 msgstr "减少了{count}行字幕。"
 
-#: autosub/sub_utils.py:594
+#: autosub/sub_utils.py:596
 msgid "Add {count} lines of events."
 msgstr "增加了{count}行字幕。"
 

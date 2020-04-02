@@ -142,8 +142,6 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
             on_close=lambda web_socket: self.on_close(web_socket),
             on_open=lambda web_socket: self.on_open(web_socket))
         self.web_socket_app.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
-        if not self.is_keep:
-            os.remove(filename)
         if self.is_full_result:
             return self.result_list
         return self.transcript
@@ -219,6 +217,8 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
                     # 模拟音频采样间隔
                     time.sleep(interval)
             web_socket.close()
+            if not self.is_keep:
+                os.remove(self.filename)
         _thread.start_new_thread(run, ())
 
 

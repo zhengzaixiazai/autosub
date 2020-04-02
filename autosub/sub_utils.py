@@ -449,6 +449,7 @@ def merge_bilingual_assfile(  # pylint: disable=too-many-locals, too-many-branch
 
 def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-blocks,
         # pylint: disable=too-many-statements, too-many-branches, too-many-arguments
+        # pylint: disable=too-many-boolean-expressions
         subtitles,
         stop_words_set_1,
         stop_words_set_2,
@@ -490,7 +491,8 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                 and new_ssafile.events[-1].style == temp_ssafile.events[event_count].style \
                 and temp_ssafile.events[event_count].start \
                 - new_ssafile.events[-1].end < max_delta_time \
-                and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters:
+                and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters\
+                and temp_ssafile.events[event_count].text.lstrip(" ")[0] not in delimiters:
             if len(new_ssafile.events[-1].text) + \
                     len(temp_ssafile.events[event_count].text) < max_join_size:
                 new_ssafile.events[-1].end = temp_ssafile.events[event_count].end

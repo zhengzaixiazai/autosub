@@ -1094,7 +1094,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 _("Error: Convert source file to \"{name}\" failed.").format(
                     name=audio_wav))
 
-        print(_("Conversion complete.\nUse Auditok to detect speech regions."))
+        print(_("Conversion completed.\nUse Auditok to detect speech regions."))
 
         regions = core.auditok_gen_speech_regions(
             audio_wav=audio_wav,
@@ -1106,7 +1106,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         os.remove(audio_wav)
         gc.collect(0)
 
-        print(_("\n\"{name}\" has been deleted.").format(name=audio_wav))
+        print(_("Auditok detection completed."
+                "\n\"{name}\" has been deleted.").format(name=audio_wav))
 
     if not regions:
         raise exceptions.AutosubException(

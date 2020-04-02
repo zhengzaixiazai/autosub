@@ -68,6 +68,7 @@ Click up arrow to go back to TOC.
 
 - Fix the size count bug when the last line been split in list_to_googletrans.
 - Fix delete_chars issue when using `-of full-src`.
+- Fix os.remove() PermissionError in api_xfyun.py.
 
 #### Removed(Unreleased)
 

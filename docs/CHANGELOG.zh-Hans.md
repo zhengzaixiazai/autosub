@@ -66,6 +66,7 @@
 
 - 修复list_to_googletrans中当最后一行是需要被分割时的长度计算问题。
 - 修复delete_chars问题当使用`-of full-src`时。
+- 修复api_xfyun.py中的os.remove()文件占用问题。
 
 #### 删除(未发布)
 
