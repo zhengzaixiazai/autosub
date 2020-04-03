@@ -383,7 +383,6 @@ def xfyun_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
             api_secret=config["api_secret"],
             api_address=api_address,
             business_args=config["business"],
-            is_keep=is_keep,
             is_full_result=result_list is not None,
             delete_chars=delete_chars)
 
@@ -413,11 +412,19 @@ def xfyun_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
                     result_list.append("")
                 text_list.append("")
                 pbar.update(i)
+
+        if not is_keep:
+            for audio_fragment in audio_fragments:
+                os.remove(audio_fragment)
+
         pbar.finish()
         pool.terminate()
         pool.join()
 
     except (KeyboardInterrupt, AttributeError) as error:
+        if not is_keep:
+            for audio_fragment in audio_fragments:
+                os.remove(audio_fragment)
         pbar.finish()
         pool.terminate()
         pool.join()
@@ -429,6 +436,9 @@ def xfyun_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
         return None
 
     except exceptions.SpeechToTextException as err_msg:
+        if not is_keep:
+            for audio_fragment in audio_fragments:
+                os.remove(audio_fragment)
         pbar.finish()
         pool.terminate()
         pool.join()
@@ -707,8 +717,7 @@ def list_to_sub_str(
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
-            text_list=timed_text,
-            style_name=None)
+            text_list=timed_text)
         formatted_subtitles = pysubs2_obj.to_string(
             format_=subtitles_file_format)
 
@@ -725,8 +734,7 @@ def list_to_sub_str(
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
-            text_list=timed_text,
-            style_name=None)
+            text_list=timed_text)
         formatted_subtitles = pysubs2_obj.to_string(
             format_='json')
 
@@ -739,8 +747,7 @@ def list_to_sub_str(
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
-            text_list=timed_text,
-            style_name=None)
+            text_list=timed_text)
         formatted_subtitles = pysubs2_obj.to_string(
             format_='microdvd',
             fps=fps)
@@ -753,8 +760,7 @@ def list_to_sub_str(
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
-            text_list=timed_text,
-            style_name=None)
+            text_list=timed_text)
         formatted_subtitles = pysubs2_obj.to_string(
             format_='mpl2',
             fps=fps)
@@ -769,8 +775,7 @@ def list_to_sub_str(
         sub_utils.pysubs2_ssa_event_add(
             src_ssafile=None,
             dst_ssafile=pysubs2_obj,
-            text_list=timed_text,
-            style_name=None)
+            text_list=timed_text)
         formatted_subtitles = pysubs2_obj.to_string(
             format_=constants.DEFAULT_SUBTITLES_FORMAT)
 

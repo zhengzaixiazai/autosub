@@ -4,7 +4,6 @@
 Defines Xun Fei Yun API used by autosub.
 """
 # Import built-in modules
-import os
 import datetime
 import hashlib
 import base64
@@ -103,7 +102,6 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
                  api_secret,
                  api_address,
                  business_args,
-                 is_keep=False,
                  is_full_result=False,
                  delete_chars=None):
         self.common_args = {"app_id": app_id}
@@ -111,7 +109,6 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
         self.api_secret = api_secret
         self.api_address = api_address
         self.business_args = business_args
-        self.is_keep = is_keep
         self.is_full_result = is_full_result
         self.delete_chars = delete_chars
         self.data = {"status": 0,
@@ -217,8 +214,6 @@ class XfyunWebSocketAPI:  # pylint: disable=too-many-instance-attributes, too-ma
                     # 模拟音频采样间隔
                     time.sleep(interval)
             web_socket.close()
-            if not self.is_keep:
-                os.remove(self.filename)
         _thread.start_new_thread(run, ())
 
 

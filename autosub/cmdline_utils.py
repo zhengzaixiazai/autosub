@@ -834,7 +834,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=bilingual_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[0])
+                style_name="")
 
         bilingual_string = core.ssafile_to_sub_str(
             ssafile=bilingual_sub,
@@ -886,7 +886,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[0],
+                style_name="",
                 same_event_type=1)
 
         bilingual_string = core.ssafile_to_sub_str(
@@ -939,7 +939,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[0],
+                style_name="",
                 same_event_type=2)
 
         bilingual_string = core.ssafile_to_sub_str(
@@ -987,7 +987,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=dst_sub,
                 text_list=translated_text,
-                style_name=styles_list[0])
+                style_name="")
 
         dst_string = core.ssafile_to_sub_str(
             ssafile=dst_sub,
@@ -1383,13 +1383,11 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=None,
                         dst_ssafile=bilingual_sub,
-                        text_list=timed_text,
-                        style_name=None)
+                        text_list=timed_text)
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=bilingual_sub,
                         dst_ssafile=bilingual_sub,
                         text_list=translated_text,
-                        style_name=None,
                         same_event_type=0)
                     bilingual_string = core.ssafile_to_sub_str(
                         ssafile=bilingual_sub,
@@ -1431,13 +1429,11 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=None,
                         dst_ssafile=src_sub,
-                        text_list=timed_text,
-                        style_name=None)
+                        text_list=timed_text)
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=src_sub,
                         dst_ssafile=bilingual_sub,
                         text_list=translated_text,
-                        style_name=None,
                         same_event_type=1)
                     bilingual_string = core.ssafile_to_sub_str(
                         ssafile=bilingual_sub,
@@ -1479,13 +1475,11 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=None,
                         dst_ssafile=src_sub,
-                        text_list=timed_text,
-                        style_name=None)
+                        text_list=timed_text)
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=src_sub,
                         dst_ssafile=bilingual_sub,
                         text_list=translated_text,
-                        style_name=None,
                         same_event_type=2)
                     bilingual_string = core.ssafile_to_sub_str(
                         ssafile=bilingual_sub,

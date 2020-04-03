@@ -69,13 +69,11 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
         src_ssafile,
         dst_ssafile,
         text_list,
-        style_name,
+        style_name='Default',
         same_event_type=0,):
     """
     Serialize a list of subtitles using pysubs2.
     """
-    if not style_name:
-        style_name = 'Default'
     if text_list:
         if not src_ssafile:
             if isinstance(text_list[0][0], tuple):
@@ -105,19 +103,30 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
             length = len(text_list)
             if same_event_type == 0:
                 #  append text_list to new events
-                while i < length:
-                    event = pysubs2.SSAEvent()
-                    event.start = src_ssafile.events[i].start
-                    event.end = src_ssafile.events[i].end
-                    event.is_comment = src_ssafile.events[i].is_comment
-                    event.text = text_list[i]
-                    event.style = style_name
-                    dst_ssafile.events.append(event)
-                    i = i + 1
+                if style_name:
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
+                        event.text = text_list[i]
+                        event.style = style_name
+                        dst_ssafile.events.append(event)
+                        i = i + 1
+                else:
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
+                        event.text = text_list[i]
+                        event.style = src_ssafile.events[i].style
+                        dst_ssafile.events.append(event)
+                        i = i + 1
             elif same_event_type == 1:
                 # add text_list to src_ssafile
                 # before the existing text in event
-                if src_ssafile.events[0].style == style_name:
+                if not style_name or src_ssafile.events[0].style == style_name:
                     # same style
                     while i < length:
                         event = pysubs2.SSAEvent()
@@ -147,7 +156,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
             elif same_event_type == 2:
                 # add text_list to src_ssafile
                 # after the existing text in event
-                if src_ssafile.events[0].style == style_name:
+                if not style_name or src_ssafile.events[0].style == style_name:
                     # same style
                     while i < length:
                         event = pysubs2.SSAEvent()
@@ -178,6 +187,8 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
         # src_ssafile provides regions only
         i = 0
         length = len(src_ssafile.events)
+        if not style_name:
+            style_name = 'Default'
         while i < length:
             event = pysubs2.SSAEvent()
             event.start = src_ssafile.events[i].start
@@ -195,8 +206,7 @@ def list_to_vtt_str(subtitles):
     pysubs2_ssa_event_add(
         src_ssafile=None,
         dst_ssafile=pysubs2_obj,
-        text_list=subtitles,
-        style_name=None)
+        text_list=subtitles)
     formatted_subtitles = pysubs2_obj.to_string(
         format_='srt')
     i = 0
