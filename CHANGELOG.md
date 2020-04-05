@@ -64,7 +64,6 @@ Click up arrow to go back to TOC.
 - Change the MAX_REGION_SIZE_LIMIT into 60 seconds.
 - Change all text file input decoding into "utf-8".
 - Change the default style selection in subtitles translation.
-- Change check_output into Popen.
 - Change the loglevel in ffmpeg commands into `-loglevel error`.
 
 #### Fixed(Unreleased)

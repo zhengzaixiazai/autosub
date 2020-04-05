@@ -69,9 +69,7 @@ class SplitIntoAudioPiece:  # pylint: disable=too-few-public-methods
                 prcs = subprocess.Popen(constants.cmd_conversion(command),
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE)
-                err = prcs.communicate()[1]
-                if err:
-                    return None
+                prcs.communicate()
                 return temp.name
 
             filename = self.output \
@@ -211,19 +209,9 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
                 in_=output_list[i - 1],
                 out_=output_list[i])
             print(command)
-            prcs = subprocess.Popen(constants.cmd_conversion(command),
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            out, err = prcs.communicate()
-            ffmpeg_str = ""
-            if out:
-                ffmpeg_str = out.decode(sys.stdout.encoding)
-            if err:
-                print(_("Error: ffmpeg failed to convert the file."
-                        "\nBelow is the error output.\n")
-                      + err.decode(sys.stdout.encoding))
-                return None
-            print(ffmpeg_str)
+            subprocess.check_output(
+                constants.cmd_conversion(command),
+                stdin=open(os.devnull))
             if not ffprobe_check_file(output_list[i]):
                 return None
 
@@ -239,22 +227,13 @@ def audio_pre_prcs(  # pylint: disable=too-many-arguments, too-many-branches
                 in_=output_list[i - 1],
                 out_=output_list[i])
             print(command)
-            prcs = subprocess.Popen(constants.cmd_conversion(command),
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            out, err = prcs.communicate()
-            ffmpeg_str = ""
-            if out:
-                ffmpeg_str = out.decode(sys.stdout.encoding)
-            if err:
-                print(_("Error: ffmpeg failed to convert the file."
-                        "\nBelow is the error output.\n")
-                      + err.decode(sys.stdout.encoding))
-                return None
-            print(ffmpeg_str)
+            subprocess.check_output(
+                constants.cmd_conversion(command),
+                stdin=open(os.devnull))
             if not ffprobe_check_file(output_list[i]):
                 os.remove(output_list[i])
                 return None
-            os.remove(output_list[i - 1])
+            if i > 1:
+                os.remove(output_list[i - 1])
 
     return output_list[-1]

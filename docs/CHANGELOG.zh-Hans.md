@@ -62,7 +62,6 @@
 - 修改最长语音区域限制为60秒。
 - 修改所有文本文件输入编码为"utf-8"。
 - 修改字幕翻译中字幕样式选择的默认方式。
-- 修改check_output方法为Popen方法。
 - 修改ffmpeg指令中的loglevel为`-loglevel error`。
 
 #### 修复(未发布)
