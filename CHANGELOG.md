@@ -64,12 +64,15 @@ Click up arrow to go back to TOC.
 - Change the MAX_REGION_SIZE_LIMIT into 60 seconds.
 - Change all text file input decoding into "utf-8".
 - Change the default style selection in subtitles translation.
+- Change check_output into Popen.
+- Change the loglevel in ffmpeg commands into `-loglevel error`.
 
 #### Fixed(Unreleased)
 
 - Fix the size count bug when the last line been split in list_to_googletrans.
 - Fix delete_chars issue when using `-of full-src`.
 - Fix os.remove() PermissionError in api_xfyun.py.
+- Fix DEFAULT_AUDIO_PRCS_CMDS and DEFAULT_CHECK_CMD.
 
 #### Removed(Unreleased)
 
@@ -95,6 +98,8 @@ Click up arrow to go back to TOC.
 #### Deprecated(0.5.6-alpha)
 
 - Deprecate Python 2.7 support.
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.5-alpha] - 2020-03-04
 

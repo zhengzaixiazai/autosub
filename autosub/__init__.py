@@ -121,14 +121,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         args.audio_split_cmd.replace(
                             "-vn -ac [channel] -ar [sample_rate] ", "")
                     if not prcs_file:
-                        print(_("Audio pre-processing failed."
-                                "\nUse default method."))
+                        print(_("Audio pre-processing failed. Try default method."))
                     else:
                         args.input = prcs_file
                         print(_("Audio pre-processing complete."))
 
             else:
-                if args.audio_split_cmd == constants.DEFAULT_AUDIO_SPLT:
+                if args.audio_split_cmd == constants.DEFAULT_AUDIO_SPLT_CMD:
                     # if user doesn't modify the audio_split_cmd
                     if args.api_suffix == ".ogg":
                         # regard ogg as ogg_opus

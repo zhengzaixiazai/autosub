@@ -482,9 +482,9 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "https://github.com/stevenj/autosub/blob/master/scripts/subgen.sh "
                "https://ffmpeg.org/ffmpeg-filters.html) "
                "(2 >= arg_num >= 1)").format(
-                   dft_1=constants.DEFAULT_AUDIO_PRCS[0],
-                   dft_2=constants.DEFAULT_AUDIO_PRCS[1],
-                   dft_3=constants.DEFAULT_AUDIO_PRCS[2]))
+                   dft_1=constants.DEFAULT_AUDIO_PRCS_CMDS[0],
+                   dft_2=constants.DEFAULT_AUDIO_PRCS_CMDS[1],
+                   dft_3=constants.DEFAULT_AUDIO_PRCS_CMDS[2]))
 
     audio_prcs_group.add_argument(
         '-k', '--keep',
@@ -513,7 +513,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     audio_prcs_group.add_argument(
         '-acc', '--audio-conversion-cmd',
         metavar=_('command'),
-        default=constants.DEFAULT_AUDIO_CVT,
+        default=constants.DEFAULT_AUDIO_CVT_CMD,
         help=_("(Experimental)This arg will override the default "
                "audio conversion command. "
                "\"[\", \"]\" are optional arguments "
@@ -525,7 +525,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     audio_prcs_group.add_argument(
         '-asc', '--audio-split-cmd',
         metavar=_('command'),
-        default=constants.DEFAULT_AUDIO_SPLT,
+        default=constants.DEFAULT_AUDIO_SPLT_CMD,
         help=_("(Experimental)This arg will override the default "
                "audio split command. "
                "Same attention above. "

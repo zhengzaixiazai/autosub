@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-26 11:26+0800\n"
-"PO-Revision-Date: 2020-03-26 14:46+0800\n"
+"POT-Creation-Date: 2020-04-05 12:40+0800\n"
+"PO-Revision-Date: 2020-04-05 13:21+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -25,7 +25,7 @@ msgstr ""
 "\n"
 "输入参数(不包含\"autosub\"): "
 
-#: autosub/__init__.py:64 autosub/__init__.py:182
+#: autosub/__init__.py:64 autosub/__init__.py:181
 msgid ""
 "\n"
 "All works done."
@@ -62,22 +62,20 @@ msgstr ""
 "做完了。"
 
 #: autosub/__init__.py:124
-msgid ""
-"Audio pre-processing failed.\n"
-"Use default method."
+msgid "Audio pre-processing failed. Try default method."
 msgstr ""
 "音频预处理失败。\n"
 "使用默认方法。"
 
-#: autosub/__init__.py:128
+#: autosub/__init__.py:127
 msgid "Audio pre-processing complete."
 msgstr "音频预处理已完成。"
 
-#: autosub/__init__.py:170
+#: autosub/__init__.py:169
 msgid "Error: No valid \"-of\"/\"--output-files\" arguments."
 msgstr "错误：\"-of\"/\"--output-files\"参数无效。"
 
-#: autosub/__init__.py:185
+#: autosub/__init__.py:184
 msgid ""
 "\n"
 "KeyboardInterrupt. Works stopped."
@@ -85,7 +83,7 @@ msgstr ""
 "\n"
 "键盘中断。操作终止。"
 
-#: autosub/__init__.py:187
+#: autosub/__init__.py:186
 msgid ""
 "\n"
 "Error: pysubs2.exceptions. Check your file format."
@@ -93,7 +91,7 @@ msgstr ""
 "\n"
 "错误：pysubs2异常。检查你的文件格式。"
 
-#: autosub/__init__.py:192
+#: autosub/__init__.py:191
 msgid "Press Enter to exit..."
 msgstr "按回车以退出..."
 

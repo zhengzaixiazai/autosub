@@ -104,8 +104,9 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(regions)).start()
     try:
         audio_fragments = []
-        for i, flac_region in enumerate(pool.imap(converter, regions)):
-            audio_fragments.append(flac_region)
+        for i, audio_fragment in enumerate(pool.imap(converter, regions)):
+            if audio_fragment:
+                audio_fragments.append(audio_fragment)
             pbar.update(i)
             gc.collect(0)
         pbar.finish()

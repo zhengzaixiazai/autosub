@@ -62,12 +62,15 @@
 - 修改最长语音区域限制为60秒。
 - 修改所有文本文件输入编码为"utf-8"。
 - 修改字幕翻译中字幕样式选择的默认方式。
+- 修改check_output方法为Popen方法。
+- 修改ffmpeg指令中的loglevel为`-loglevel error`。
 
 #### 修复(未发布)
 
 - 修复list_to_googletrans中当最后一行是需要被分割时的长度计算问题。
 - 修复delete_chars问题当使用`-of full-src`时。
 - 修复api_xfyun.py中的os.remove()文件占用问题。
+- 修复DEFAULT_AUDIO_PRCS_CMDS和DEFAULT_CHECK_CMD。
 
 #### 删除(未发布)
 
@@ -90,6 +93,8 @@
 - 修复Google Speech-to-Text API空结果返回bug。[issue #89](https://github.com/BingLingGroup/autosub/issues/89)
 - 修改选项`-sml`为`-nsml`。
 - 修改Auditok默认参数。
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.5-alpha] - 2020-03-04
 

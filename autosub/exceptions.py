@@ -32,7 +32,7 @@ class AutosubException(Exception):
 
 class ConversionException(AutosubException):
     """
-    Raised when short-term audio fragments conversion failed.
+    Raised when audio conversion failed.
     """
 
 

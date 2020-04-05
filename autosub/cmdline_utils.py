@@ -7,6 +7,7 @@ Defines autosub's command line functionality.
 # Import built-in modules
 import gettext
 import os
+import sys
 import subprocess
 import tempfile
 import gc
@@ -1057,9 +1058,14 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             sample_rate=16000,
             out_=audio_wav)
         print(command)
-        subprocess.check_output(
-            constants.cmd_conversion(command),
-            stdin=open(os.devnull))
+        prcs = subprocess.Popen(constants.cmd_conversion(command),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = prcs.communicate()
+        if out:
+            print(out.decode(sys.stdout.encoding))
+        if err:
+            print(err.decode(sys.stdout.encoding))
         regions = sub_utils.sub_to_speech_regions(
             audio_wav=audio_wav,
             sub_file=args.ext_regions)
@@ -1085,9 +1091,14 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 "to detect audio regions.").format(
                     name=audio_wav))
         print(command)
-        subprocess.check_output(
-            constants.cmd_conversion(command),
-            stdin=open(os.devnull))
+        prcs = subprocess.Popen(constants.cmd_conversion(command),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = prcs.communicate()
+        if out:
+            print(out.decode(sys.stdout.encoding))
+        if err:
+            print(err.decode(sys.stdout.encoding))
 
         if not ffmpeg_utils.ffprobe_check_file(audio_wav):
             raise exceptions.AutosubException(

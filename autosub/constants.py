@@ -78,7 +78,7 @@ DEFAULT_CONTINUOUS_SILENCE = 0.2
 
 DEFAULT_DST_LANGUAGE = 'en-US'
 DEFAULT_SIZE_PER_TRANS = 4000
-DEFAULT_SLEEP_SECONDS = 5
+DEFAULT_SLEEP_SECONDS = 1
 
 DEFAULT_MAX_SIZE_PER_EVENT = 100
 DEFAULT_EVENT_DELIMITERS = r"!()*,.:;?[]^_`~"
@@ -422,27 +422,29 @@ if 'FFMPEG_NORMALIZE_PATH' in os.environ:
 else:
     FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
 
-DEFAULT_AUDIO_PRCS = [
-    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\
+DEFAULT_AUDIO_PRCS_CMDS = [
+    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -vn -af \"asplit[a],aphasemeter=video=0,\
 ametadata=select:key=\
 lavfi.aphasemeter.phase:value=-0.005:function=less,\
 pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]amix\" \
--ac 1 -f flac \"{out_}\"",
-    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af lowpass=3000,highpass=200 \"{out_}\"",
+-ac 1 -f flac -loglevel error \"{out_}\"",
+    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af \"lowpass=3000,highpass=200\" "
+                 "-loglevel error \"{out_}\"",
     FFMPEG_NORMALIZE_CMD + " -v \"{in_}\" -ar 44100 -ofmt flac -c:a flac -pr -p -o \"{out_}\""
 ]
 
-DEFAULT_AUDIO_CVT = \
-    FFMPEG_CMD + " -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
+DEFAULT_AUDIO_CVT_CMD = \
+    FFMPEG_CMD + " -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate}" \
+                 " -loglevel error \"{out_}\""
 
-DEFAULT_AUDIO_SPLT = \
+DEFAULT_AUDIO_SPLT_CMD = \
     FFMPEG_CMD + " -y -ss {start} -i \"{in_}\" -t {dura} " \
     "-vn -ac [channel] -ar [sample_rate] -loglevel error \"{out_}\""
 
 DEFAULT_VIDEO_FPS_CMD = FFPROBE_CMD + " -v 0 -of csv=p=0 -select_streams " \
                         "v:0 -show_entries stream=r_frame_rate \"{in_}\""
 
-DEFAULT_CHECK_CMD = FFPROBE_CMD + " {in_} -show_format -pretty -loglevel quiet"
+DEFAULT_CHECK_CMD = FFPROBE_CMD + " \"{in_}\" -show_format -pretty -loglevel quiet"
 
 DEFAULT_ENGLISH_STOP_WORDS_SET_1 = \
     {'after', 'and', 'as', 'because', 'before', 'between', 'but', 'either', 'except', 'for', 'how',
