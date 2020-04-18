@@ -23,13 +23,13 @@ setup(
     author=metadata['AUTHOR'],
     author_email=metadata['AUTHOR_EMAIL'],
     url=metadata['HOMEPAGE'],
-    packages=[str('autosub')],
+    packages=['autosub'],
     entry_points={
         'console_scripts': [
             'autosub = autosub:main',
         ]
     },
-    package_data={str('autosub'): [str('data/locale/zh_CN/LC_MESSAGES/*mo')]},
+    package_data={'autosub': ['data/locale/zh_CN/LC_MESSAGES/*mo']},
     install_requires=[
         'requests>=2.3.0',
         'pysubs2>=0.2.4',

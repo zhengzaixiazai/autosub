@@ -63,6 +63,7 @@
 - 修改所有文本文件输入编码为"utf-8"。
 - 修改字幕翻译中字幕样式选择的默认方式。
 - 修改ffmpeg指令中的loglevel为`-loglevel error`。
+- 修改DEFAULT_MIN_REGION_SIZE为0.5。
 
 #### 修复(未发布)
 
