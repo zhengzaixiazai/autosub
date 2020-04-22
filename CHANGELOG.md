@@ -65,7 +65,7 @@ Click up arrow to go back to TOC.
 - Change all text file input decoding into "utf-8".
 - Change the default style selection in subtitles translation.
 - Change the loglevel in ffmpeg commands into `-loglevel error`.
-- Change DEFAULT_MIN_REGION_SIZE to 0.5
+- Change DEFAULT_MIN_REGION_SIZE to 0.5.
 
 #### Fixed(Unreleased)
 
@@ -73,6 +73,7 @@ Click up arrow to go back to TOC.
 - Fix delete_chars issue when using `-of full-src`.
 - Fix os.remove() PermissionError in api_xfyun.py.
 - Fix DEFAULT_AUDIO_PRCS_CMDS and DEFAULT_CHECK_CMD.
+- Fix the issue with path checking in dependency finding.
 
 #### Removed(Unreleased)
 

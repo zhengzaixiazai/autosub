@@ -394,33 +394,39 @@ def which_exe(program_path):
 
 def get_cmd(program_name):
     """
-    Return the executable name. "" returned when no executable exists.
+    Return the path for a given executable.
+    "" returned when no executable exists.
     """
-    command = which_exe(program_name)
-    if command:
-        return command
-
-    command = which_exe(program_name + ".exe")
-    if command:
-        return command
+    if not sys.platform.startswith('win'):
+        command = which_exe(program_name)
+        if command:
+            return command
+    else:
+        command = which_exe(program_name + ".exe")
+        if command:
+            return command
 
     return ""
 
 
-if 'FFMPEG_PATH' in os.environ:
-    FFMPEG_CMD = os.environ['FFMPEG_PATH']
-else:
-    FFMPEG_CMD = get_cmd("ffmpeg")
+def get_cmd_from_env(program_name, env_name):
+    """
+    Return the path or the value of environment variable
+    for a given executable.
+    """
+    if env_name in os.environ:
+        if is_exe(os.environ[env_name]):
+            return os.environ[env_name]
+        program_name = os.path.join(os.environ[env_name], program_name)
+        if is_exe(program_name):
+            return program_name
+        return program_name + ".exe"
+    return get_cmd(program_name)
 
-if 'FFPROBE_PATH' in os.environ:
-    FFPROBE_CMD = os.environ['FFPROBE_PATH']
-else:
-    FFPROBE_CMD = get_cmd("ffprobe")
 
-if 'FFMPEG_NORMALIZE_PATH' in os.environ:
-    FFMPEG_NORMALIZE_CMD = os.environ['FFMPEG_NORMALIZE_PATH']
-else:
-    FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
+FFMPEG_CMD = get_cmd_from_env("ffmpeg", "FFMPEG_PATH")
+FFPROBE_CMD = get_cmd_from_env("ffprobe", "FFPROBE_PATH")
+FFMPEG_NORMALIZE_CMD = get_cmd_from_env("ffmpeg-normalize", "FFMPEG_NORMALIZE_PATH")
 
 DEFAULT_AUDIO_PRCS_CMDS = [
     FFMPEG_CMD + " -hide_banner -i \"{in_}\" -vn -af \"asplit[a],aphasemeter=video=0,\

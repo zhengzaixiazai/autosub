@@ -71,6 +71,7 @@
 - 修复delete_chars问题当使用`-of full-src`时。
 - 修复api_xfyun.py中的os.remove()文件占用问题。
 - 修复DEFAULT_AUDIO_PRCS_CMDS和DEFAULT_CHECK_CMD。
+- 修复依赖查找中，路径检查的问题。
 
 #### 删除(未发布)
 
