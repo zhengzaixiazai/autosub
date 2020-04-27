@@ -49,8 +49,10 @@ def get_baidu_transcript(
     try:
         err_no = result_dict["err_no"]
         if err_no != 0:
-            raise exceptions.SpeechToTextException(
-                json.dumps(result_dict, indent=4, ensure_ascii=False))
+            if err_no not in (3301, 3303, 3307, 3313, 3315):
+                raise exceptions.SpeechToTextException(
+                    json.dumps(result_dict, indent=4, ensure_ascii=False))
+            raise KeyError
         if delete_chars:
             result = result_dict["result"][0].translate(
                 str.maketrans(delete_chars, " " * len(delete_chars)))

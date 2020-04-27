@@ -87,6 +87,11 @@ class SplitIntoAudioPiece:  # pylint: disable=too-few-public-methods
             err = prcs.communicate()[1]
             if err:
                 return None
+            audio_file = open(filename, mode="rb")
+            audio_data = audio_file.read()
+            audio_file.close()
+            if len(audio_data) <= 4:
+                return None
             return filename
 
         except KeyboardInterrupt:

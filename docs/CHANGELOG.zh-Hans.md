@@ -55,6 +55,7 @@
 - 添加方法merge_src_assfile，merge_bilingual_assfile。
 - 添加停用词用于merge_src_assfile方法里的断句。
 - 添加标点符号分割功能在merge_src_assfile方法里。
+- 添加音频长度至少为4字节的检测，在SplitIntoAudioPiece里。
 
 #### 改动(未发布)
 
@@ -72,6 +73,7 @@
 - 修复api_xfyun.py中的os.remove()文件占用问题。
 - 修复DEFAULT_AUDIO_PRCS_CMDS和DEFAULT_CHECK_CMD。
 - 修复依赖查找中，路径检查的问题。
+- 修复百度奇怪的错误代码处理。[issue #114](https://github.com/BingLingGroup/autosub/issues/114)
 
 #### 删除(未发布)
 

@@ -57,6 +57,7 @@ Click up arrow to go back to TOC.
 - Add merge_src_assfile, merge_bilingual_assfile methods.
 - Add stop words to split events in merge_src_assfile method.
 - Add punctuations split in merge_src_assfile method.
+- Add limitation in SplitIntoAudioPiece with an audio length of at least 4 bytes.
 
 #### Changed(Unreleased)
 
@@ -74,6 +75,7 @@ Click up arrow to go back to TOC.
 - Fix os.remove() PermissionError in api_xfyun.py.
 - Fix DEFAULT_AUDIO_PRCS_CMDS and DEFAULT_CHECK_CMD.
 - Fix the issue with path checking in dependency finding.
+- Fix Baidu's strange error code handling. [issue #114](https://github.com/BingLingGroup/autosub/issues/114)
 
 #### Removed(Unreleased)
 
