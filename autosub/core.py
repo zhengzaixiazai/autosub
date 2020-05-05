@@ -575,9 +575,9 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
     if not text_list:
         return None
 
-    print(_("\nTranslating text from \"{0}\" to \"{1}\".").format(
-        src_language,
-        dst_language))
+    translator = googletrans.Translator(
+        user_agent=user_agent,
+        service_urls=service_urls)
 
     size = 0
     i = 0
@@ -630,6 +630,16 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
         valid_index.append(i)
         # valid_index for valid text position end
 
+    if src_language == "auto":
+        content_to_trans = '\n'.join(text_list[i:partial_index[0]])
+        result_src = translator.detect(content_to_trans).lang
+    else:
+        result_src = src_language
+
+    print(_("\nTranslating text from \"{0}\" to \"{1}\".").format(
+        result_src,
+        dst_language))
+
     widgets = [_("Translation: "),
                progressbar.Percentage(), ' ',
                progressbar.Bar(), ' ',
@@ -642,9 +652,6 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
         # total position
         j = 0
         # valid_index position
-        translator = googletrans.Translator(
-            user_agent=user_agent,
-            service_urls=service_urls)
 
         for index in partial_index:
             content_to_trans = '\n'.join(text_list[i:index])
@@ -654,6 +661,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                                                dest=dst_language,
                                                src=src_language)
             result_text = translation.text.translate(str.maketrans('’', '\''))
+            result_src = translation.src
             result_list = result_text.split('\n')
             k = 0
             len_result_list = len(result_list)
@@ -702,7 +710,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
         print(_("Cancelling translation."))
         return 1
 
-    return translated_text
+    return translated_text, result_src
 
 
 def list_to_sub_str(

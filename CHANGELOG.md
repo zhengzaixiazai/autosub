@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Added](#addedunreleased)
   - [Changed](#changedunreleased)
   - [Fixed](#fixedunreleased)
+  - [Removed](#removedunreleased)
 - [0.5.6-alpha - 2020-03-20](#056-alpha---2020-03-20)
   - [Added](#added056-alpha)
   - [Changed](#changed056-alpha)
@@ -58,6 +59,7 @@ Click up arrow to go back to TOC.
 - Add stop words to split events in merge_src_assfile method.
 - Add punctuations split in merge_src_assfile method.
 - Add limitation in SplitIntoAudioPiece with an audio length of at least 4 bytes.
+- Add support for src language auto-detection when not input `-SRC` language.
 
 #### Changed(Unreleased)
 

@@ -99,7 +99,7 @@ def list_args(args):
             print("{column_1}{column_2}".format(
                 column_1=lang_code_utils.wjust(_("Lang code"), 18),
                 column_2=_("Description")))
-            for code, language in sorted(constants.TRANSLATION_LANGUAGE_CODES.items()):
+            for code, language in sorted(googletrans.constants.LANGUAGES.items()):
                 print("{column_1}{column_2}".format(
                     column_1=lang_code_utils.wjust(code, 18),
                     column_2=language))
@@ -107,7 +107,7 @@ def list_args(args):
             print(_("Match py-googletrans lang codes."))
             lang_code_utils.match_print(
                 dsr_lang=args.list_translation_codes,
-                match_list=list(constants.TRANSLATION_LANGUAGE_CODES.keys()),
+                match_list=list(googletrans.constants.LANGUAGES.keys()),
                 min_score=args.min_score)
         return True
 
@@ -423,18 +423,11 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                 elif 'src' not in args.best_match:
                     args.best_match.add('src')
 
-            is_src_matched = False
-            is_dst_matched = False
+            args.src_language = args.src_language.lower()
+            args.dst_language = args.dst_language.lower()
 
-            for key in googletrans.constants.LANGUAGES:
-                if args.src_language.lower() == key.lower():
-                    args.src_language = key
-                    is_src_matched = True
-                if args.dst_language.lower() == key.lower():
-                    args.dst_language = key
-                    is_dst_matched = True
-
-            if not is_src_matched:
+            if args.src_language != 'auto' and \
+                    args.src_language not in googletrans.constants.LANGUAGES:
                 if args.best_match and 'src' in args.best_match:
                     print(_("Let translation source lang code "
                             "to match py-googletrans lang codes."))
@@ -456,7 +449,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                           "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
                               src=args.src_language))
 
-            if not is_dst_matched:
+            if args.dst_language not in googletrans.constants.LANGUAGES:
                 if args.best_match and 'd' in args.best_match:
                     print(_("Let translation destination lang code "
                             "to match py-googletrans lang codes."))
@@ -516,18 +509,11 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
             raise exceptions.AutosubException(
                 _("Error: Destination language not provided."))
 
-        is_src_matched = False
-        is_dst_matched = False
+        args.src_language = args.src_language.lower()
+        args.dst_language = args.dst_language.lower()
 
-        for key in googletrans.constants.LANGUAGES:
-            if args.src_language.lower() == key.lower():
-                args.src_language = key
-                is_src_matched = True
-            if args.dst_language.lower() == key.lower():
-                args.dst_language = key
-                is_dst_matched = True
-
-        if not is_src_matched:
+        if args.src_language != 'auto' and\
+                args.src_language not in googletrans.constants.LANGUAGES:
             if args.best_match and 'src' in args.best_match:
                 print(
                     _("Warning: Source language \"{src}\" not supported. "
@@ -554,7 +540,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                       "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
                           src=args.src_language))
 
-        if not is_dst_matched:
+        if args.dst_language not in googletrans.constants.LANGUAGES:
             if args.best_match and 'd' in args.best_match:
                 print(
                     _("Warning: Destination language \"{dst}\" not supported. "
@@ -800,7 +786,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
 
     # text translation
     # use googletrans
-    translated_text = core.list_to_googletrans(
+    translated_text, args.src_language = core.list_to_googletrans(
         text_list,
         src_language=args.src_language,
         dst_language=args.dst_language,
@@ -1365,7 +1351,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 pass
 
             # text translation
-            translated_text = core.list_to_googletrans(
+            translated_text, args.src_language = core.list_to_googletrans(
                 text_list,
                 src_language=args.src_language,
                 dst_language=args.dst_language,

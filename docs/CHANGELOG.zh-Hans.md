@@ -56,6 +56,7 @@
 - 添加停用词用于merge_src_assfile方法里的断句。
 - 添加标点符号分割功能在merge_src_assfile方法里。
 - 添加音频长度至少为4字节的检测，在SplitIntoAudioPiece里。
+- 添加源语言自动识别功能，当不输入`-SRC`选项时。
 
 #### 改动(未发布)
 

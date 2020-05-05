@@ -150,18 +150,15 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     lang_group.add_argument(
         '-SRC', '--src-language',
         metavar=_('lang_code'),
+        default='auto',
         help=_("Lang code/Lang tag for translation source language. "
-               "If not given, use langcodes to get a best matching "
-               "of the \"-S\"/\"--speech-language\". "
-               "If using py-googletrans as the method to translate, "
-               "WRONG INPUT STOP RUNNING. "
+               "If not given, use py-googletrans to auto-detect the src language. "
                "(arg_num = 1) (default: %(default)s)"))
 
     lang_group.add_argument(
         '-D', '--dst-language',
         metavar=_('lang_code'),
         help=_("Lang code/Lang tag for translation destination language. "
-               "Same attention in the \"-SRC\"/\"--src-language\". "
                "(arg_num = 1) (default: %(default)s)"))
 
     lang_group.add_argument(
@@ -170,7 +167,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         nargs="*",
         help=_("Allow langcodes to get a best matching lang code "
                "when your input is wrong. "
-               "Only functional for py-googletrans and Google Speech V2. "
+               "Only functional for py-googletrans and Google Speech API. "
                "Available modes: "
                "s, src, d, all. "
                "\"s\" for \"-S\"/\"--speech-language\". "
