@@ -71,7 +71,7 @@ The new features mentioned above are only available in the latest alpha branch. 
 
 This repo has a different license from [the original repo](https://github.com/agermanidis/autosub).
 
-[GPLv3](LICENSE)
+[GPLv2](LICENSE)
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub)
 
@@ -723,18 +723,16 @@ Language Options:
                         text/docs/languages(arg_num = 1) (default: None)
   -SRC lang_code, --src-language lang_code
                         Lang code/Lang tag for translation source language. If
-                        not given, use langcodes to get a best matching of the
-                        "-S"/"--speech-language". If using py-googletrans as
-                        the method to translate, WRONG INPUT STOP RUNNING.
-                        (arg_num = 1) (default: None)
+                        not given, use py-googletrans to auto-detect the src
+                        language. (arg_num = 1) (default: auto)
   -D lang_code, --dst-language lang_code
                         Lang code/Lang tag for translation destination
-                        language. Same attention in the "-SRC"/"--src-
-                        language". (arg_num = 1) (default: None)
+                        language. (arg_num = 1) (default: None)
   -bm [mode [mode ...]], --best-match [mode [mode ...]]
-                        Allow langcodes to get a best matching lang code when
+                        Use langcodes to get a best matching lang code when
                         your input is wrong. Only functional for py-
-                        googletrans and Google Speech V2. Available modes: s,
+                        googletrans and Google Speech API. If langcodes not
+                        installed, use fuzzywuzzy instead. Available modes: s,
                         src, d, all. "s" for "-S"/"--speech-language". "src"
                         for "-SRC"/"--src-language". "d" for "-D"/"--dst-
                         language". (3 >= arg_num >= 1)
@@ -834,7 +832,7 @@ py-googletrans Options:
 
   -slp second, --sleep-seconds second
                         (Experimental)Seconds to sleep between two translation
-                        requests. (arg_num = 1) (default: 5)
+                        requests. (arg_num = 1) (default: 1)
   -surl [URL [URL ...]], --service-urls [URL [URL ...]]
                         (Experimental)Customize request urls. Ref: https://py-
                         googletrans.readthedocs.io/en/latest/ (arg_num >= 1)
@@ -845,6 +843,31 @@ py-googletrans Options:
                         Drop any .ass override codes in the text before
                         translation. Only affect the translation result.
                         (arg_num = 0)
+  -gt-dc [chars], --gt-delete-chars [chars]
+                        Replace the specific chars with a space after
+                        translation, and strip the space at the end of each
+                        sentence. Only affect the translation result. (arg_num
+                        = 0 or 1) (const: ，。！)
+
+Subtitles Conversion Options:
+  Options to control subtitles conversions.(Experimental)
+
+  -mjs integer, --max-join-size integer
+                        (Experimental)Max length to join two events. (arg_num
+                        = 1) (default: 100)
+  -mdt second, --max-delta-time second
+                        (Experimental)Max delta time to join two events.
+                        (arg_num = 1) (default: 0.2)
+  -dms string, --delimiters string
+                        (Experimental)Delimiters not to join two events.
+                        (arg_num = 1) (default: !()*,.:;?[]^_`~)
+  -sw1 words_delimited_by_space, --stop-words-1 words_delimited_by_space
+                        (Experimental)First set of Stop words to split two
+                        events. (arg_num = 1)
+  -sw2 words_delimited_by_space, --stop-words-2 words_delimited_by_space
+                        (Experimental)Second set of Stop words to split two
+                        events. (arg_num = 1)
+  -ds, --dont-split     (Experimental)Don't Split just merge. (arg_num = 0)
 
 Network Options:
   Options to control network.
@@ -890,14 +913,15 @@ Audio Processing Options:
                         procedure. "o": only pre-process the input audio.
                         ("-k"/"--keep" is true) "s": only split the input
                         audio. ("-k"/"--keep" is true) Default command to pre-
-                        process the audio:
-                        c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
-                        -i "{in_}" -af "asplit[a],aphasemeter=video=0,ametadat
-                        a=select:key=lavfi.aphasemeter.phase:value=-0.005:func
-                        tion=less,pan=1c|c0=c0,aresample=async=1:first_pts=0,[
-                        a]amix" -ac 1 -f flac "{out_}" |
-                        c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
-                        -i "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
+                        process the audio: C:\Program
+                        Files\ImageMagick-7.0.10-Q16\ffmpeg.exe -hide_banner
+                        -i "{in_}" -vn -af "asplit[a],aphasemeter=video=0,amet
+                        adata=select:key=lavfi.aphasemeter.phase:value=-0.005:
+                        function=less,pan=1c|c0=c0,aresample=async=1:first_pts
+                        =0,[a]amix" -ac 1 -f flac -loglevel error "{out_}" |
+                        C:\Program Files\ImageMagick-7.0.10-Q16\ffmpeg.exe
+                        -hide_banner -i "{in_}" -af
+                        "lowpass=3000,highpass=200" -loglevel error "{out_}" |
                         C:\Python37\Scripts\ffmpeg-normalize.exe -v "{in_}"
                         -ar 44100 -ofmt flac -c:a flac -pr -p -o "{out_}"
                         (Ref: https://github.com/stevenj/autosub/blob/master/s
@@ -916,16 +940,18 @@ Audio Processing Options:
   -acc command, --audio-conversion-cmd command
                         (Experimental)This arg will override the default audio
                         conversion command. "[", "]" are optional arguments
-                        meaning you can remove them. "{{", "}}" are required
+                        meaning you can remove them. "{", "}" are required
                         arguments meaning you can't remove them. (arg_num = 1)
-                        (default: c:\programdata\chocolatey\bin\ffmpeg.exe
-                        -hide_banner -y -i "{in_}" -vn -ac {channel} -ar
-                        {sample_rate} "{out_}")
+                        (default: C:\Program
+                        Files\ImageMagick-7.0.10-Q16\ffmpeg.exe -hide_banner
+                        -y -i "{in_}" -vn -ac {channel} -ar {sample_rate}
+                        -loglevel error "{out_}")
   -asc command, --audio-split-cmd command
                         (Experimental)This arg will override the default audio
                         split command. Same attention above. (arg_num = 1)
-                        (default: c:\programdata\chocolatey\bin\ffmpeg.exe -y
-                        -ss {start} -i "{in_}" -t {dura} -vn -ac [channel] -ar
+                        (default: C:\Program
+                        Files\ImageMagick-7.0.10-Q16\ffmpeg.exe -y -ss {start}
+                        -i "{in_}" -t {dura} -vn -ac [channel] -ar
                         [sample_rate] -loglevel error "{out_}")
   -asf file_suffix, --api-suffix file_suffix
                         (Experimental)This arg will override the default API
@@ -944,13 +970,13 @@ Auditok Options:
                         The energy level which determines the region to be
                         detected. Ref: https://auditok.readthedocs.io/en/lates
                         t/apitutorial.html#examples-using-real-audio-data
-                        (arg_num = 1) (default: 50)
+                        (arg_num = 1) (default: 45)
   -mnrs second, --min-region-size second
                         Minimum region size. Same docs above. (arg_num = 1)
-                        (default: 0.8)
+                        (default: 0.5)
   -mxrs second, --max-region-size second
                         Maximum region size. Same docs above. (arg_num = 1)
-                        (default: 6.0)
+                        (default: 10.0)
   -mxcs second, --max-continuous-silence second
                         Maximum length of a tolerated silence within a valid
                         audio activity. Same docs above. (arg_num = 1)
@@ -1000,6 +1026,7 @@ The default value is used
 when the option is not given at the command line.
 "(arg_num)" means if the option is given,
 the number of the arguments is required.
+Arguments *ARE* the things given behind the options.
 Author: Bing Ling
 Email: binglinggroup@outlook.com
 Bug report: https://github.com/BingLingGroup/autosub

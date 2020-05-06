@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-05 14:05+0800\n"
+"POT-Creation-Date: 2020-05-05 17:19+0800\n"
 "PO-Revision-Date: 2020-04-05 13:23+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -17,12 +17,12 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.3\n"
 
-#: autosub/ffmpeg_utils.py:97
+#: autosub/ffmpeg_utils.py:102
 msgid ""
 "Error: ffmpeg can't split your file. Check your audio processing options."
 msgstr "错误：ffmpeg无法分割你的文件。检查一下你的音频处理选项。"
 
-#: autosub/ffmpeg_utils.py:128
+#: autosub/ffmpeg_utils.py:133
 msgid ""
 "ffprobe can't get video fps.\n"
 "It is necessary when output is \".sub\"."
@@ -30,16 +30,16 @@ msgstr ""
 "ffprobe无法获取到视频的帧率。\n"
 "当输出格式是\".sub\"时，需要获取帧率。"
 
-#: autosub/ffmpeg_utils.py:131
+#: autosub/ffmpeg_utils.py:136
 msgid ""
 "Input your video fps. Any illegal input will regard as \".srt\" instead.\n"
 msgstr "输入你视频的帧率。任何非法的值会被当作\".srt\"格式处理。\n"
 
-#: autosub/ffmpeg_utils.py:138
+#: autosub/ffmpeg_utils.py:143
 msgid "Use \".srt\" instead."
 msgstr "改用\".srt\"格式。"
 
-#: autosub/ffmpeg_utils.py:151
+#: autosub/ffmpeg_utils.py:156
 msgid ""
 "\n"
 "Use ffprobe to check conversion result."
@@ -47,19 +47,19 @@ msgstr ""
 "\n"
 "使用ffprobe来检查转换结果。"
 
-#: autosub/ffmpeg_utils.py:184
+#: autosub/ffmpeg_utils.py:189
 msgid ""
 "Warning: Dependency ffmpeg-normalize not found on this machine. Try default "
 "method."
 msgstr ""
 "警告：依赖ffmpeg-normalize未在这台电脑上找到。尝试默认的方法去转换格式。"
 
-#: autosub/ffmpeg_utils.py:196
+#: autosub/ffmpeg_utils.py:201
 msgid ""
 "There is already a file with the same name in this location: \"{dest_name}\"."
 msgstr "在此处已有同名文件：\"{dest_name}\"。"
 
-#: autosub/ffmpeg_utils.py:199
+#: autosub/ffmpeg_utils.py:204
 msgid "Input a new path (including directory and file name) for output file.\n"
 msgstr "为输出文件输入一个新的路径（包括路径和文件名）。\n"
 

@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [Changed](#changedunreleased)
   - [Fixed](#fixedunreleased)
   - [Removed](#removedunreleased)
+- [0.5.7-alpha - 2020-05-06](#057-alpha---2020-05-06)
+  - [Added](#added057-alpha)
+  - [Changed](#changed057-alpha)
+  - [Fixed](#fixed057-alpha)
+  - [Removed](#removed057-alpha)
 - [0.5.6-alpha - 2020-03-20](#056-alpha---2020-03-20)
   - [Added](#added056-alpha)
   - [Changed](#changed056-alpha)
@@ -49,7 +54,9 @@ Click up arrow to go back to TOC.
 
 ### [Unreleased]
 
-#### Added(Unreleased)
+### [0.5.7-alpha] - 2020-05-06
+
+#### Added(0.5.7-alpha)
 
 - Add support for Xun Fei Yun Speech-to-Text WebSocket API.
 - Add support for Baidu Automatic Speech Recognition API. [issue #68](https://github.com/BingLingGroup/autosub/issues/68)
@@ -61,7 +68,7 @@ Click up arrow to go back to TOC.
 - Add limitation in SplitIntoAudioPiece with an audio length of at least 4 bytes.
 - Add support for src language auto-detection when not input `-SRC` language.
 
-#### Changed(Unreleased)
+#### Changed(0.5.7-alpha)
 
 - Change the replacement condition of the audio_split_cmd only when the user doesn't modify it.
 - Change the MAX_REGION_SIZE_LIMIT into 60 seconds.
@@ -70,8 +77,9 @@ Click up arrow to go back to TOC.
 - Change the loglevel in ffmpeg commands into `-loglevel error`.
 - Change DEFAULT_MIN_REGION_SIZE to 0.5.
 - Change langcodes into the optional dependency.
+- Change LICENSE into GPLv2.
 
-#### Fixed(Unreleased)
+#### Fixed(0.5.7-alpha)
 
 - Fix the size count bug when the last line been split in list_to_googletrans.
 - Fix delete_chars issue when using `-of full-src`.
@@ -80,9 +88,11 @@ Click up arrow to go back to TOC.
 - Fix the issue with path checking in dependency finding.
 - Fix Baidu's strange error code handling. [issue #114](https://github.com/BingLingGroup/autosub/issues/114)
 
-#### Removed(Unreleased)
+#### Removed(0.5.7-alpha)
 
 - Remove Python 2.7 support.
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.6-alpha] - 2020-03-20
 
@@ -274,7 +284,8 @@ Click up arrow to go back to TOC.
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
-[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.6-alpha...HEAD
+[Unreleased]: https://github.com/BingLingGroup/autosub/compare/0.5.7-alpha...HEAD
+[0.5.7-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.6-alpha...0.5.7-alpha
 [0.5.6-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.5-alpha...0.5.6-alpha
 [0.5.5-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...0.5.5-alpha
 [0.5.4-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...0.5.4-alpha
