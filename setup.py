@@ -36,10 +36,11 @@ setup(
         'progressbar2>=3.34.3',
         'auditok==0.1.5',
         'googletrans>=2.4.0',
-        'langcodes>=1.2.0',
         'wcwidth>=0.1.7',
+        'fuzzywuzzy>=0.18.0',
         'google-cloud-speech>=1.3.1',
-        'websocket-client>=0.56.0'
+        'websocket-client>=0.56.0',
+        'python-Levenshtein>=0.12.0'
     ],
     license=open(os.path.join(here, "LICENSE")).read()
 )

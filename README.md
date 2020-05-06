@@ -23,6 +23,8 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
 1. [Description](#description)
 2. [License](#license)
 3. [Dependencies](#dependencies)
+   - 3.1 [Optional Dependencies](#optional-dependencies)
+   - 3.2 [Required Dependencies](#required-dependencies)
 4. [Download and Installation](#download-and-installation)
    - 4.1 [Branches](#branches)
    - 4.2 [Install on Ubuntu](#install-on-ubuntu)
@@ -77,17 +79,31 @@ This repo has a different license from [the original repo](https://github.com/ag
 
 Autosub depends on these third party softwares or Python site-packages. Much appreciation to all of these projects.
 
+#### Optional dependencies
+
 - [ffmpeg](https://ffmpeg.org/)
 - [ffprobe](https://ffmpeg.org/ffprobe.html)
-- [auditok](https://github.com/amsehili/auditok)
+- [langcodes](https://github.com/LuminosoInsight/langcodes)
+- [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
+- [python-Levenshtein](https://github.com/ztane/python-Levenshtein)(Used by [fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy))
+
+For windows user:
+
+- [Build Tools for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
+  - Used by [marisa-trie](https://github.com/pytries/marisa-trie) when installing.
+  - [marisa-trie](https://github.com/pytries/marisa-trie) is the dependency of the [langcodes](https://github.com/LuminosoInsight/langcodes))
+  - Probable components installation: MSVC v14 VS 2019 C++ build tools, windows 10 SDK.
+
+#### Required dependencies
+
+- [auditok 0.1.5](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
 - [wcwidth](https://github.com/jquast/wcwidth)
 - [requests](https://github.com/psf/requests)
-- [langcodes](https://github.com/LuminosoInsight/langcodes)
+- [fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy)
 - [progressbar2](https://github.com/WoLpH/python-progressbar)
 - [websocket-client](https://github.com/websocket-client/websocket-client)
 - [py-googletrans](https://github.com/ssut/py-googletrans)
-- [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
 
 [requirements.txt](requirements.txt).
 
@@ -99,9 +115,17 @@ About how to install these dependencies, see [Download and Installation](#downlo
 
 Except the PyPI version, others include non-original codes not from the original repository.
 
-After autosub-0.4.0, all of the codes is compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
+0.4.0 > autosub
 
-About the dependencies installation. If you install autosub by pip, ffmpeg and ffmpeg-normalize won't be installed together not like the Python site-packages already listed on the `setup.py` or `requirements.txt`. You need to install them separately. But of course they are optional. They aren't necessary if you only use autosub to translate your subtitles.
+- These versions are only compatible with Python 2.7.
+
+0.5.6a >= autosub >= 0.4.0
+
+- These versions are compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
+
+autosub >= 0.5.7a
+
+- These versions are only compatible with Python 3.
 
 ffmpeg, ffprobe, ffmpeg-normalize need to be put on one of these places to let the autosub detect and use them. The following codes are in the [constants.py](autosub/constants.py). Priority is determined in order.
 
@@ -147,6 +171,13 @@ apt install ffmpeg python python-pip git -y
 pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
 ```
 
+Install from `dev` branch.(latest autosub dev version)
+
+```bash
+apt install ffmpeg python python-pip git -y
+pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
+```
+
 Install from `origin` branch.(autosub-0.4.0a)
 
 ```bash
@@ -187,13 +218,24 @@ Choco installation command is for cmd.(not Powershell)
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
+If you don't have visual studio 
+
 Install from `alpha` branch.(latest autosub alpha release)
 
 ```batch
-choco install git python2 curl ffmpeg -y
+choco install git python curl ffmpeg -y
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
-pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
+pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize langcodes
+```
+
+Install from `dev` branch.(latest autosub dev version)
+
+```batch
+choco install git python curl ffmpeg -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
 ```
 
 Install from `origin` branch.(autosub-0.4.0a)
@@ -609,13 +651,15 @@ autosub -sapi baidu -i input_file -sconf baidu_speech_config ...(other options)
 
 Translate subtitles to another language.
 
+If not input option `-SRC`, the translation source language will be auto-detected by py-googletrans.
+
 Translate subtitles from an audio/video file.
 
 ```
 autosub -i input_file -S lang_code (-SRC lang_code) -D lang_code
 ```
 
-Translate subtitles from a subtitles file.
+Translate subtitles from a subtitles file.(Translation source language auto-detection by py-googletrans)
 
 ```
 autosub -i input_file -SRC lang_code -D lang_code

@@ -18,6 +18,11 @@ try:
 except DistributionNotFound:
     IS_GOOGLECLOUDCLIENT = False
 
+try:
+    import langcodes as langcodes_  # pylint: disable=unused-import
+except ImportError:
+    langcodes_ = None
+
 # Any changes to the path and your own modules
 
 SUPPORTED_LOCALE = {

@@ -69,6 +69,7 @@ Click up arrow to go back to TOC.
 - Change the default style selection in subtitles translation.
 - Change the loglevel in ffmpeg commands into `-loglevel error`.
 - Change DEFAULT_MIN_REGION_SIZE to 0.5.
+- Change langcodes into the optional dependency.
 
 #### Fixed(Unreleased)
 

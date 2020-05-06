@@ -165,9 +165,10 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         '-bm', '--best-match',
         metavar=_('mode'),
         nargs="*",
-        help=_("Allow langcodes to get a best matching lang code "
+        help=_("Use langcodes to get a best matching lang code "
                "when your input is wrong. "
                "Only functional for py-googletrans and Google Speech API. "
+               "If langcodes not installed, use fuzzywuzzy instead. "
                "Available modes: "
                "s, src, d, all. "
                "\"s\" for \"-S\"/\"--speech-language\". "

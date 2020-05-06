@@ -16,7 +16,6 @@ import json
 # Import third-party modules
 import auditok
 import googletrans
-import langcodes
 import pysubs2
 
 # Any changes to the path and your own modules
@@ -385,10 +384,18 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
                         min_score=args.min_score)
                     if best_result:
-                        print(_("Use langcodes to standardize the result."))
-                        args.speech_language = langcodes.standardize_tag(best_result[0])
                         print(_("Use \"{lang_code}\" instead.").format(
-                            lang_code=args.speech_language))
+                            lang_code=best_result[0]))
+                        args.speech_language = best_result[0]
+                        if constants.langcodes_:
+                            print(_("Use langcodes to standardize the result."))
+                            args.speech_language = constants.langcodes_.standardize_tag(
+                                best_result[0])
+                            print(_("Use \"{lang_code}\" instead.").format(
+                                lang_code=args.speech_language))
+                        else:
+                            print(_("Use the lower case."))
+                            args.speech_language = best_result[0]
                     else:
                         print(_("Match failed. Still using \"{lang_code}\".").format(
                             lang_code=args.speech_language))

@@ -23,6 +23,8 @@
 1. [介绍](#介绍)
 2. [证书](#证书)
 3. [依赖](#依赖)
+   - 3.1 [可选依赖](#可选依赖)
+   - 3.2 [必需依赖](#必需依赖)
 4. [下载与安装](#下载与安装)
    - 4.1 [分支](#分支)
    - 4.2 [在Ubuntu上安装](#在Ubuntu上安装)
@@ -77,16 +79,31 @@ Autosub是一个字幕自动生成工具。它能使用Auditok来自动检测语
 
 Autosub依赖于这些第三方的软件或者Python的site-packages。非常感谢以下这些项目的工作。
 
+#### 可选依赖
+
 - [ffmpeg](https://ffmpeg.org/)
 - [ffprobe](https://ffmpeg.org/ffprobe.html)
-- [auditok](https://github.com/amsehili/auditok)
+- [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
+- [langcodes](https://github.com/LuminosoInsight/langcodes)
+- [python-Levenshtein](https://github.com/ztane/python-Levenshtein)([fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy)的可选依赖)
+
+对于windows用户：
+
+- [Visual Studio 2019 生成工具](https://visualstudio.microsoft.com/downloads/)
+  - [marisa-trie](https://github.com/pytries/marisa-trie)安装时会用到。
+  - [marisa-trie](https://github.com/pytries/marisa-trie)是[langcodes](https://github.com/LuminosoInsight/langcodes))的依赖。
+  - 大概需要安装以下两个组件：MSVC v14 VS 2019 C++生成工具, windows 10 SDK。
+
+#### 必需依赖
+
+- [auditok 0.1.5](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
 - [wcwidth](https://github.com/jquast/wcwidth)
-- [langcodes](https://github.com/LuminosoInsight/langcodes)
+- [requests](https://github.com/psf/requests)
+- [fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy)
 - [progressbar2](https://github.com/WoLpH/python-progressbar)
 - [websocket-client](https://github.com/websocket-client/websocket-client)
 - [py-googletrans](https://github.com/ssut/py-googletrans)
-- [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
 
 [requirements.txt](requirements.txt)。
 
@@ -98,9 +115,17 @@ Autosub依赖于这些第三方的软件或者Python的site-packages。非常感
 
 除去PyPI版本的代码和原仓库的一致，其他的安装方式均包含非原仓库的代码。
 
-在autosub-0.4.0之后，所有的代码都是Python3和Python2.7兼容的。所以后面的安装指令中的Python版本你可以随便改。
+0.4.0 > autosub
 
-至于依赖的安装，如果你是通过pip来安装的autosub，那么ffmpeg和ffmpeg-normalize不会被一块儿安装，不像site-packages那样列在`setup.py`或者`requirements.txt`里面自动安装了。你需要分别安装它们。当然安装是可选的，如果你只是翻译字幕，不需要安装这两个软件。
+- 这些版本只与Python 2.7兼容。
+
+0.5.6a >= autosub >= 0.4.0
+
+- 这些版本与Python3和Python2.7兼容。所以后面的安装指令中的Python版本你可以随便改。
+
+autosub >= 0.5.7a
+
+- 这些版本只与Python 3兼容。
 
 ffmpeg, ffprobe, ffmpeg-normalize需要被放在以下位置之一来让autosub检测并使用。以下代码都在[constants.py](autosub/constants.py)里。优先级按照先后顺序确定。
 
@@ -137,13 +162,20 @@ pip install .
 
 #### 在Ubuntu上安装
 
-第一行包含依赖的安装。
+包含依赖的安装。
 
 从`alpha`分支安装。（最新alpha发布版）
 
 ```bash
 apt install ffmpeg python python-pip git -y
-pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
+pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize langcodes
+```
+
+从`dev`分支安装。（最新dev版）
+
+```bash
+apt install ffmpeg python python-pip git -y
+pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
 ```
 
 从`origin`分支安装。（autosub-0.4.0a）
@@ -189,10 +221,19 @@ pip install autosub
 从`alpha`分支安装。（最新alpha发布版）
 
 ```batch
-choco install git python2 curl ffmpeg -y
+choco install git python curl ffmpeg -y
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
 pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
+```
+
+从`dev`分支安装。（最新dev版）
+
+```batch
+choco install git python curl ffmpeg -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
 ```
 
 从`origin`分支安装。（autosub-0.4.0a）
@@ -206,7 +247,7 @@ pip install git+https://github.com/BingLingGroup/autosub.git@origin
 
 PyPI的版本（autosub-0.3.12）不推荐在windows上使用，因为它无法成功运行。查看[origin分支的更新日志](CHANGELOG.zh-Hans.md#040-alpha---2019-02-17)来了解详情。
 
-推荐使用`python`而不是`python2`在autosub-0.4.0之后。
+在autosub-0.4.0之后，推荐使用`python`而不是`python2`。
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
@@ -610,6 +651,8 @@ autosub -sapi baidu -i 输入文件 -sconf 百度语音配置文件 ...(其他�
 
 将字幕翻译为别的语言。
 
+如果不输入选项`-SRC`，翻译源语言会被py-googletrans自动检测。
+
 从音频/视频文件翻译字幕。
 
 ```
@@ -619,7 +662,7 @@ autosub -i 输入文件 -S 语言代码 (-SRC 语言代码) -D 语言代码
 从字幕文件翻译字幕。
 
 ```
-autosub -i 输入文件 -SRC 语言代码 -D 语言代码
+autosub -i 输入文件 (-SRC 语言代码) -D 语言代码
 ```
 
 使用"translate.google.cn"翻译字幕，"translate.google.cn"可被某地直连。
