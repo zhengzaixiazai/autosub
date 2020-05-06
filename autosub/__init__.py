@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's commandline entry point functionality.
 """
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import os
 import gettext
 import sys
@@ -25,11 +24,7 @@ INIT_TEXT = gettext.translation(domain=__name__,
                                 languages=[constants.CURRENT_LOCALE],
                                 fallback=True)
 
-try:
-    _ = INIT_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = INIT_TEXT.gettext
+_ = INIT_TEXT.gettext
 
 
 def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
@@ -39,17 +34,13 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
     is_pause = False
 
-    try:
-        input_main = raw_input
-    except NameError:
-        input_main = input
-
+    # todo1: move into constants to support locale and dependency input
     option_parser = options.get_cmd_parser()
     if len(sys.argv) > 1:
         args = option_parser.parse_args()
     else:
         option_parser.print_help()
-        new_argv = input_main(_("\nInput args(without \"autosub\"): "))
+        new_argv = input(_("\nInput args(without \"autosub\"): "))
         args = option_parser.parse_args(shlex.split(new_argv))
         is_pause = True
 
@@ -73,7 +64,7 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             raise exceptions.AutosubException(_("\nAll works done."))
 
         if not args.yes:
-            input_m = input_main
+            input_m = input
         else:
             input_m = None
 
@@ -130,13 +121,27 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                         args.audio_split_cmd.replace(
                             "-vn -ac [channel] -ar [sample_rate] ", "")
                     if not prcs_file:
-                        print(_("Audio pre-processing failed."
-                                "\nUse default method."))
+                        print(_("Audio pre-processing failed. Try default method."))
                     else:
                         args.input = prcs_file
                         print(_("Audio pre-processing complete."))
 
             else:
+                if args.audio_split_cmd == constants.DEFAULT_AUDIO_SPLT_CMD:
+                    # if user doesn't modify the audio_split_cmd
+                    if args.api_suffix == ".ogg":
+                        # regard ogg as ogg_opus
+                        args.audio_split_cmd = \
+                            args.audio_split_cmd.replace(
+                                "-vn",
+                                "-vn -c:a libopus")
+                    elif args.api_suffix == ".pcm":
+                        # raw pcm
+                        args.audio_split_cmd = \
+                            args.audio_split_cmd.replace(
+                                "-vn",
+                                "-vn -c:a pcm_s16le -f s16le")
+
                 args.audio_split_cmd = \
                     args.audio_split_cmd.replace(
                         "[channel]",
@@ -145,13 +150,6 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                     args.audio_split_cmd.replace(
                         "[sample_rate]",
                         "{sample_rate}".format(sample_rate=args.api_sample_rate))
-
-                if args.api_suffix == ".ogg":
-                    # regard ogg as ogg_opus
-                    args.audio_split_cmd = \
-                        args.audio_split_cmd.replace(
-                            "-vn",
-                            "-vn -c:a libopus")
 
             cmdline_utils.validate_aovp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
@@ -164,6 +162,11 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
             result = cmdline_utils.validate_sp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
             if result:
+                args.output_files = args.output_files & \
+                                    constants.DEFAULT_SUB_MODE_SET
+                if not args.output_files:
+                    raise exceptions.AutosubException(
+                        _("Error: No valid \"-of\"/\"--output-files\" arguments."))
                 cmdline_utils.sub_trans(args,
                                         input_m=input_m,
                                         fps=fps,
@@ -185,5 +188,5 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
         print(err_msg)
 
     if is_pause:
-        input_main(_("Press Enter to exit..."))
+        input(_("Press Enter to exit..."))
     return 0

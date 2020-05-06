@@ -1,18 +1,26 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines subtitle formatters used by autosub.
 """
 # Import built-in modules
-from __future__ import absolute_import, unicode_literals
 import wave
 import json
+import gettext
 
 # Import third-party modules
 import pysubs2
 
 # Any changes to the path and your own modules
 from autosub import constants
+
+
+SUB_UTILS_TEXT = gettext.translation(domain=__name__,
+                                     localedir=constants.LOCALE_PATH,
+                                     languages=[constants.CURRENT_LOCALE],
+                                     fallback=True)
+
+_ = SUB_UTILS_TEXT.gettext
 
 
 def sub_to_speech_regions(
@@ -61,13 +69,11 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
         src_ssafile,
         dst_ssafile,
         text_list,
-        style_name,
+        style_name='Default',
         same_event_type=0,):
     """
     Serialize a list of subtitles using pysubs2.
     """
-    if not style_name:
-        style_name = 'Default'
     if text_list:
         if not src_ssafile:
             if isinstance(text_list[0][0], tuple):
@@ -97,19 +103,30 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
             length = len(text_list)
             if same_event_type == 0:
                 #  append text_list to new events
-                while i < length:
-                    event = pysubs2.SSAEvent()
-                    event.start = src_ssafile.events[i].start
-                    event.end = src_ssafile.events[i].end
-                    event.is_comment = src_ssafile.events[i].is_comment
-                    event.text = text_list[i]
-                    event.style = style_name
-                    dst_ssafile.events.append(event)
-                    i = i + 1
+                if style_name:
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
+                        event.text = text_list[i]
+                        event.style = style_name
+                        dst_ssafile.events.append(event)
+                        i = i + 1
+                else:
+                    while i < length:
+                        event = pysubs2.SSAEvent()
+                        event.start = src_ssafile.events[i].start
+                        event.end = src_ssafile.events[i].end
+                        event.is_comment = src_ssafile.events[i].is_comment
+                        event.text = text_list[i]
+                        event.style = src_ssafile.events[i].style
+                        dst_ssafile.events.append(event)
+                        i = i + 1
             elif same_event_type == 1:
                 # add text_list to src_ssafile
                 # before the existing text in event
-                if src_ssafile.events[0].style == style_name:
+                if not style_name or src_ssafile.events[0].style == style_name:
                     # same style
                     while i < length:
                         event = pysubs2.SSAEvent()
@@ -139,7 +156,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
             elif same_event_type == 2:
                 # add text_list to src_ssafile
                 # after the existing text in event
-                if src_ssafile.events[0].style == style_name:
+                if not style_name or src_ssafile.events[0].style == style_name:
                     # same style
                     while i < length:
                         event = pysubs2.SSAEvent()
@@ -170,6 +187,8 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
         # src_ssafile provides regions only
         i = 0
         length = len(src_ssafile.events)
+        if not style_name:
+            style_name = 'Default'
         while i < length:
             event = pysubs2.SSAEvent()
             event.start = src_ssafile.events[i].start
@@ -187,8 +206,7 @@ def list_to_vtt_str(subtitles):
     pysubs2_ssa_event_add(
         src_ssafile=None,
         dst_ssafile=pysubs2_obj,
-        text_list=subtitles,
-        style_name=None)
+        text_list=subtitles)
     formatted_subtitles = pysubs2_obj.to_string(
         format_='srt')
     i = 0
@@ -437,3 +455,258 @@ def merge_bilingual_assfile(  # pylint: disable=too-many-locals, too-many-branch
             new_ssafile.events = events + new_ssafile.events
 
     return new_ssafile
+
+
+def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-blocks,
+        # pylint: disable=too-many-statements, too-many-branches, too-many-arguments
+        # pylint: disable=too-many-boolean-expressions
+        subtitles,
+        stop_words_set_1,
+        stop_words_set_2,
+        max_join_size=constants.DEFAULT_MAX_SIZE_PER_EVENT,
+        max_delta_time=int(constants.DEFAULT_CONTINUOUS_SILENCE * 1000),
+        delimiters=constants.DEFAULT_EVENT_DELIMITERS,
+        avoid_split=False):
+    """
+    Merge a source subtitles file's events automatically.
+    """
+    new_ssafile = pysubs2.SSAFile()
+    new_ssafile.styles = subtitles.styles
+    new_ssafile.info = subtitles.info
+    style_events = {}
+
+    for event in subtitles.events:
+        if event.style not in style_events:
+            style_events[event.style] = [event]
+        else:
+            style_events[event.style].append(event)
+
+    sorted_events_list = sorted(style_events.values(), key=len)
+    events_1 = sorted_events_list.pop()
+
+    temp_ssafile = pysubs2.SSAFile()
+    temp_ssafile.events = events_1
+    temp_ssafile.sort()
+
+    sub_length = len(temp_ssafile.events)
+    event_count = 1
+    merge_count = 0
+    split_count = 0
+
+    new_ssafile.events.append(temp_ssafile.events[0])
+
+    while event_count < sub_length:
+        if not new_ssafile.events[-1].is_comment \
+                and not temp_ssafile.events[event_count].is_comment \
+                and new_ssafile.events[-1].style == temp_ssafile.events[event_count].style \
+                and temp_ssafile.events[event_count].start \
+                - new_ssafile.events[-1].end < max_delta_time \
+                and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters\
+                and temp_ssafile.events[event_count].text.lstrip(" ")[0] not in delimiters:
+            if len(new_ssafile.events[-1].text) + \
+                    len(temp_ssafile.events[event_count].text) < max_join_size:
+                new_ssafile.events[-1].end = temp_ssafile.events[event_count].end
+                if new_ssafile.events[-1].text[-1] != " ":
+                    new_ssafile.events[-1].text = new_ssafile.events[-1].text + " " + \
+                                                  temp_ssafile.events[event_count].text
+                else:
+                    new_ssafile.events[-1].text = \
+                        new_ssafile.events[-1].text + temp_ssafile.events[event_count].text
+                merge_count = merge_count + 1
+                event_count = event_count + 1
+                continue
+
+            if not avoid_split:
+                if len(new_ssafile.events[-1].text) \
+                        > len(temp_ssafile.events[event_count].text) * 1.4 and \
+                        len(new_ssafile.events[-1].text) > max_join_size * 0.8:
+                    joint_event = new_ssafile.events[-1]
+                else:
+                    joint_event = join_event(new_ssafile.events[-1],
+                                             temp_ssafile.events[event_count])
+                event_list = []
+                while True:
+                    word_dict = get_slice_pos_dict(joint_event.text, delimiters=delimiters)
+                    total_length = len(joint_event.text)
+                    # use punctuations to split the sentence first
+                    stop_word_set = set(word_dict.keys())
+                    last_index = find_split_index(
+                        total_length=total_length,
+                        stop_word_set=stop_word_set,
+                        word_dict=word_dict,
+                        min_range_ratio=0.1
+                    )
+
+                    if len(word_dict) < 2 or not last_index:
+                        # then use stop words
+                        word_dict = get_slice_pos_dict(joint_event.text)
+                        stop_word_set = stop_words_set_1 & \
+                            set(word_dict.keys())
+                        last_index = find_split_index(
+                            total_length=total_length,
+                            stop_word_set=stop_word_set,
+                            word_dict=word_dict,
+                            min_range_ratio=0.1
+                        )
+                        if not last_index:
+                            stop_word_set = stop_words_set_2 & \
+                                set(word_dict.keys())
+                            last_index = find_split_index(
+                                total_length=total_length,
+                                stop_word_set=stop_word_set,
+                                word_dict=word_dict,
+                                min_range_ratio=0.1
+                            )
+
+                    if 0 < last_index < max_join_size:
+                        if total_length - last_index < max_join_size:
+                            event_list.extend(split_event(joint_event, last_index))
+                            if joint_event.text in new_ssafile.events[-1].text:
+                                last_index = -2
+                            else:
+                                last_index = -1
+                            new_ssafile.events.pop()
+                            if len(event_list) > 2:
+                                count = 0
+                                while count < len(event_list) - 1:
+                                    joint_event = join_event(
+                                        event_list[count],
+                                        event_list[count + 1])
+                                    if len(joint_event.text) < max_join_size:
+                                        del event_list[count + 1]
+                                        event_list[count] = joint_event
+                                        merge_count = merge_count + 1
+                                    count = count + 1
+                            new_ssafile.events.extend(event_list)
+                            split_count = split_count + len(event_list)
+                            break
+                        split_events = split_event(joint_event, last_index)
+                        event_list.append(split_events[0])
+                        joint_event = split_events[1]
+                    else:
+                        break
+
+                if last_index < 0:
+                    if last_index > -2:
+                        event_count = event_count + 1
+                    continue
+
+        new_ssafile.events.append(temp_ssafile.events[event_count])
+        event_count = event_count + 1
+
+    for events in sorted_events_list:
+        new_ssafile.events = events + new_ssafile.events
+
+    print(_("Merge {count} times.").format(count=merge_count))
+    print(_("Split {count} times.").format(count=split_count))
+    delta = len(subtitles.events) - len(new_ssafile.events)
+    if delta > 0:
+        print(_("Reduce {count} lines of events.").format(count=delta))
+    else:
+        print(_("Add {count} lines of events.").format(count=-delta))
+
+    return new_ssafile
+
+
+def find_split_index(
+        total_length,
+        stop_word_set,
+        word_dict,
+        min_range_ratio
+):
+    """
+    Find index to split.
+    """
+    half_pos = int(total_length / 2)
+    min_range = int(min_range_ratio * total_length)
+    max_range = total_length - min_range
+    last_index = 0
+    last_delta = half_pos - last_index
+    if stop_word_set:
+        for stop_word in stop_word_set:
+            for index in word_dict[stop_word]:
+                if min_range < index < max_range:
+                    delta = abs(index - half_pos)
+                    if delta < last_delta:
+                        last_index = index
+                        last_delta = delta
+
+    return last_index
+
+
+def get_slice_pos_dict(
+        sentence,
+        delimiters=" "
+):
+    """
+    Get word position dictionary from sentence.
+    """
+    i = 0
+    j = 0
+    result_dict = {}
+    length = len(sentence)
+    while i < length:
+        if sentence[i] in delimiters:
+            if i != j and sentence[j:i].strip(" "):
+                slice_ = sentence[j:i].lstrip(" ")
+                index = result_dict.get(slice_)
+                if not index:
+                    result_dict[slice_] = [j]
+                else:
+                    result_dict[slice_].append(j)
+            j = i + 1
+        i = i + 1
+
+    if i != j and sentence[j:i].strip(" "):
+        slice_ = sentence[j:i].lstrip(" ")
+        index = result_dict.get(slice_)
+        if not index:
+            result_dict[slice_] = [j]
+        else:
+            result_dict[slice_].append(j)
+
+    return result_dict
+
+
+def join_event(
+        event1,
+        event2
+):
+    """
+    Join two events.
+    """
+    joint_event = event1.copy()
+    joint_event.start = event1.start
+    joint_event.end = event2.end
+    joint_event.text = event1.text + " " + event2.text
+
+    return joint_event
+
+
+def split_event(
+        event,
+        position,
+        without_mark=False
+):
+    """
+    Split an event based on position.
+    """
+    ratio = position / len(event.text)
+    first_event = event.copy()
+    first_event.start = event.start
+    first_event.end = int((event.end - event.start) * ratio) + event.start
+
+    second_event = event.copy()
+    second_event.end = event.end
+    second_event.start = first_event.end
+    if not without_mark:
+        if not first_event.text.startswith("{\\r}"):
+            first_event.text = "{\\r}" + event.text[:position].rstrip(" ")
+        else:
+            first_event.text = event.text[:position].rstrip(" ")
+        if not second_event.text.startswith("{\\r}"):
+            second_event.text = "{\\r}" + event.text[position:].lstrip(" ")
+        else:
+            second_event.text = event.text[position:].lstrip(" ")
+
+    return [first_event, second_event]

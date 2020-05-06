@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's command line options.
@@ -25,13 +25,8 @@ META_TEXT = gettext.translation(domain=metadata.__name__,
                                 languages=[constants.CURRENT_LOCALE],
                                 fallback=True)
 
-try:
-    _ = OPTIONS_TEXT.ugettext
-    M_ = META_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = OPTIONS_TEXT.gettext
-    M_ = META_TEXT.gettext
+_ = OPTIONS_TEXT.gettext
+M_ = META_TEXT.gettext
 
 
 def get_cmd_parser():  # pylint: disable=too-many-statements
@@ -48,6 +43,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                  "when the option is not given at the command line.\n"
                  "\"(arg_num)\" means if the option is given,\n"
                  "the number of the arguments is required.\n"
+                 "Arguments *ARE* the things given behind the options.\n"
                  "Author: {author}\n"
                  "Email: {email}\n"
                  "Bug report: {homepage}\n").format(
@@ -75,6 +71,9 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         _('Options to control translation. '
           'Default method to translate. '
           'Could be blocked at any time.'))
+    conversion_group = parser.add_argument_group(
+        _('Subtitles Conversion Options'),
+        _('Options to control subtitles conversions.(Experimental)'))
     network_group = parser.add_argument_group(
         _('Network Options'),
         _('Options to control network.'))
@@ -151,27 +150,25 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     lang_group.add_argument(
         '-SRC', '--src-language',
         metavar=_('lang_code'),
+        default='auto',
         help=_("Lang code/Lang tag for translation source language. "
-               "If not given, use langcodes to get a best matching "
-               "of the \"-S\"/\"--speech-language\". "
-               "If using py-googletrans as the method to translate, "
-               "WRONG INPUT STOP RUNNING. "
+               "If not given, use py-googletrans to auto-detect the src language. "
                "(arg_num = 1) (default: %(default)s)"))
 
     lang_group.add_argument(
         '-D', '--dst-language',
         metavar=_('lang_code'),
         help=_("Lang code/Lang tag for translation destination language. "
-               "Same attention in the \"-SRC\"/\"--src-language\". "
                "(arg_num = 1) (default: %(default)s)"))
 
     lang_group.add_argument(
         '-bm', '--best-match',
         metavar=_('mode'),
         nargs="*",
-        help=_("Allow langcodes to get a best matching lang code "
+        help=_("Use langcodes to get a best matching lang code "
                "when your input is wrong. "
-               "Only functional for py-googletrans and Google Speech V2. "
+               "Only functional for py-googletrans and Google Speech API. "
+               "If langcodes not installed, use fuzzywuzzy instead. "
                "Available modes: "
                "s, src, d, all. "
                "\"s\" for \"-S\"/\"--speech-language\". "
@@ -251,17 +248,22 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         '-sapi', '--speech-api',
         metavar=_('API_code'),
         default='gsv2',
+        choices=["gsv2", "gcsv1", "xfyun", "baidu"],
         help=_("Choose which Speech-to-Text API to use. "
                "Currently support: "
                "gsv2: Google Speech V2 (https://github.com/gillesdemey/google-speech-v2). "
                "gcsv1: Google Cloud Speech-to-Text V1P1Beta1 "
                "(https://cloud.google.com/speech-to-text/docs). "
+               "xfyun: Xun Fei Yun Speech-to-Text WebSocket API "
+               "(https://www.xfyun.cn/doc/asr/voicedictation/API.html). "
+               "baidu: Baidu Automatic Speech Recognition API "
+               "(https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily) "
                "(arg_num = 1) (default: %(default)s)"))
 
     speech_group.add_argument(
         '-skey', '--speech-key',
         metavar='key',
-        help=_("The API key for Speech-to-Text API. (arg_num = 1) "
+        help=_("The API key for Google Speech-to-Text API. (arg_num = 1) "
                "Currently support: "
                "gsv2: The API key for gsv2. (default: Free API key) "
                "gcsv1: The API key for gcsv1. "
@@ -284,6 +286,10 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "https://googleapis.dev/python/speech/latest"
                "/gapic/v1/types.html"
                "#google.cloud.speech_v1.types.RecognitionConfig "
+               "xfyun: Xun Fei Yun Speech-to-Text WebSocket API "
+               "(https://console.xfyun.cn/services/iat). "
+               "baidu: Baidu Automatic Speech Recognition API "
+               "(https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u). "
                "If arg_num is 0, use const path. "
                "(arg_num = 0 or 1) (const: %(const)s)")
     )
@@ -293,7 +299,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         metavar='float',
         type=float,
         default=0.0,
-        help=_("API response for text confidence. "
+        help=_("Google Speech-to-Text API response for text confidence. "
                "A float value between 0 and 1. "
                "Confidence bigger means the result is better. "
                "Input this argument will drop any result below it. "
@@ -343,6 +349,56 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         action='store_true',
         help=_("Drop any .ass override codes in the text before translation. "
                "Only affect the translation result. "
+               "(arg_num = 0)"))
+
+    pygt_group.add_argument(
+        '-gt-dc', '--gt-delete-chars',
+        nargs='?', metavar="chars",
+        const="，。！",
+        help=_("Replace the specific chars with a space after translation, "
+               "and strip the space at the end of each sentence. "
+               "Only affect the translation result. "
+               "(arg_num = 0 or 1) (const: %(const)s)"))
+
+    conversion_group.add_argument(
+        '-mjs', '--max-join-size',
+        metavar='integer',
+        type=int,
+        default=constants.DEFAULT_MAX_SIZE_PER_EVENT,
+        help=_("(Experimental)Max length to join two events. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-mdt', '--max-delta-time',
+        metavar=_('second'),
+        type=float,
+        default=constants.DEFAULT_CONTINUOUS_SILENCE,
+        help=_("(Experimental)Max delta time to join two events. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-dms', '--delimiters',
+        metavar=_('string'),
+        default=constants.DEFAULT_EVENT_DELIMITERS,
+        help=_("(Experimental)Delimiters not to join two events. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    conversion_group.add_argument(
+        '-sw1', '--stop-words-1',
+        metavar=_('words_delimited_by_space'),
+        help=_("(Experimental)First set of Stop words to split two events. "
+               "(arg_num = 1)"))
+
+    conversion_group.add_argument(
+        '-sw2', '--stop-words-2',
+        metavar=_('words_delimited_by_space'),
+        help=_("(Experimental)Second set of Stop words to split two events. "
+               "(arg_num = 1)"))
+
+    conversion_group.add_argument(
+        '-ds', '--dont-split',
+        action='store_true',
+        help=_("(Experimental)Don't Split just merge. "
                "(arg_num = 0)"))
 
     network_group.add_argument(
@@ -424,9 +480,9 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "https://github.com/stevenj/autosub/blob/master/scripts/subgen.sh "
                "https://ffmpeg.org/ffmpeg-filters.html) "
                "(2 >= arg_num >= 1)").format(
-                   dft_1=constants.DEFAULT_AUDIO_PRCS[0],
-                   dft_2=constants.DEFAULT_AUDIO_PRCS[1],
-                   dft_3=constants.DEFAULT_AUDIO_PRCS[2]))
+                   dft_1=constants.DEFAULT_AUDIO_PRCS_CMDS[0],
+                   dft_2=constants.DEFAULT_AUDIO_PRCS_CMDS[1],
+                   dft_3=constants.DEFAULT_AUDIO_PRCS_CMDS[2]))
 
     audio_prcs_group.add_argument(
         '-k', '--keep',
@@ -455,19 +511,19 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     audio_prcs_group.add_argument(
         '-acc', '--audio-conversion-cmd',
         metavar=_('command'),
-        default=constants.DEFAULT_AUDIO_CVT,
+        default=constants.DEFAULT_AUDIO_CVT_CMD,
         help=_("(Experimental)This arg will override the default "
                "audio conversion command. "
                "\"[\", \"]\" are optional arguments "
                "meaning you can remove them. "
-               "\"{{\", \"}}\" are required arguments "
+               "\"{\", \"}\" are required arguments "
                "meaning you can't remove them. "
                "(arg_num = 1) (default: %(default)s)"))
 
     audio_prcs_group.add_argument(
         '-asc', '--audio-split-cmd',
         metavar=_('command'),
-        default=constants.DEFAULT_AUDIO_SPLT,
+        default=constants.DEFAULT_AUDIO_SPLT_CMD,
         help=_("(Experimental)This arg will override the default "
                "audio split command. "
                "Same attention above. "

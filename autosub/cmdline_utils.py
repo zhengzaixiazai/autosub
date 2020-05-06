@@ -1,14 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's command line functionality.
 """
 # pylint: disable=too-many-lines
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
-
 import gettext
 import os
+import sys
 import subprocess
 import tempfile
 import gc
@@ -17,7 +16,6 @@ import json
 # Import third-party modules
 import auditok
 import googletrans
-import langcodes
 import pysubs2
 
 # Any changes to the path and your own modules
@@ -27,17 +25,15 @@ from autosub import exceptions
 from autosub import ffmpeg_utils
 from autosub import lang_code_utils
 from autosub import sub_utils
+from autosub import api_google
+from autosub import api_baidu
 
 CMDLINE_UTILS_TEXT = gettext.translation(domain=__name__,
                                          localedir=constants.LOCALE_PATH,
                                          languages=[constants.CURRENT_LOCALE],
                                          fallback=True)
 
-try:
-    _ = CMDLINE_UTILS_TEXT.ugettext
-except AttributeError:
-    # Python 3 fallback
-    _ = CMDLINE_UTILS_TEXT.gettext
+_ = CMDLINE_UTILS_TEXT.gettext
 
 
 def list_args(args):
@@ -102,7 +98,7 @@ def list_args(args):
             print("{column_1}{column_2}".format(
                 column_1=lang_code_utils.wjust(_("Lang code"), 18),
                 column_2=_("Description")))
-            for code, language in sorted(constants.TRANSLATION_LANGUAGE_CODES.items()):
+            for code, language in sorted(googletrans.constants.LANGUAGES.items()):
                 print("{column_1}{column_2}".format(
                     column_1=lang_code_utils.wjust(code, 18),
                     column_2=language))
@@ -110,7 +106,7 @@ def list_args(args):
             print(_("Match py-googletrans lang codes."))
             lang_code_utils.match_print(
                 dsr_lang=args.list_translation_codes,
-                match_list=list(constants.TRANSLATION_LANGUAGE_CODES.keys()),
+                match_list=list(googletrans.constants.LANGUAGES.keys()),
                 min_score=args.min_score)
         return True
 
@@ -227,12 +223,6 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
             if not args.output_files:
                 raise exceptions.AutosubException(
                     _("Error: No valid \"-of\"/\"--output-files\" arguments."))
-        else:
-            args.output_files = args.output_files & \
-                                constants.DEFAULT_SUB_MODE_SET
-            if not args.output_files:
-                raise exceptions.AutosubException(
-                    _("Error: No valid \"-of\"/\"--output-files\" arguments."))
 
     if args.best_match:
         args.best_match = {k.lower() for k in args.best_match}
@@ -255,54 +245,120 @@ def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-r
     for audio or video processing.
     """
     if os.path.isfile(args.speech_config):
-        with open(args.speech_config, 'r') as config_file:
+        with open(args.speech_config, encoding='utf-8') as config_file:
             try:
                 config_dict = json.load(config_file)
             except ValueError:
                 raise exceptions.AutosubException(
-                    _("Error: Can't decode config file \"{filename}\".").format(
+                    _("Error: Can't decode speech config file \"{filename}\".").format(
                         filename=args.speech_config))
     else:
         raise exceptions.AutosubException(
-            _("Error: Config file \"{filename}\" doesn't exist.").format(
+            _("Error: Speech config file \"{filename}\" doesn't exist.").format(
                 filename=args.speech_config))
 
-    if "encoding" in config_dict and config_dict["encoding"]:
-        # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
-        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
-        if config_dict["encoding"] == "FLAC":
-            args.api_suffix = ".flac"
-        elif config_dict["encoding"] == "MP3":
-            args.api_suffix = ".mp3"
-        elif config_dict["encoding"] == "LINEAR16":
-            args.api_suffix = ".wav"
-        elif config_dict["encoding"] == "OGG_OPUS":
-            args.api_suffix = ".ogg"
+    if args.speech_api == "gcsv1":
+        if "encoding" in config_dict and config_dict["encoding"]:
+            # https://cloud.google.com/speech-to-text/docs/quickstart-protocol
+            # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+            args.api_suffix = api_google.google_enc_to_ext(config_dict["encoding"])
+        else:
+            # it's necessary to set default encoding
+            config_dict["encoding"] = api_google.google_ext_to_enc(args.api_suffix)
+
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
+        # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
+        # In practice, the client API only accept the Snake case naming variable
+        # but the URL API accept the both
+        if "sample_rate_hertz" in config_dict and config_dict["sample_rate_hertz"]:
+            args.api_sample_rate = config_dict["sample_rate_hertz"]
+        elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
+            args.api_sample_rate = config_dict["sampleRateHertz"]
+        else:
+            # it's necessary to set sample_rate_hertz from option --api-sample-rate
+            config_dict["sample_rate_hertz"] = args.api_sample_rate
+
+        if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
+            args.api_audio_channel = config_dict["audio_channel_count"]
+        elif "audioChannelCount" in config_dict and config_dict["audioChannelCount"]:
+            args.api_audio_channel = config_dict["audioChannelCount"]
+
+        if "language_code" in config_dict and config_dict["language_code"]:
+            args.speech_language = config_dict["language_code"]
+        elif "languageCode" in config_dict and config_dict["languageCode"]:
+            args.speech_language = config_dict["languageCode"]
+
     else:
-        # it's necessary to set default encoding
-        config_dict["encoding"] = core.extension_to_encoding(args.api_suffix)
+        args.api_suffix = ".pcm"
+        args.api_sample_rate = 16000
 
-    # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig
-    # https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig
-    # In practice, the client API only accept the Snake case naming variable
-    # but the URL API accept the both
-    if "sample_rate_hertz" in config_dict and config_dict["sample_rate_hertz"]:
-        args.api_sample_rate = config_dict["sample_rate_hertz"]
-    elif "sampleRateHertz" in config_dict and config_dict["sampleRateHertz"]:
-        args.api_sample_rate = config_dict["sampleRateHertz"]
-    else:
-        # it's necessary to set sample_rate_hertz from option --api-sample-rate
-        config_dict["sample_rate_hertz"] = args.api_sample_rate
+        if "APPID" in config_dict:
+            config_dict["app_id"] = config_dict["APPID"]
+            del config_dict["APPID"]
+        elif "AppID" in config_dict:
+            config_dict["app_id"] = config_dict["AppID"]
+            del config_dict["AppID"]
+        elif "app_id" not in config_dict:
+            raise exceptions.AutosubException(
+                _("Error: No \"app_id\" found in speech config file \"{filename}\"."
+                  ).format(filename=args.speech_config))
 
-    if "audio_channel_count" in config_dict and config_dict["audio_channel_count"]:
-        args.api_audio_channel = config_dict["audio_channel_count"]
-    elif "audioChannelCount" in config_dict and config_dict["audioChannelCount"]:
-        args.api_audio_channel = config_dict["audioChannelCount"]
+        if "APIKey" in config_dict:
+            config_dict["api_key"] = config_dict["APIKey"]
+            del config_dict["APIKey"]
+        elif "API key" in config_dict:
+            config_dict["api_key"] = config_dict["API key"]
+            del config_dict["API key"]
+        elif "api_key" not in config_dict:
+            raise exceptions.AutosubException(
+                _("Error: No \"api_key\" found in speech config file \"{filename}\"."
+                  ).format(filename=args.speech_config))
 
-    if "language_code" in config_dict and config_dict["language_code"]:
-        args.speech_language = config_dict["language_code"]
-    elif "languageCode" in config_dict and config_dict["languageCode"]:
-        args.speech_language = config_dict["languageCode"]
+        if "APISecret" in config_dict:
+            config_dict["api_secret"] = config_dict["APISecret"]
+            del config_dict["APISecret"]
+        elif "Secret Key" in config_dict:
+            config_dict["api_secret"] = config_dict["Secret Key"]
+            del config_dict["Secret Key"]
+        elif "api_secret" not in config_dict:
+            raise exceptions.AutosubException(
+                _("Error: No \"api_secret\" found in speech config file \"{filename}\"."
+                  ).format(filename=args.speech_config))
+
+        if args.speech_api == "xfyun":
+            if "business" not in config_dict:
+                config_dict["business"] = {
+                    "language": "zh_cn",
+                    "domain": "iat",
+                    "accent": "mandarin"}
+
+            if "language" not in config_dict["business"]:
+                raise exceptions.AutosubException(
+                    _("Error: No \"language\" found in speech config file \"{filename}\"."
+                      ).format(filename=args.speech_config))
+
+            args.speech_language = config_dict["business"]["language"]
+
+        elif args.speech_api == "baidu":
+            if "config" not in config_dict:
+                config_dict["config"] = {
+                    "format": "pcm",
+                    "rate": 16000,
+                    "channel": 1,
+                    "cuid": "python",
+                    "dev_pid": 1537
+                }
+
+            if "dev_pid" in config_dict["config"]:
+                args.speech_language = \
+                    api_baidu.baidu_dev_pid_to_lang_code(config_dict["config"]["dev_pid"])
+            else:
+                config_dict["config"]["dev_pid"] = 1537
+
+            if "disable_qps_limit" not in config_dict \
+                    or config_dict["disable_qps_limit"] is not True:
+                # Queries per second limit
+                args.speech_concurrency = 1
 
     args.speech_config = config_dict
 
@@ -328,10 +384,18 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                         match_list=list(constants.SPEECH_TO_TEXT_LANGUAGE_CODES.keys()),
                         min_score=args.min_score)
                     if best_result:
-                        print(_("Use langcodes to standardize the result."))
-                        args.speech_language = langcodes.standardize_tag(best_result[0])
                         print(_("Use \"{lang_code}\" instead.").format(
-                            lang_code=args.speech_language))
+                            lang_code=best_result[0]))
+                        args.speech_language = best_result[0]
+                        if constants.langcodes_:
+                            print(_("Use langcodes to standardize the result."))
+                            args.speech_language = constants.langcodes_.standardize_tag(
+                                best_result[0])
+                            print(_("Use \"{lang_code}\" instead.").format(
+                                lang_code=args.speech_language))
+                        else:
+                            print(_("Use the lower case."))
+                            args.speech_language = best_result[0]
                     else:
                         print(_("Match failed. Still using \"{lang_code}\".").format(
                             lang_code=args.speech_language))
@@ -346,9 +410,11 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                 raise exceptions.AutosubException(
                     _("Error: The arg of \"-mnc\"/\"--min-confidence\" isn't legal."))
 
-        else:
-            raise exceptions.AutosubException(
-                _("Error: Wrong API code."))
+        elif args.speech_api == "xfyun":
+            if not args.speech_config:
+                raise exceptions.AutosubException(
+                    _("Error: You must provide \"-sconf\", \"--speech-config\" option "
+                      "when using Xun Fei Yun API."))
 
         if args.dst_language is None:
             print(_("Translation destination language not provided. "
@@ -364,18 +430,11 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                 elif 'src' not in args.best_match:
                     args.best_match.add('src')
 
-            is_src_matched = False
-            is_dst_matched = False
+            args.src_language = args.src_language.lower()
+            args.dst_language = args.dst_language.lower()
 
-            for key in googletrans.constants.LANGUAGES:
-                if args.src_language.lower() == key.lower():
-                    args.src_language = key
-                    is_src_matched = True
-                if args.dst_language.lower() == key.lower():
-                    args.dst_language = key
-                    is_dst_matched = True
-
-            if not is_src_matched:
+            if args.src_language != 'auto' and \
+                    args.src_language not in googletrans.constants.LANGUAGES:
                 if args.best_match and 'src' in args.best_match:
                     print(_("Let translation source lang code "
                             "to match py-googletrans lang codes."))
@@ -397,7 +456,7 @@ def validate_aovp_args(args):  # pylint: disable=too-many-branches, too-many-ret
                           "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
                               src=args.src_language))
 
-            if not is_dst_matched:
+            if args.dst_language not in googletrans.constants.LANGUAGES:
                 if args.best_match and 'd' in args.best_match:
                     print(_("Let translation destination lang code "
                             "to match py-googletrans lang codes."))
@@ -457,18 +516,11 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
             raise exceptions.AutosubException(
                 _("Error: Destination language not provided."))
 
-        is_src_matched = False
-        is_dst_matched = False
+        args.src_language = args.src_language.lower()
+        args.dst_language = args.dst_language.lower()
 
-        for key in googletrans.constants.LANGUAGES:
-            if args.src_language.lower() == key.lower():
-                args.src_language = key
-                is_src_matched = True
-            if args.dst_language.lower() == key.lower():
-                args.dst_language = key
-                is_dst_matched = True
-
-        if not is_src_matched:
+        if args.src_language != 'auto' and\
+                args.src_language not in googletrans.constants.LANGUAGES:
             if args.best_match and 'src' in args.best_match:
                 print(
                     _("Warning: Source language \"{src}\" not supported. "
@@ -495,7 +547,7 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
                       "Or use \"-bm\"/\"--best-match\" to get a best match.").format(
                           src=args.src_language))
 
-        if not is_dst_matched:
+        if args.dst_language not in googletrans.constants.LANGUAGES:
             if args.best_match and 'd' in args.best_match:
                 print(
                     _("Warning: Destination language \"{dst}\" not supported. "
@@ -627,6 +679,92 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
     except KeyError:
         pass
 
+    try:
+        args.output_files.remove("src-lf-dst")
+        new_sub = sub_utils.merge_bilingual_assfile(
+            subtitles=src_sub,
+            order=0
+        )
+        sub_string = core.ssafile_to_sub_str(
+            ssafile=new_sub,
+            fps=fps,
+            subtitles_file_format=args.format)
+
+        if args.format == 'mpl2':
+            extension = 'mpl2.txt'
+        else:
+            extension = args.format
+
+        sub_name = "{base}.{nt}.{extension}".format(
+            base=args.output,
+            nt="combination.2",
+            extension=extension)
+
+        subtitles_file_path = core.str_to_file(
+            str_=sub_string,
+            output=sub_name,
+            input_m=input_m)
+        # subtitles string to file
+        print(_("\"src-lf-dst\" subtitles file "
+                "created at \"{}\".").format(subtitles_file_path))
+
+        if not args.output_files:
+            raise exceptions.AutosubException(_("\nAll works done."))
+
+    except KeyError:
+        pass
+
+    try:
+        args.output_files.remove("join-events")
+        if args.stop_words_1:
+            stop_words_1 = args.stop_words_1.split(" ")
+            stop_words_set_1 = set(stop_words_1)
+        else:
+            stop_words_set_1 = constants.DEFAULT_ENGLISH_STOP_WORDS_SET_1
+        if args.stop_words_2:
+            stop_words_2 = args.stop_words_2.split(" ")
+            stop_words_set_2 = set(stop_words_2)
+        else:
+            stop_words_set_2 = constants.DEFAULT_ENGLISH_STOP_WORDS_SET_2
+
+        new_sub = sub_utils.merge_src_assfile(
+            subtitles=src_sub,
+            max_join_size=args.max_join_size,
+            max_delta_time=int(args.max_delta_time * 1000),
+            delimiters=args.delimiters,
+            stop_words_set_1=stop_words_set_1,
+            stop_words_set_2=stop_words_set_2,
+            avoid_split=args.dont_split
+        )
+        sub_string = core.ssafile_to_sub_str(
+            ssafile=new_sub,
+            fps=fps,
+            subtitles_file_format=args.format)
+
+        if args.format == 'mpl2':
+            extension = 'mpl2.txt'
+        else:
+            extension = args.format
+
+        sub_name = "{base}.{nt}.{extension}".format(
+            base=args.output,
+            nt="join",
+            extension=extension)
+
+        subtitles_file_path = core.str_to_file(
+            str_=sub_string,
+            output=sub_name,
+            input_m=input_m)
+        # subtitles string to file
+        print(_("\"join-events\" subtitles file "
+                "created at \"{}\".").format(subtitles_file_path))
+
+        if not args.output_files:
+            raise exceptions.AutosubException(_("\nAll works done."))
+
+    except KeyError:
+        pass
+
 
 def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         args,
@@ -655,14 +793,15 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
 
     # text translation
     # use googletrans
-    translated_text = core.list_to_googletrans(
+    translated_text, args.src_language = core.list_to_googletrans(
         text_list,
         src_language=args.src_language,
         dst_language=args.dst_language,
         sleep_seconds=args.sleep_seconds,
         user_agent=args.user_agent,
         service_urls=args.service_urls,
-        drop_override_codes=args.drop_override_codes)
+        drop_override_codes=args.drop_override_codes,
+        delete_chars=args.gt_delete_chars)
 
     if not translated_text or len(translated_text) != len(text_list):
         raise exceptions.AutosubException(
@@ -672,6 +811,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("bilingual")
         bilingual_sub = pysubs2.SSAFile()
         bilingual_sub.styles = src_sub.styles
+        bilingual_sub.info = src_sub.info
         bilingual_sub.events = src_sub.events[:]
         if args.styles and \
                 len(styles_list) == 2 and \
@@ -688,7 +828,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=bilingual_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[0])
+                style_name="")
 
         bilingual_string = core.ssafile_to_sub_str(
             ssafile=bilingual_sub,
@@ -723,6 +863,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("dst-lf-src")
         bilingual_sub = pysubs2.SSAFile()
         bilingual_sub.styles = src_sub.styles
+        bilingual_sub.info = src_sub.info
         if args.styles and \
                 len(styles_list) == 2 and \
                 (args.format == 'ass' or
@@ -739,7 +880,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[0],
+                style_name="",
                 same_event_type=1)
 
         bilingual_string = core.ssafile_to_sub_str(
@@ -775,6 +916,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("src-lf-dst")
         bilingual_sub = pysubs2.SSAFile()
         bilingual_sub.styles = src_sub.styles
+        bilingual_sub.info = src_sub.info
         if args.styles and \
                 len(styles_list) == 2 and \
                 (args.format == 'ass' or
@@ -791,7 +933,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[0],
+                style_name="",
                 same_event_type=2)
 
         bilingual_string = core.ssafile_to_sub_str(
@@ -827,6 +969,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
         args.output_files.remove("dst")
         dst_sub = pysubs2.SSAFile()
         dst_sub.styles = src_sub.styles
+        dst_sub.info = src_sub.info
         if len(styles_list) == 2:
             sub_utils.pysubs2_ssa_event_add(
                 src_ssafile=src_sub,
@@ -838,7 +981,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=dst_sub,
                 text_list=translated_text,
-                style_name=styles_list[0])
+                style_name="")
 
         dst_string = core.ssafile_to_sub_str(
             ssafile=dst_sub,
@@ -896,12 +1039,6 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     """
     Give args and process an input audio or video file.
     """
-
-    if not args.output_files:
-        raise exceptions.AutosubException(
-            _("\nNo works done."
-              " Check your \"-of\"/\"--output-files\" option."))
-
     if args.ext_regions:
         # use external speech regions
         print(_("Use external speech regions."))
@@ -914,9 +1051,14 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             sample_rate=16000,
             out_=audio_wav)
         print(command)
-        subprocess.check_output(
-            constants.cmd_conversion(command),
-            stdin=open(os.devnull))
+        prcs = subprocess.Popen(constants.cmd_conversion(command),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = prcs.communicate()
+        if out:
+            print(out.decode(sys.stdout.encoding))
+        if err:
+            print(err.decode(sys.stdout.encoding))
         regions = sub_utils.sub_to_speech_regions(
             audio_wav=audio_wav,
             sub_file=args.ext_regions)
@@ -942,16 +1084,21 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 "to detect audio regions.").format(
                     name=audio_wav))
         print(command)
-        subprocess.check_output(
-            constants.cmd_conversion(command),
-            stdin=open(os.devnull))
+        prcs = subprocess.Popen(constants.cmd_conversion(command),
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        out, err = prcs.communicate()
+        if out:
+            print(out.decode(sys.stdout.encoding))
+        if err:
+            print(err.decode(sys.stdout.encoding))
 
         if not ffmpeg_utils.ffprobe_check_file(audio_wav):
             raise exceptions.AutosubException(
                 _("Error: Convert source file to \"{name}\" failed.").format(
                     name=audio_wav))
 
-        print(_("Conversion complete.\nUse Auditok to detect speech regions."))
+        print(_("Conversion completed.\nUse Auditok to detect speech regions."))
 
         regions = core.auditok_gen_speech_regions(
             audio_wav=audio_wav,
@@ -963,7 +1110,8 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         os.remove(audio_wav)
         gc.collect(0)
 
-        print(_("\n\"{name}\" has been deleted.").format(name=audio_wav))
+        print(_("Auditok detection completed."
+                "\n\"{name}\" has been deleted.").format(name=audio_wav))
 
     if not regions:
         raise exceptions.AutosubException(
@@ -1125,12 +1273,29 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     print(_("No available GOOGLE_APPLICATION_CREDENTIALS. "
                             "Use \"-sa\"/\"--service-account\" to set one."))
                     text_list = None
+
+        elif args.speech_api == "xfyun":
+            # Xun Fei Yun Speech-to-Text WebSocket API
+            text_list = core.xfyun_to_text(
+                audio_fragments=audio_fragments,
+                config=args.speech_config,
+                concurrency=args.speech_concurrency,
+                is_keep=False,
+                result_list=result_list)
+        elif args.speech_api == "baidu":
+            # Baidu ASR API
+            text_list = core.baidu_to_text(
+                audio_fragments=audio_fragments,
+                config=args.speech_config,
+                concurrency=args.speech_concurrency,
+                is_keep=False,
+                result_list=result_list)
         else:
             text_list = None
 
         gc.collect(0)
 
-        if result_list is not None:
+        if result_list and result_list is not None:
             timed_result = get_timed_text(
                 is_empty_dropped=False,
                 regions=regions,
@@ -1193,14 +1358,15 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 pass
 
             # text translation
-            translated_text = core.list_to_googletrans(
+            translated_text, args.src_language = core.list_to_googletrans(
                 text_list,
                 src_language=args.src_language,
                 dst_language=args.dst_language,
                 sleep_seconds=args.sleep_seconds,
                 user_agent=args.user_agent,
                 service_urls=args.service_urls,
-                drop_override_codes=args.drop_override_codes)
+                drop_override_codes=args.drop_override_codes,
+                delete_chars=args.gt_delete_chars)
 
             if not translated_text or len(translated_text) != len(regions):
                 raise exceptions.AutosubException(
@@ -1221,13 +1387,11 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=None,
                         dst_ssafile=bilingual_sub,
-                        text_list=timed_text,
-                        style_name=None)
+                        text_list=timed_text)
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=bilingual_sub,
                         dst_ssafile=bilingual_sub,
                         text_list=translated_text,
-                        style_name=None,
                         same_event_type=0)
                     bilingual_string = core.ssafile_to_sub_str(
                         ssafile=bilingual_sub,
@@ -1269,13 +1433,11 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=None,
                         dst_ssafile=src_sub,
-                        text_list=timed_text,
-                        style_name=None)
+                        text_list=timed_text)
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=src_sub,
                         dst_ssafile=bilingual_sub,
                         text_list=translated_text,
-                        style_name=None,
                         same_event_type=1)
                     bilingual_string = core.ssafile_to_sub_str(
                         ssafile=bilingual_sub,
@@ -1317,13 +1479,11 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=None,
                         dst_ssafile=src_sub,
-                        text_list=timed_text,
-                        style_name=None)
+                        text_list=timed_text)
                     sub_utils.pysubs2_ssa_event_add(
                         src_ssafile=src_sub,
                         dst_ssafile=bilingual_sub,
                         text_list=translated_text,
-                        style_name=None,
                         same_event_type=2)
                     bilingual_string = core.ssafile_to_sub_str(
                         ssafile=bilingual_sub,

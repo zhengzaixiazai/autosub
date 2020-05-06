@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines constants used by autosub.
 """
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import os
 import sys
 import shlex
@@ -18,6 +17,11 @@ try:
     IS_GOOGLECLOUDCLIENT = True
 except DistributionNotFound:
     IS_GOOGLECLOUDCLIENT = False
+
+try:
+    import langcodes as langcodes_  # pylint: disable=unused-import
+except ImportError:
+    langcodes_ = None
 
 # Any changes to the path and your own modules
 
@@ -44,7 +48,7 @@ LOCALE_PATH = os.path.abspath(os.path.join(APP_PATH, "data/locale"))
 
 EXT_LOCALE = os.path.abspath(os.path.join(os.getcwd(), "locale"))
 if os.path.isfile(EXT_LOCALE):
-    with open(EXT_LOCALE, "r") as in_file:
+    with open(EXT_LOCALE, encoding='utf-8') as in_file:
         LINE = in_file.readline()
         LINE_LIST = LINE.split()
         if LINE_LIST[0] in SUPPORTED_LOCALE:
@@ -57,6 +61,10 @@ else:
 GOOGLE_SPEECH_V2_API_KEY = "AIzaSyBOti4mM-6x9WDnZIjIeyEU21OpBXqWBgw"
 GOOGLE_SPEECH_V2_API_URL = \
     "www.google.com/speech-api/v2/recognize?client=chromium&lang={lang}&key={key}"
+XFYUN_SPEECH_WEBAPI_URL = "iat-api.xfyun.cn"
+BAIDU_ASR_URL = "http://vop.baidu.com/server_api"
+BAIDU_PRO_ASR_URL = "http://vop.baidu.com/pro_api"
+BAIDU_TOKEN_URL = "http://openapi.baidu.com/oauth/2.0/token"
 
 if multiprocessing.cpu_count() > 3:
     DEFAULT_CONCURRENCY = multiprocessing.cpu_count() >> 1
@@ -64,18 +72,21 @@ else:
     DEFAULT_CONCURRENCY = 2
 
 DEFAULT_SRC_LANGUAGE = 'en-US'
-DEFAULT_ENERGY_THRESHOLD = 50
-DEFAULT_MAX_REGION_SIZE = 6.0
-DEFAULT_MIN_REGION_SIZE = 0.8
-MIN_REGION_SIZE_LIMIT = 0.6
-MAX_REGION_SIZE_LIMIT = 12.0
+DEFAULT_ENERGY_THRESHOLD = 45
+DEFAULT_MAX_REGION_SIZE = 10.0
+DEFAULT_MIN_REGION_SIZE = 0.5
+MIN_REGION_SIZE_LIMIT = 0.3
+MAX_REGION_SIZE_LIMIT = 60.0
 DEFAULT_CONTINUOUS_SILENCE = 0.2
 # Maximum speech to text region length in milliseconds
 # when using external speech region control
 
 DEFAULT_DST_LANGUAGE = 'en-US'
 DEFAULT_SIZE_PER_TRANS = 4000
-DEFAULT_SLEEP_SECONDS = 5
+DEFAULT_SLEEP_SECONDS = 1
+
+DEFAULT_MAX_SIZE_PER_EVENT = 100
+DEFAULT_EVENT_DELIMITERS = r"!()*,.:;?[]^_`~"
 
 DEFAULT_SUBTITLES_FORMAT = 'srt'
 
@@ -204,117 +215,8 @@ SPEECH_TO_TEXT_LANGUAGE_CODES = {
     'ur-in': 'Urdu (India)',
     'ur-pk': 'Urdu (Pakistan)',
     'vi-vn': 'Vietnamese (Vietnam)',
-    'yue-hant-hk' : 'Chinese, Cantonese (Traditional, Hong Kong)',
+    'yue-hant-hk': 'Chinese, Cantonese (Traditional, Hong Kong)',
     'zu-za': 'Zulu (South Africa)'
-}
-
-TRANSLATION_LANGUAGE_CODES = {
-    'af': 'Afrikaans',
-    'am': 'Amharic',
-    'ar': 'Arabic',
-    'az': 'Azerbaijani',
-    'be': 'Belarusian',
-    'bg': 'Bulgarian',
-    'bn': 'Bengali',
-    'bs': 'Bosnian',
-    'ca': 'Catalan',
-    'ceb': 'Cebuano',
-    'co': 'Corsican',
-    'cs': 'Czech',
-    'cy': 'Welsh',
-    'da': 'Danish',
-    'de': 'German',
-    'el': 'Greek',
-    'en': 'English',
-    'eo': 'Esperanto',
-    'es': 'Spanish',
-    'et': 'Estonian',
-    'eu': 'Basque',
-    'fa': 'Persian',
-    'fi': 'Finnish',
-    'fr': 'French',
-    'fy': 'Frisian',
-    'ga': 'Irish',
-    'gd': 'Scots Gaelic',
-    'gl': 'Galician',
-    'gu': 'Gujarati',
-    'ha': 'Hausa',
-    'haw': 'Hawaiian',
-    'he': 'Hebrew',
-    'hi': 'Hindi',
-    'hmn': 'Hmong',
-    'hr': 'Croatian',
-    'ht': 'Haitian Creole',
-    'hu': 'Hungarian',
-    'hy': 'Armenian',
-    'id': 'Indonesian',
-    'ig': 'Igbo',
-    'is': 'Icelandic',
-    'it': 'Italian',
-    'iw': 'Hebrew',
-    'ja': 'Japanese',
-    'jw': 'Javanese',
-    'ka': 'Georgian',
-    'kk': 'Kazakh',
-    'km': 'Khmer',
-    'kn': 'Kannada',
-    'ko': 'Korean',
-    'ku': 'Kurdish',
-    'ky': 'Kyrgyz',
-    'la': 'Latin',
-    'lb': 'Luxembourgish',
-    'lo': 'Lao',
-    'lt': 'Lithuanian',
-    'lv': 'Latvian',
-    'mg': 'Malagasy',
-    'mi': 'Maori',
-    'mk': 'Macedonian',
-    'ml': 'Malayalam',
-    'mn': 'Mongolian',
-    'mr': 'Marathi',
-    'ms': 'Malay',
-    'mt': 'Maltese',
-    'my': 'Myanmar(Burmese)',
-    'ne': 'Nepali',
-    'nl': 'Dutch',
-    'no': 'Norwegian',
-    'ny': 'Nyanja(Chichewa)',
-    'pa': 'Punjabi',
-    'pl': 'Polish',
-    'ps': 'Pashto',
-    'pt': 'Portuguese(Portugal,Brazil)',
-    'ro': 'Romanian',
-    'ru': 'Russian',
-    'sd': 'Sindhi',
-    'si': 'Sinhala(Sinhalese)',
-    'sk': 'Slovak',
-    'sl': 'Slovenian',
-    'sm': 'Samoan',
-    'sn': 'Shona',
-    'so': 'Somali',
-    'sq': 'Albanian',
-    'sr': 'Serbian',
-    'st': 'Sesotho',
-    'su': 'Sundanese',
-    'sv': 'Swedish',
-    'sw': 'Swahili',
-    'ta': 'Tamil',
-    'te': 'Telugu',
-    'tg': 'Tajik',
-    'th': 'Thai',
-    'tl': 'Tagalog(Filipino)',
-    'tr': 'Turkish',
-    'uk': 'Ukrainian',
-    'ur': 'Urdu',
-    'uz': 'Uzbek',
-    'vi': 'Vietnamese',
-    'xh': 'Xhosa',
-    'yi': 'Yiddish',
-    'yo': 'Yoruba',
-    'zh': 'Chinese (Simplified)',
-    'zh-cn': 'Chinese (Simplified)',
-    'zh-tw': 'Chinese (Traditional)',
-    'zu': 'Zulu'
 }
 
 OUTPUT_FORMAT = {
@@ -388,52 +290,85 @@ def which_exe(program_path):
 
 def get_cmd(program_name):
     """
-    Return the executable name. "" returned when no executable exists.
+    Return the path for a given executable.
+    "" returned when no executable exists.
     """
-    command = which_exe(program_name)
-    if command:
-        return command
-
-    command = which_exe(program_name + ".exe")
-    if command:
-        return command
+    if not sys.platform.startswith('win'):
+        command = which_exe(program_name)
+        if command:
+            return command
+    else:
+        command = which_exe(program_name + ".exe")
+        if command:
+            return command
 
     return ""
 
 
-if 'FFMPEG_PATH' in os.environ:
-    FFMPEG_CMD = os.environ['FFMPEG_PATH']
-else:
-    FFMPEG_CMD = get_cmd("ffmpeg")
+def get_cmd_from_env(program_name, env_name):
+    """
+    Return the path or the value of environment variable
+    for a given executable.
+    """
+    if env_name in os.environ:
+        if is_exe(os.environ[env_name]):
+            return os.environ[env_name]
+        program_name = os.path.join(os.environ[env_name], program_name)
+        if is_exe(program_name):
+            return program_name
+        return program_name + ".exe"
+    return get_cmd(program_name)
 
-if 'FFPROBE_PATH' in os.environ:
-    FFPROBE_CMD = os.environ['FFPROBE_PATH']
-else:
-    FFPROBE_CMD = get_cmd("ffprobe")
 
-if 'FFMPEG_NORMALIZE_PATH' in os.environ:
-    FFMPEG_NORMALIZE_CMD = os.environ['FFMPEG_NORMALIZE_PATH']
-else:
-    FFMPEG_NORMALIZE_CMD = get_cmd("ffmpeg-normalize")
+FFMPEG_CMD = get_cmd_from_env("ffmpeg", "FFMPEG_PATH")
+FFPROBE_CMD = get_cmd_from_env("ffprobe", "FFPROBE_PATH")
+FFMPEG_NORMALIZE_CMD = get_cmd_from_env("ffmpeg-normalize", "FFMPEG_NORMALIZE_PATH")
 
-DEFAULT_AUDIO_PRCS = [
-    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af \"asplit[a],aphasemeter=video=0,\
+DEFAULT_AUDIO_PRCS_CMDS = [
+    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -vn -af \"asplit[a],aphasemeter=video=0,\
 ametadata=select:key=\
 lavfi.aphasemeter.phase:value=-0.005:function=less,\
 pan=1c|c0=c0,aresample=async=1:first_pts=0,[a]amix\" \
--ac 1 -f flac \"{out_}\"",
-    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af lowpass=3000,highpass=200 \"{out_}\"",
+-ac 1 -f flac -loglevel error \"{out_}\"",
+    FFMPEG_CMD + " -hide_banner -i \"{in_}\" -af \"lowpass=3000,highpass=200\" "
+                 "-loglevel error \"{out_}\"",
     FFMPEG_NORMALIZE_CMD + " -v \"{in_}\" -ar 44100 -ofmt flac -c:a flac -pr -p -o \"{out_}\""
 ]
 
-DEFAULT_AUDIO_CVT = \
-    FFMPEG_CMD + " -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate} \"{out_}\""
+DEFAULT_AUDIO_CVT_CMD = \
+    FFMPEG_CMD + " -hide_banner -y -i \"{in_}\" -vn -ac {channel} -ar {sample_rate}" \
+                 " -loglevel error \"{out_}\""
 
-DEFAULT_AUDIO_SPLT = \
+DEFAULT_AUDIO_SPLT_CMD = \
     FFMPEG_CMD + " -y -ss {start} -i \"{in_}\" -t {dura} " \
     "-vn -ac [channel] -ar [sample_rate] -loglevel error \"{out_}\""
 
 DEFAULT_VIDEO_FPS_CMD = FFPROBE_CMD + " -v 0 -of csv=p=0 -select_streams " \
                         "v:0 -show_entries stream=r_frame_rate \"{in_}\""
 
-DEFAULT_CHECK_CMD = FFPROBE_CMD + " {in_} -show_format -pretty -loglevel quiet"
+DEFAULT_CHECK_CMD = FFPROBE_CMD + " \"{in_}\" -show_format -pretty -loglevel quiet"
+
+DEFAULT_ENGLISH_STOP_WORDS_SET_1 = \
+    {'after', 'and', 'as', 'because', 'before', 'between', 'but', 'either', 'except', 'for', 'how',
+     'include', 'including', 'includes', 'included', 'if', 'or', 'since', 'so', 'that', "that'll",
+     'until', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'with'}
+
+DEFAULT_ENGLISH_STOP_WORDS_SET_2 = \
+    {'a', 'about', 'above', 'after', 'again', 'against', 'ain', 'all', 'am', 'an', 'and', 'any',
+     'are', 'aren', "aren't", 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below',
+     'between', 'both', 'but', 'by', 'can', 'couldn', "couldn't", 'd', 'did', 'didn', "didn't",
+     'do', 'does', 'doesn', "doesn't", 'doing', 'don', "don't", 'down', 'during', 'each', 'few',
+     'for', 'from', 'further', 'had', 'hadn', "hadn't", 'has', 'hasn', "hasn't", 'have', 'haven',
+     "haven't", 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how',
+     'i', 'if', 'in', 'into', 'is', 'isn', "isn't", 'it', "it's", 'its', 'itself', 'just', 'll',
+     'm', 'ma', 'me', 'mightn', "mightn't", 'more', 'most', 'mustn', "mustn't", 'my', 'myself',
+     'needn', "needn't", 'no', 'nor', 'not', 'now', 'o', 'of', 'off', 'on', 'once', 'only', 'or',
+     'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 're', 's', 'same', 'shan', "shan't",
+     'she', "she's", 'should', "should've", 'shouldn', "shouldn't", 'so', 'some', 'such', 't',
+     'than', 'that', "that'll", 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there',
+     'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 've', 'very',
+     'was', 'wasn', "wasn't", 'we', 'were', 'weren', "weren't", 'what', 'when', 'where', 'which',
+     'while', 'who', 'whom', 'why', 'will', 'with', 'won', "won't", 'wouldn', "wouldn't", 'y',
+     'you', "you'd", "you'll", "you're", "you've", 'your', 'yours', 'yourself', 'yourselves'
+     }
+# Reference: https://gist.github.com/sebleier/554280

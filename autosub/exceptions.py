@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines exceptions used by autosub.
 """
 
 # Import built-in modules
-from __future__ import absolute_import, print_function, unicode_literals
 import sys
 
 # Import third-party modules
@@ -33,7 +32,7 @@ class AutosubException(Exception):
 
 class ConversionException(AutosubException):
     """
-    Raised when short-term audio fragments conversion failed.
+    Raised when audio conversion failed.
     """
 
 

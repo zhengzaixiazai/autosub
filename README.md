@@ -23,6 +23,8 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
 1. [Description](#description)
 2. [License](#license)
 3. [Dependencies](#dependencies)
+   - 3.1 [Optional Dependencies](#optional-dependencies)
+   - 3.2 [Required Dependencies](#required-dependencies)
 4. [Download and Installation](#download-and-installation)
    - 4.1 [Branches](#branches)
    - 4.2 [Install on Ubuntu](#install-on-ubuntu)
@@ -41,8 +43,10 @@ Color: [Solarized](https://en.wikipedia.org/wiki/Solarized_(color_scheme)#Colors
      - 6.1.4 [Transcribe Audio To Subtitles](#transcribe-audio-to-subtitles)
        - 6.1.4.1 [Google Speech V2](#google-speech-v2)
        - 6.1.4.2 [Google Cloud Speech-to-Text](#google-cloud-speech-to-text)
-       - 6.1.4.3 [Speech config](#speech-config)
+       - 6.1.4.3 [Google speech config](#google-speech-config)
        - 6.1.4.4 [Output API full response](#output-api-full-response)
+       - 6.1.4.5 [Xfyun speech config](#xfyun-speech-config)
+       - 6.1.4.6 [Baidu speech config](#baidu-speech-config)
      - 6.1.5 [Translate Subtitles](#translate-subtitles)
    - 6.2 [Options](#Options)
    - 6.3 [Internationalization](#internationalization)
@@ -67,7 +71,7 @@ The new features mentioned above are only available in the latest alpha branch. 
 
 This repo has a different license from [the original repo](https://github.com/agermanidis/autosub).
 
-[GPLv3](LICENSE)
+[GPLv2](LICENSE)
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FBingLingGroup%2Fautosub)
 
@@ -75,15 +79,33 @@ This repo has a different license from [the original repo](https://github.com/ag
 
 Autosub depends on these third party softwares or Python site-packages. Much appreciation to all of these projects.
 
+#### Optional dependencies
+
 - [ffmpeg](https://ffmpeg.org/)
 - [ffprobe](https://ffmpeg.org/ffprobe.html)
-- [auditok](https://github.com/amsehili/auditok)
-- [pysubs2](https://github.com/tkarabela/pysubs2)
-- [py-googletrans](https://github.com/ssut/py-googletrans)
 - [langcodes](https://github.com/LuminosoInsight/langcodes)
 - [ffmpeg-normalize](https://github.com/slhck/ffmpeg-normalize)
+- [python-Levenshtein](https://github.com/ztane/python-Levenshtein)(Used by [fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy))
 
-Others see: [requirements.txt](requirements.txt).
+For windows user:
+
+- [Build Tools for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
+  - Used by [marisa-trie](https://github.com/pytries/marisa-trie) when installing.
+  - [marisa-trie](https://github.com/pytries/marisa-trie) is the dependency of the [langcodes](https://github.com/LuminosoInsight/langcodes))
+  - Probable components installation: MSVC v14 VS 2019 C++ build tools, windows 10 SDK.
+
+#### Required dependencies
+
+- [auditok 0.1.5](https://github.com/amsehili/auditok)
+- [pysubs2](https://github.com/tkarabela/pysubs2)
+- [wcwidth](https://github.com/jquast/wcwidth)
+- [requests](https://github.com/psf/requests)
+- [fuzzywuzzy](https://github.com/seatgeek/fuzzywuzzy)
+- [progressbar2](https://github.com/WoLpH/python-progressbar)
+- [websocket-client](https://github.com/websocket-client/websocket-client)
+- [py-googletrans](https://github.com/ssut/py-googletrans)
+
+[requirements.txt](requirements.txt).
 
 About how to install these dependencies, see [Download and Installation](#download-and-installation).
 
@@ -93,9 +115,17 @@ About how to install these dependencies, see [Download and Installation](#downlo
 
 Except the PyPI version, others include non-original codes not from the original repository.
 
-After autosub-0.4.0, all of the codes is compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
+0.4.0 > autosub
 
-About the dependencies installation. If you install autosub by pip, ffmpeg and ffmpeg-normalize won't be installed together not like the Python site-packages already listed on the `setup.py` or `requirements.txt`. You need to install them separately. But of course they are optional. They aren't necessary if you only use autosub to translate your subtitles.
+- These versions are only compatible with Python 2.7.
+
+0.5.6a >= autosub >= 0.4.0
+
+- These versions are compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
+
+autosub >= 0.5.7a
+
+- These versions are only compatible with Python 3.
 
 ffmpeg, ffprobe, ffmpeg-normalize need to be put on one of these places to let the autosub detect and use them. The following codes are in the [constants.py](autosub/constants.py). Priority is determined in order.
 
@@ -141,6 +171,13 @@ apt install ffmpeg python python-pip git -y
 pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
 ```
 
+Install from `dev` branch.(latest autosub dev version)
+
+```bash
+apt install ffmpeg python python-pip git -y
+pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
+```
+
 Install from `origin` branch.(autosub-0.4.0a)
 
 ```bash
@@ -181,13 +218,24 @@ Choco installation command is for cmd.(not Powershell)
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
+If you don't have visual studio 
+
 Install from `alpha` branch.(latest autosub alpha release)
 
 ```batch
-choco install git python2 curl ffmpeg -y
+choco install git python curl ffmpeg -y
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
-pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
+pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize langcodes
+```
+
+Install from `dev` branch.(latest autosub dev version)
+
+```batch
+choco install git python curl ffmpeg -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
 ```
 
 Install from `origin` branch.(autosub-0.4.0a)
@@ -229,6 +277,11 @@ Supported formats below:
   - MP3
   - 16bit/mono PCM
 
+[Xfyun Speech-to-Text WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[Baidu ASR API/Baidu ASR Pro API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+
+- Supported
+  - 16bit/16000Hz/mono PCM
+
 Also, you can use the built-in audio pre-processing function though Google [doesn't recommend](https://cloud.google.com/speech-to-text/docs/best-practices) doing this. Honestly speaking, if your audio volume is not been standardized like too loud or too quiet, it's recommended to use some tools or just the built-in function to standardize it. The default [pre-processing commands](https://github.com/agermanidis/autosub/issues/40#issuecomment-509928060) depend on the ffmpeg-normalize and ffmpeg. The commands include three commands. The [first](https://trac.ffmpeg.org/wiki/AudioChannelManipulation) is for converting stereo to mono. The [second](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg) is for filtering out the sound not in the frequency of speech. The third is to normalize the audio to make sure it is not too loud or too quiet. If you are not satisfied with the default commands, you can also modified them yourself by input `-apc` option. Still, it currently only supports 24bit/44100Hz/mono FLAC format.
 
 If it is a subtitles file and you give the proper arguments, only translate it by py-googletrans.
@@ -240,13 +293,17 @@ Audio length limits:
 [Google-Speech-v2](https://github.com/gillesdemey/google-speech-v2)
 
 - No longer than [10 to 15 seconds](https://github.com/gillesdemey/google-speech-v2#caveats).
-- In autosub it is set as the [10-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61).
+- In autosub it is set as the [60-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L74).
 
 [Google Cloud Speech-to-Text API](https://cloud.google.com/speech-to-text/docs/encoding)
 
 - No longer than [1 minute](https://cloud.google.com/speech-to-text/docs/sync-recognize).
-- In autosub it is currently set the same as the [10-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L61).
+- In autosub it is currently set the same as the [60-seconds-limit](https://github.com/BingLingGroup/autosub/blob/dev/autosub/constants.py#L74).
 - Currently only support sync-recognize means only short-term audio supported.
+
+[Xfyun Speech-to-Text WebSocket API](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E6%8E%A5%E5%8F%A3%E8%A6%81%E6%B1%82)/[Baidu ASR API/Baidu ASR Pro API](https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+
+- Same limit above.
 
 Autosub uses Auditok to detect speech regions. And then use them to split as well as convert the video/audio into many audio fragments. Each fragment per region per API request. All these audio fragments are converted directly from input to avoid any extra quality loss.
 
@@ -263,6 +320,8 @@ After Speech-to-Text, translates them to a different language. Combining multipl
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 #### Speech-to-Text/Translation language support
+
+Below is only for Google API language codes description. About other API: [Xfyun speech config](#xfyun-speech-config), [baidu speech config](#baidu-speech-config).
 
 The Speech-to-Text lang codes are different from the Translation lang codes due to the difference between these two APIs. And of course, they are in *Google* formats, not following the iso standards, making users more confused to use.
 
@@ -436,7 +495,7 @@ autosub -i input_file -sapi gcsv1 -asf .mp3 ...(other options)
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
-###### Speech config
+###### Google Speech config
 
 Use customized [speech config file](https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig) to send request to Google Cloud Speech API. If using the config file, override these options: `-S`, `-asr`, `-asf`.
 
@@ -518,9 +577,81 @@ autosub -i input_file -sconf config_json_file -bm all -sapi gcsv1 -skey API_key 
 
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
+##### Xfyun speech config
+
+For Xfyun Speech-to-Text WebSocket API usage, user must input its speech config.
+
+Example speech config file:
+
+```json
+{
+    "app_id": "",
+    "api_secret": "",
+    "api_key": "",
+    "business": {
+        "language": "zh_cn",
+        "domain": "iat",
+        "accent": "mandarin"
+    }
+}
+```
+
+`"business"` field is the same as the [xfyun document](https://www.xfyun.cn/doc/asr/voicedictation/API.html#%E4%B8%9A%E5%8A%A1%E5%8F%82%E6%95%B0) mentioned.
+
+When the file doesn't include the `"business"` field, autosub will use the above default content instead.
+
+If you add `"delete_chars": "，。"` in the configuration file (In this example, full-width comma and period are the punctuations to be deleted), autosub will automatically replace the specific punctuation with a space when receiving the transcript, and strip the space at the end of each sentence.
+
+command:
+
+```
+autosub -sapi xfyun -i input_file -sconf xfyun_speech_config ...(other options)
+```
+
+##### Baidu speech config
+
+For Baidu ASR API usage, user must input its speech config.
+
+Example speech config file:
+
+```json
+{
+    "AppID": "",
+    "API key": "",
+    "Secret Key": "",
+    "config": {
+        "format": "pcm",
+        "rate": 16000,
+        "channel": 1,
+        "cuid": "python",
+        "dev_pid": 1537
+    }
+}
+```
+
+`"config"` field is the same as the [Baidu ASR document](https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u) mentioned.
+
+If you want to use the Pro ASR API, change the value of `"cuid"` into `80001`.
+
+When the file doesn't include the `"config"` field, autosub will use the above default content instead.
+
+Same `"delete_chars"` function above.
+
+Practical speaking, since Baidu ASR/ASR Pro API doesn't allow concurrency by default, concurrency will be limited to 1. If you need to lift the limit, please add `"disable_qps_limit": true,` to the config file. If so, the concurrency will be set by the option `-sc`.
+
+command:
+
+```
+autosub -sapi baidu -i input_file -sconf baidu_speech_config ...(other options)
+```
+
+<escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
+
 ##### Translate Subtitles
 
 Translate subtitles to another language.
+
+If not input option `-SRC`, the translation source language will be auto-detected by py-googletrans.
 
 Translate subtitles from an audio/video file.
 
@@ -528,7 +659,7 @@ Translate subtitles from an audio/video file.
 autosub -i input_file -S lang_code (-SRC lang_code) -D lang_code
 ```
 
-Translate subtitles from a subtitles file.
+Translate subtitles from a subtitles file.(Translation source language auto-detection by py-googletrans)
 
 ```
 autosub -i input_file -SRC lang_code -D lang_code
@@ -571,7 +702,7 @@ Input Options:
                         for your output. If the arg_num is 0, it will use the
                         styles from the : "-esr"/"--external-speech-regions".
                         More info on "-sn"/"--styles-name". (arg_num = 0 or 1)
-  -sn [style-name [style-name ...]], --styles-name [style-name [style-name ...]]
+  -sn [style_name [style_name ...]], --styles-name [style_name [style_name ...]]
                         Valid when your output format is "ass"/"ssa" and
                         "-sty"/"--styles" is given. Adds "ass"/"ssa" styles to
                         your events. If not provided, events will use the
@@ -592,27 +723,25 @@ Language Options:
                         text/docs/languages(arg_num = 1) (default: None)
   -SRC lang_code, --src-language lang_code
                         Lang code/Lang tag for translation source language. If
-                        not given, use langcodes to get a best matching of the
-                        "-S"/"--speech-language". If using py-googletrans as
-                        the method to translate, WRONG INPUT STOP RUNNING.
-                        (arg_num = 1) (default: None)
+                        not given, use py-googletrans to auto-detect the src
+                        language. (arg_num = 1) (default: auto)
   -D lang_code, --dst-language lang_code
                         Lang code/Lang tag for translation destination
-                        language. Same attention in the "-SRC"/"--src-
-                        language". (arg_num = 1) (default: None)
+                        language. (arg_num = 1) (default: None)
   -bm [mode [mode ...]], --best-match [mode [mode ...]]
-                        Allow langcodes to get a best matching lang code when
+                        Use langcodes to get a best matching lang code when
                         your input is wrong. Only functional for py-
-                        googletrans and Google Speech V2. Available modes: s,
+                        googletrans and Google Speech API. If langcodes not
+                        installed, use fuzzywuzzy instead. Available modes: s,
                         src, d, all. "s" for "-S"/"--speech-language". "src"
                         for "-SRC"/"--src-language". "d" for "-D"/"--dst-
                         language". (3 >= arg_num >= 1)
   -mns integer, --min-score integer
                         An integer between 0 and 100 to control the good match
-                        group of "-lsc"/"--list-speech-codes" or "-ltc
-                        "/"--list-translation-codes" or the match result in
-                        "-bm"/"--best-match". Result will be a group of "good
-                        match" whose score is above this arg. (arg_num = 1)
+                        group of "-lsc"/"--list-speech-codes" or "-ltc"/"--
+                        list-translation-codes" or the match result in "-bm"/"
+                        --best-match". Result will be a group of "good match"
+                        whose score is above this arg. (arg_num = 1)
 
 Output Options:
   Options to control output.
@@ -640,7 +769,7 @@ Output Options:
                         language in the same event. And dst is ahead of src.
                         src-lf-dst: src language and dst language in the same
                         event. And src is ahead of dst. (6 >= arg_num >= 1)
-                        (default: [u'dst'])
+                        (default: ['dst'])
   -fps float, --sub-fps float
                         Valid when your output format is "sub". If input, it
                         will override the fps check on the input file. Ref:
@@ -656,14 +785,18 @@ Speech Options:
                         support: gsv2: Google Speech V2
                         (https://github.com/gillesdemey/google-speech-v2).
                         gcsv1: Google Cloud Speech-to-Text V1P1Beta1
-                        (https://cloud.google.com/speech-to-text/docs).
+                        (https://cloud.google.com/speech-to-text/docs). xfyun:
+                        Xun Fei Yun Speech-to-Text WebSocket API (https://www.
+                        xfyun.cn/doc/asr/voicedictation/API.html). baidu:
+                        Baidu Automatic Speech Recognition API
+                        (https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
                         (arg_num = 1) (default: gsv2)
   -skey key, --speech-key key
-                        The API key for Speech-to-Text API. (arg_num = 1)
-                        Currently support: gsv2: The API key for gsv2.
+                        The API key for Google Speech-to-Text API. (arg_num =
+                        1) Currently support: gsv2: The API key for gsv2.
                         (default: Free API key) gcsv1: The API key for gcsv1.
-                        (If used, override the credentials given by"-sa
-                        "/"--service-account")
+                        (If used, override the credentials given by"-sa"/"--
+                        service-account")
   -sconf [path], --speech-config [path]
                         Use Speech-to-Text recognition config file to send
                         request. Override these options below: "-S", "-asr",
@@ -673,14 +806,19 @@ Speech Options:
                         text/docs/reference/rest/v1p1beta1/RecognitionConfig
                         Service account config reference: https://googleapis.d
                         ev/python/speech/latest/gapic/v1/types.html#google.clo
-                        ud.speech_v1.types.RecognitionConfig If arg_num is 0,
-                        use const path. (arg_num = 0 or 1) (const:
-                        config.json)
+                        ud.speech_v1.types.RecognitionConfig xfyun: Xun Fei
+                        Yun Speech-to-Text WebSocket API
+                        (https://console.xfyun.cn/services/iat). baidu: Baidu
+                        Automatic Speech Recognition API
+                        (https://ai.baidu.com/ai-doc/SPEECH/ek38lxj1u). If
+                        arg_num is 0, use const path. (arg_num = 0 or 1)
+                        (const: config.json)
   -mnc float, --min-confidence float
-                        API response for text confidence. A float value
-                        between 0 and 1. Confidence bigger means the result is
-                        better. Input this argument will drop any result below
-                        it. Ref: https://github.com/BingLingGroup/google-
+                        Google Speech-to-Text API response for text
+                        confidence. A float value between 0 and 1. Confidence
+                        bigger means the result is better. Input this argument
+                        will drop any result below it. Ref:
+                        https://github.com/BingLingGroup/google-
                         speech-v2#response (arg_num = 1) (default: 0.0)
   -der, --drop-empty-regions
                         Drop any regions without speech recognition result.
@@ -694,7 +832,7 @@ py-googletrans Options:
 
   -slp second, --sleep-seconds second
                         (Experimental)Seconds to sleep between two translation
-                        requests. (arg_num = 1) (default: 5)
+                        requests. (arg_num = 1) (default: 1)
   -surl [URL [URL ...]], --service-urls [URL [URL ...]]
                         (Experimental)Customize request urls. Ref: https://py-
                         googletrans.readthedocs.io/en/latest/ (arg_num >= 1)
@@ -705,6 +843,31 @@ py-googletrans Options:
                         Drop any .ass override codes in the text before
                         translation. Only affect the translation result.
                         (arg_num = 0)
+  -gt-dc [chars], --gt-delete-chars [chars]
+                        Replace the specific chars with a space after
+                        translation, and strip the space at the end of each
+                        sentence. Only affect the translation result. (arg_num
+                        = 0 or 1) (const: ，。！)
+
+Subtitles Conversion Options:
+  Options to control subtitles conversions.(Experimental)
+
+  -mjs integer, --max-join-size integer
+                        (Experimental)Max length to join two events. (arg_num
+                        = 1) (default: 100)
+  -mdt second, --max-delta-time second
+                        (Experimental)Max delta time to join two events.
+                        (arg_num = 1) (default: 0.2)
+  -dms string, --delimiters string
+                        (Experimental)Delimiters not to join two events.
+                        (arg_num = 1) (default: !()*,.:;?[]^_`~)
+  -sw1 words_delimited_by_space, --stop-words-1 words_delimited_by_space
+                        (Experimental)First set of Stop words to split two
+                        events. (arg_num = 1)
+  -sw2 words_delimited_by_space, --stop-words-2 words_delimited_by_space
+                        (Experimental)Second set of Stop words to split two
+                        events. (arg_num = 1)
+  -ds, --dont-split     (Experimental)Don't Split just merge. (arg_num = 0)
 
 Network Options:
   Options to control network.
@@ -750,15 +913,16 @@ Audio Processing Options:
                         procedure. "o": only pre-process the input audio.
                         ("-k"/"--keep" is true) "s": only split the input
                         audio. ("-k"/"--keep" is true) Default command to pre-
-                        process the audio:
-                        c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
-                        -i "{in_}" -af "asplit[a],aphasemeter=video=0,ametadat
-                        a=select:key=lavfi.aphasemeter.phase:value=-0.005:func
-                        tion=less,pan=1c|c0=c0,aresample=async=1:first_pts=0,[
-                        a]amix" -ac 1 -f flac "{out_}" |
-                        c:\programdata\chocolatey\bin\ffmpeg.exe -hide_banner
-                        -i "{in_}" -af lowpass=3000,highpass=200 "{out_}" |
-                        C:\Python27\Scripts\ffmpeg-normalize.exe -v "{in_}"
+                        process the audio: C:\Program
+                        Files\ImageMagick-7.0.10-Q16\ffmpeg.exe -hide_banner
+                        -i "{in_}" -vn -af "asplit[a],aphasemeter=video=0,amet
+                        adata=select:key=lavfi.aphasemeter.phase:value=-0.005:
+                        function=less,pan=1c|c0=c0,aresample=async=1:first_pts
+                        =0,[a]amix" -ac 1 -f flac -loglevel error "{out_}" |
+                        C:\Program Files\ImageMagick-7.0.10-Q16\ffmpeg.exe
+                        -hide_banner -i "{in_}" -af
+                        "lowpass=3000,highpass=200" -loglevel error "{out_}" |
+                        C:\Python37\Scripts\ffmpeg-normalize.exe -v "{in_}"
                         -ar 44100 -ofmt flac -c:a flac -pr -p -o "{out_}"
                         (Ref: https://github.com/stevenj/autosub/blob/master/s
                         cripts/subgen.sh https://ffmpeg.org/ffmpeg-
@@ -776,16 +940,18 @@ Audio Processing Options:
   -acc command, --audio-conversion-cmd command
                         (Experimental)This arg will override the default audio
                         conversion command. "[", "]" are optional arguments
-                        meaning you can remove them. "{{", "}}" are required
+                        meaning you can remove them. "{", "}" are required
                         arguments meaning you can't remove them. (arg_num = 1)
-                        (default: c:\programdata\chocolatey\bin\ffmpeg.exe
-                        -hide_banner -y -i "{in_}" -vn -ac {channel} -ar
-                        {sample_rate} "{out_}")
+                        (default: C:\Program
+                        Files\ImageMagick-7.0.10-Q16\ffmpeg.exe -hide_banner
+                        -y -i "{in_}" -vn -ac {channel} -ar {sample_rate}
+                        -loglevel error "{out_}")
   -asc command, --audio-split-cmd command
                         (Experimental)This arg will override the default audio
                         split command. Same attention above. (arg_num = 1)
-                        (default: c:\programdata\chocolatey\bin\ffmpeg.exe -y
-                        -ss {start} -i "{in_}" -t {dura} -vn -ac [channel] -ar
+                        (default: C:\Program
+                        Files\ImageMagick-7.0.10-Q16\ffmpeg.exe -y -ss {start}
+                        -i "{in_}" -t {dura} -vn -ac [channel] -ar
                         [sample_rate] -loglevel error "{out_}")
   -asf file_suffix, --api-suffix file_suffix
                         (Experimental)This arg will override the default API
@@ -810,19 +976,19 @@ Auditok Options:
                         (default: 0.5)
   -mxrs second, --max-region-size second
                         Maximum region size. Same docs above. (arg_num = 1)
-                        (default: 6.0)
+                        (default: 10.0)
   -mxcs second, --max-continuous-silence second
                         Maximum length of a tolerated silence within a valid
                         audio activity. Same docs above. (arg_num = 1)
-                        (default: 0.3)
-  -sml, --strict-min-length
-                        Ref:
-                        https://auditok.readthedocs.io/en/latest/core.html
-                        #class-summary (arg_num = 0)
+                        (default: 0.2)
+  -nsml, --not-strict-min-length
+                        If not input this option, it will keep all regions
+                        strictly follow the minimum region limit. Ref: https:/
+                        /auditok.readthedocs.io/en/latest/core.html#class-
+                        summary (arg_num = 0)
   -dts, --drop-trailing-silence
-                        Ref:
-                        https://auditok.readthedocs.io/en/latest/core.html
-                        #class-summary (arg_num = 0)
+                        Ref: https://auditok.readthedocs.io/en/latest/core.htm
+                        l#class-summary (arg_num = 0)
 
 List Options:
   List all available arguments.
@@ -851,15 +1017,16 @@ List Options:
                         Use py-googletrans to detect a sub file's first line
                         language. And list a group of matched language in
                         recommended "-S"/"--speech-language" Google Speech-to-
-                        Text language codes. Ref: https://cloud.google.com
-                        /speech-to-text/docs/languages (arg_num = 1) (default:
-                        None)
+                        Text language codes. Ref:
+                        https://cloud.google.com/speech-to-text/docs/languages
+                        (arg_num = 1) (default: None)
 
 Make sure the argument with space is in quotes.
 The default value is used
 when the option is not given at the command line.
 "(arg_num)" means if the option is given,
 the number of the arguments is required.
+Arguments *ARE* the things given behind the options.
 Author: Bing Ling
 Email: binglinggroup@outlook.com
 Bug report: https://github.com/BingLingGroup/autosub

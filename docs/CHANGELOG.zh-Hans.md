@@ -10,9 +10,17 @@
 
 - [未发布](#未发布)
   - [添加](#添加未发布)
-  - [改动](#修改未发布)
+  - [改动](#改动未发布)
+  - [修复](#修复未发布)
+  - [删除](#删除未发布)
+- [0.5.7-alpha - 2020-05-06](#057-alpha---2020-05-06)
+  - [添加](#添加057-alpha)
+  - [改动](#改动057-alpha)
+  - [修复](#修复057-alpha)
+  - [删除](#删除057-alpha)
 - [0.5.6-alpha - 2020-03-20](#056-alpha---2020-03-20)
   - [添加](#添加056-alpha)
+  - [改动](#改动056-alpha)
   - [即将删除](#即将删除056-alpha)
   - [修复](#修复056-alpha)
 - [0.5.5-alpha - 2020-03-04](#055-alpha---2020-03-04)
@@ -44,9 +52,45 @@
 
 ### [未发布](未发布)
 
-#### 添加(未发布)
+### [0.5.7-alpha] - 2020-05-06
 
-#### 改动(未发布)
+#### 添加(0.5.7-alpha)
+
+- 添加讯飞开放平台语音听写(流式版)WebSocket API支持。
+- 添加百度智能云语音识别/极速语音识别API支持。[issue #68](https://github.com/BingLingGroup/autosub/issues/68)
+- 添加字符过滤器用于讯飞开放平台语音听写。
+- 添加delete_chars功能到方法list_to_googletrans里。
+- 添加方法merge_src_assfile，merge_bilingual_assfile。
+- 添加停用词用于merge_src_assfile方法里的断句。
+- 添加标点符号分割功能在merge_src_assfile方法里。
+- 添加音频长度至少为4字节的检测，在SplitIntoAudioPiece里。
+- 添加源语言自动识别功能，当不输入`-SRC`选项时。
+
+#### 改动(0.5.7-alpha)
+
+- 修改音频分割指令的更换条件为仅当用户不修改它时。
+- 修改最长语音区域限制为60秒。
+- 修改所有文本文件输入编码为"utf-8"。
+- 修改字幕翻译中字幕样式选择的默认方式。
+- 修改ffmpeg指令中的loglevel为`-loglevel error`。
+- 修改DEFAULT_MIN_REGION_SIZE为0.5。
+- 修改langcodes为可选依赖。
+- 修改证书为GPLv2。
+
+#### 修复(0.5.7-alpha)
+
+- 修复list_to_googletrans中当最后一行是需要被分割时的长度计算问题。
+- 修复delete_chars问题当使用`-of full-src`时。
+- 修复api_xfyun.py中的os.remove()文件占用问题。
+- 修复DEFAULT_AUDIO_PRCS_CMDS和DEFAULT_CHECK_CMD。
+- 修复依赖查找中，路径检查的问题。
+- 修复百度奇怪的错误代码处理。[issue #114](https://github.com/BingLingGroup/autosub/issues/114)
+
+#### 删除(0.5.7-alpha)
+
+- 删除Python 2.7支持。
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.6-alpha] - 2020-03-20
 
@@ -56,6 +100,11 @@
 - 添加无参数启动时的请求输入参数解析功能。[issue #92](https://github.com/BingLingGroup/autosub/issues/92)
 - 添加字幕处理功能，当不输入`-SRC`选项时。
 
+#### 修改(0.5.6-alpha)
+
+- 修改选项`-sml`为`-nsml`。
+- 修改Auditok默认参数。
+
 #### 即将删除(0.5.6-alpha)
 
 - 即将删除Python 2.7支持。
@@ -63,8 +112,8 @@
 #### 修复(0.5.6-alpha)
 
 - 修复Google Speech-to-Text API空结果返回bug。[issue #89](https://github.com/BingLingGroup/autosub/issues/89)
-- 修改选项`-sml`为`-nsml`。
-- 修改Auditok默认参数。
+
+<escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 ### [0.5.5-alpha] - 2020-03-04
 
@@ -227,7 +276,8 @@
 
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
-[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.6-alpha...HEAD
+[未发布]: https://github.com/BingLingGroup/autosub/compare/0.5.7-alpha...HEAD
+[0.5.7-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.6-alpha...0.5.7-alpha
 [0.5.6-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.5-alpha...0.5.6-alpha
 [0.5.5-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.4-alpha...0.5.5-alpha
 [0.5.4-alpha]: https://github.com/BingLingGroup/autosub/compare/0.5.3-alpha...0.5.4-alpha

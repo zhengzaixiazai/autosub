@@ -1,10 +1,9 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Defines google speech api used by autosub.
+Defines Google API used by autosub.
 """
 # Import built-in modules
-from __future__ import absolute_import, unicode_literals
 import os
 import base64
 import json
@@ -19,9 +18,96 @@ from autosub import constants
 if constants.IS_GOOGLECLOUDCLIENT:
     from google.cloud import speech_v1p1beta1
     from google.protobuf.json_format import MessageToDict
+    from google.cloud.speech_v1p1beta1 import enums
 else:
     speech_v1p1beta1 = None  # pylint: disable=invalid-name
     MessageToDict = None  # pylint: disable=invalid-name
+    enums = None  # pylint: disable=invalid-name
+
+
+def google_ext_to_enc(
+        extension,
+        is_string=True):
+    """
+    File extension to audio encoding.
+    """
+    ext = extension.lower()
+    if is_string:
+        if ext.endswith(".flac"):
+            encoding = "FLAC"
+        elif ext.endswith(".mp3"):
+            encoding = "MP3"
+        elif ext.endswith(".wav")\
+                or ext.endswith(".pcm"):
+            # regard WAV as PCM
+            encoding = "LINEAR16"
+        elif ext.endswith(".ogg"):
+            encoding = "OGG_OPUS"
+        else:
+            encoding = ""
+
+    else:
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+        if ext.endswith(".flac"):
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.FLAC
+            # encoding = 2
+        elif ext.endswith(".mp3"):
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.MP3
+            # encoding = 8
+        elif ext.endswith(".wav")\
+                or extension.lower().endswith(".pcm"):
+            # regard WAV as PCM
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.LINEAR16
+            # encoding = 1
+        elif ext.endswith(".ogg"):
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.OGG_OPUS
+            # encoding = 6
+        else:
+            encoding = \
+                enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
+            # encoding = 0
+
+    return encoding
+
+
+def google_enc_to_ext(  # pylint: disable=too-many-branches
+        encoding):
+    """
+    Audio encoding to file extension.
+    """
+    if isinstance(encoding, str):
+        if encoding == "FLAC":
+            extension = ".flac"
+        elif encoding == "MP3":
+            extension = ".mp3"
+        elif encoding == "LINEAR16":
+            extension = ".wav"
+        elif encoding == "OGG_OPUS":
+            extension = ".ogg"
+        else:
+            extension = ".flac"
+
+    elif isinstance(encoding, int):
+        # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
+        if encoding == 2:
+            extension = ".flac"
+        elif encoding == 8:
+            extension = ".mp3"
+        elif encoding == 1:
+            extension = ".wav"
+        elif encoding == 6:
+            extension = ".ogg"
+        else:
+            extension = ".flac"
+
+    else:
+        extension = ".flac"
+
+    return extension
 
 
 def get_google_speech_v2_transcript(
@@ -94,7 +180,7 @@ def get_gcsv1p1beta1_transcript(
     return result
 
 
-class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
+class GoogleSpeechV2:  # pylint: disable=too-few-public-methods
     """
     Class for performing speech-to-text using Google Speech V2 API for an input FLAC file.
     """
@@ -127,9 +213,9 @@ class GoogleSpeechV2(object):  # pylint: disable=too-few-public-methods
                     continue
 
                 # receive several results delimited by LF
-                result_str = result.content.decode('utf-8').split("\n")
+                result_list = result.content.decode('utf-8').split("\n")
                 # get the one with valid content
-                for line in result_str:
+                for line in result_list:
                     try:
                         line_dict = json.loads(line)
                         transcript = get_google_speech_v2_transcript(
@@ -176,9 +262,9 @@ def gcsv1p1beta1_service_client(
         # https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult
         client = speech_v1p1beta1.SpeechClient()
         audio_dict = {"content": audio_data}
-        recognize_reponse = client.recognize(config, audio_dict)
+        recognize_response = client.recognize(config, audio_dict)
         result_dict = MessageToDict(
-            recognize_reponse,
+            recognize_response,
             preserving_proto_field_name=True)
 
         if not is_full_result:
@@ -189,7 +275,7 @@ def gcsv1p1beta1_service_client(
         return None
 
 
-class GCSV1P1Beta1URL(object):  # pylint: disable=too-few-public-methods
+class GCSV1P1Beta1URL:  # pylint: disable=too-few-public-methods, duplicate-code
     """
     Class for performing Speech-to-Text
     using Google Cloud Speech-to-Text V1P1Beta1 API URL for an input FLAC file.

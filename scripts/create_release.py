@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines release creation scripts.
@@ -73,7 +73,7 @@ if __name__ == "__main__":
         os.makedirs(dist_path)
 
     metadata = {}
-    with open(os.path.join(here, package_name, "metadata.py")) as metafile:
+    with open(os.path.join(here, package_name, "metadata.py"), encoding='utf-8') as metafile:
         exec(metafile.read(), metadata)
 
     target = os.path.join(here, ".release", package_name)
@@ -113,14 +113,19 @@ if __name__ == "__main__":
 
     os.makedirs(target_data)
     os.makedirs(target_data_pyi)
-    copytree(src="{}/data".format(package_name), dst=target_data, exts=[".mo"], is_recursive=True)
-    copytree(src="{}/data".format(package_name), dst=target_data_pyi, exts=[".mo"], is_recursive=True)
-    copytree(src=".build_and_dist/{}.dist".format(release_name), dst=target_nuitka, is_recursive=True)
+    copytree(src="{}/data".format(package_name), dst=target_data, exts=[".mo"],
+             is_recursive=True)
+    copytree(src="{}/data".format(package_name), dst=target_data_pyi, exts=[".mo"],
+             is_recursive=True)
+    copytree(src=".build_and_dist/{}.dist".format(release_name), dst=target_nuitka,
+             is_recursive=True)
 
     exe_dir = "binaries"
     if os.path.isdir(exe_dir):
-        ffmpeg_norm_nuitka = os.path.join(exe_dir, "ffmpeg-normalize-Nuitka", "ffmpeg-normalize.exe")
-        ffmpeg_norm_pyinstaller = os.path.join(exe_dir, "ffmpeg-normalize-pyinstaller", "ffmpeg-normalize.exe")
+        ffmpeg_norm_nuitka = os.path.join(exe_dir, "ffmpeg-normalize-Nuitka",
+                                          "ffmpeg-normalize.exe")
+        ffmpeg_norm_pyinstaller = os.path.join(exe_dir, "ffmpeg-normalize-pyinstaller",
+                                               "ffmpeg-normalize.exe")
         if os.path.isfile(ffmpeg_norm_nuitka) and os.path.isfile(ffmpeg_norm_pyinstaller):
             shutil.copy2(ffmpeg_norm_nuitka, target_nuitka)
             shutil.copy2(ffmpeg_norm_pyinstaller, target_pyi)
@@ -146,10 +151,11 @@ if __name__ == "__main__":
     if err:
         print(err.decode(sys.stdout.encoding))
 
-    command = "7z a -sdel \".release/{release_name}-{version}-win-x64-pyinstaller.7z\" \"{target_pyi}\"".format(
-        release_name=release_name,
-        version=metadata['VERSION'],
-        target_pyi=target_pyi)
+    command = "7z a -sdel \".release/{release_name}-{version}-win-x64-pyinstaller.7z\"" \
+              " \"{target_pyi}\"".format(
+                release_name=release_name,
+                version=metadata['VERSION'],
+                target_pyi=target_pyi)
     print(command)
     if sys.platform.startswith('win'):
         args = command

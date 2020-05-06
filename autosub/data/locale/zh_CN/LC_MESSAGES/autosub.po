@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-03-12 17:25+0800\n"
-"PO-Revision-Date: 2020-03-12 17:25+0800\n"
+"POT-Creation-Date: 2020-04-05 12:40+0800\n"
+"PO-Revision-Date: 2020-04-05 13:21+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Language: zh_CN\n"
 "X-Generator: Poedit 2.3\n"
 
-#: autosub/__init__.py:52
+#: autosub/__init__.py:43
 msgid ""
 "\n"
 "Input args(without \"autosub\"): "
@@ -25,7 +25,7 @@ msgstr ""
 "\n"
 "输入参数(不包含\"autosub\"): "
 
-#: autosub/__init__.py:73 autosub/__init__.py:171
+#: autosub/__init__.py:64 autosub/__init__.py:181
 msgid ""
 "\n"
 "All works done."
@@ -33,15 +33,15 @@ msgstr ""
 "\n"
 "做完了。"
 
-#: autosub/__init__.py:86
+#: autosub/__init__.py:77
 msgid "Error: Dependency ffmpeg not found on this machine."
 msgstr "错误：依赖ffmpeg未在这台电脑上找到。"
 
-#: autosub/__init__.py:90
+#: autosub/__init__.py:81
 msgid "Error: Dependency ffprobe not found on this machine."
 msgstr "错误：依赖ffprobe未在这台电脑上找到。"
 
-#: autosub/__init__.py:101
+#: autosub/__init__.py:92
 msgid ""
 "Error: The args of \"-ap\"/\"--audio-process\" are wrong.\n"
 "No works done."
@@ -49,11 +49,11 @@ msgstr ""
 "错误：\"-ap\"/\"--audio-process\"的参数有误。\n"
 "啥都没做。"
 
-#: autosub/__init__.py:113
+#: autosub/__init__.py:104
 msgid "No works done."
 msgstr "啥都没做。"
 
-#: autosub/__init__.py:117
+#: autosub/__init__.py:108
 msgid ""
 "Audio pre-processing complete.\n"
 "All works done."
@@ -61,19 +61,21 @@ msgstr ""
 "音频预处理已完成。\n"
 "做完了。"
 
-#: autosub/__init__.py:133
-msgid ""
-"Audio pre-processing failed.\n"
-"Use default method."
+#: autosub/__init__.py:124
+msgid "Audio pre-processing failed. Try default method."
 msgstr ""
 "音频预处理失败。\n"
 "使用默认方法。"
 
-#: autosub/__init__.py:137
+#: autosub/__init__.py:127
 msgid "Audio pre-processing complete."
 msgstr "音频预处理已完成。"
 
-#: autosub/__init__.py:174
+#: autosub/__init__.py:169
+msgid "Error: No valid \"-of\"/\"--output-files\" arguments."
+msgstr "错误：\"-of\"/\"--output-files\"参数无效。"
+
+#: autosub/__init__.py:184
 msgid ""
 "\n"
 "KeyboardInterrupt. Works stopped."
@@ -81,7 +83,7 @@ msgstr ""
 "\n"
 "键盘中断。操作终止。"
 
-#: autosub/__init__.py:176
+#: autosub/__init__.py:186
 msgid ""
 "\n"
 "Error: pysubs2.exceptions. Check your file format."
@@ -89,7 +91,7 @@ msgstr ""
 "\n"
 "错误：pysubs2异常。检查你的文件格式。"
 
-#: autosub/__init__.py:181
+#: autosub/__init__.py:191
 msgid "Press Enter to exit..."
 msgstr "按回车以退出..."
 

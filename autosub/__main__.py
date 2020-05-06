@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Defines autosub's entry point.
 """
 # Import built-in modules
 # pylint: disable=no-member, protected-access
-from __future__ import absolute_import, print_function, unicode_literals
 import multiprocessing
 import sys
 

@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-from __future__ import unicode_literals
-
+#!/usr/bin/env python3
 import os
 
 try:
@@ -14,7 +12,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 NAME = "autosub"
 
-with open(os.path.join(here, NAME, "metadata.py")) as metafile:
+with open(os.path.join(here, NAME, "metadata.py"), encoding='utf-8') as metafile:
     exec(metafile.read(), metadata)
 
 setup(
@@ -25,22 +23,24 @@ setup(
     author=metadata['AUTHOR'],
     author_email=metadata['AUTHOR_EMAIL'],
     url=metadata['HOMEPAGE'],
-    packages=[str('autosub')],
+    packages=['autosub'],
     entry_points={
         'console_scripts': [
             'autosub = autosub:main',
         ]
     },
-    package_data={str('autosub'): [str('data/locale/zh_CN/LC_MESSAGES/*mo')]},
+    package_data={'autosub': ['data/locale/zh_CN/LC_MESSAGES/*mo']},
     install_requires=[
         'requests>=2.3.0',
         'pysubs2>=0.2.4',
         'progressbar2>=3.34.3',
-        'auditok>=0.1.5',
+        'auditok==0.1.5',
         'googletrans>=2.4.0',
-        'langcodes-py2>=1.2.0',
         'wcwidth>=0.1.7',
-        'google-cloud-speech>=1.3.1'
+        'fuzzywuzzy>=0.18.0',
+        'google-cloud-speech>=1.3.1',
+        'websocket-client>=0.56.0',
+        'python-Levenshtein>=0.12.0'
     ],
     license=open(os.path.join(here, "LICENSE")).read()
 )
