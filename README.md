@@ -91,7 +91,7 @@ For windows user:
 
 - [Build Tools for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
   - Used by [marisa-trie](https://github.com/pytries/marisa-trie) when installing.
-  - [marisa-trie](https://github.com/pytries/marisa-trie) is the dependency of the [langcodes](https://github.com/LuminosoInsight/langcodes))
+  - [marisa-trie](https://github.com/pytries/marisa-trie) is the dependency of the [langcodes](https://github.com/LuminosoInsight/langcodes).
   - Probable components installation: MSVC v14 VS 2019 C++ build tools, windows 10 SDK.
 
 #### Required dependencies
@@ -167,14 +167,18 @@ Include dependencies installation commands.
 Install from `alpha` branch.(latest autosub alpha release)
 
 ```bash
-apt install ffmpeg python python-pip git -y
-pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
+apt install ffmpeg python3 curl git -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py
+pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize langcodes
 ```
 
 Install from `dev` branch.(latest autosub dev version)
 
 ```bash
-apt install ffmpeg python python-pip git -y
+apt install ffmpeg python3 curl git -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py
 pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
 ```
 
@@ -218,7 +222,7 @@ Choco installation command is for cmd.(not Powershell)
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
-If you don't have visual studio 
+If you don't have [Build Tools for Visual Studio 2019](https://visualstudio.microsoft.com/downloads/), please install autosub without langcodes.
 
 Install from `alpha` branch.(latest autosub alpha release)
 

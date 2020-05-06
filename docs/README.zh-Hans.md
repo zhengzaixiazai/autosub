@@ -91,7 +91,7 @@ Autosub依赖于这些第三方的软件或者Python的site-packages。非常感
 
 - [Visual Studio 2019 生成工具](https://visualstudio.microsoft.com/downloads/)
   - [marisa-trie](https://github.com/pytries/marisa-trie)安装时会用到。
-  - [marisa-trie](https://github.com/pytries/marisa-trie)是[langcodes](https://github.com/LuminosoInsight/langcodes))的依赖。
+  - [marisa-trie](https://github.com/pytries/marisa-trie)是[langcodes](https://github.com/LuminosoInsight/langcodes)的依赖。
   - 大概需要安装以下两个组件：MSVC v14 VS 2019 C++生成工具, windows 10 SDK。
 
 #### 必需依赖
@@ -167,14 +167,18 @@ pip install .
 从`alpha`分支安装。（最新alpha发布版）
 
 ```bash
-apt install ffmpeg python python-pip git -y
+apt install ffmpeg python3 curl git -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py
 pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize langcodes
 ```
 
 从`dev`分支安装。（最新dev版）
 
 ```bash
-apt install ffmpeg python python-pip git -y
+apt install ffmpeg python3 curl git -y
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py
 pip install git+https://github.com/BingLingGroup/autosub.git@dev ffmpeg-normalize langcodes
 ```
 
@@ -218,13 +222,15 @@ pip install autosub
 @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 ```
 
+如果你没有[Visual Studio 2019 生成工具](https://visualstudio.microsoft.com/downloads/)，请不要安装langcodes。
+
 从`alpha`分支安装。（最新alpha发布版）
 
 ```batch
 choco install git python curl ffmpeg -y
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
-pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize
+pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize langcodes
 ```
 
 从`dev`分支安装。（最新dev版）
