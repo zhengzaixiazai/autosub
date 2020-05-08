@@ -121,7 +121,7 @@ Except the PyPI version, others include non-original codes not from the original
 
 0.5.6a >= autosub >= 0.4.0
 
-- These versions are compatible with both Python 2.7 and Python 3. It don't matter if you change the Python version in the installation commands below.
+- These versions are compatible with both Python 2.7 and Python 3. It doesn't matter if you change the Python version in the installation commands below.
 
 autosub >= 0.5.7a
 
@@ -663,10 +663,10 @@ Translate subtitles from an audio/video file.
 autosub -i input_file -S lang_code (-SRC lang_code) -D lang_code
 ```
 
-Translate subtitles from a subtitles file.(Translation source language auto-detection by py-googletrans)
+Translate subtitles from a subtitles file.
 
 ```
-autosub -i input_file -SRC lang_code -D lang_code
+autosub -i input_file (-SRC lang_code) -D lang_code
 ```
 
 Translate subtitles by "translate.google.cn" which can be directly accessed from somewhere.

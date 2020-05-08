@@ -54,6 +54,10 @@ Click up arrow to go back to TOC.
 
 ### [Unreleased]
 
+#### Fixed(Unreleased)
+
+- Fix the issue when not input the `-D` option.
+
 ### [0.5.7-alpha] - 2020-05-06
 
 #### Added(0.5.7-alpha)
