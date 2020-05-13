@@ -54,6 +54,10 @@ Click up arrow to go back to TOC.
 
 ### [Unreleased]
 
+#### Changed(Unreleased)
+
+- Change the default value for `-et` option into 50.
+
 #### Fixed(Unreleased)
 
 - Fix the issue when not input the `-D` option.
