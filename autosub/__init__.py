@@ -142,14 +142,14 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                                 "-vn",
                                 "-vn -c:a pcm_s16le -f s16le")
 
-                args.audio_split_cmd = \
-                    args.audio_split_cmd.replace(
-                        "[channel]",
-                        "{channel}".format(channel=args.api_audio_channel))
-                args.audio_split_cmd = \
-                    args.audio_split_cmd.replace(
-                        "[sample_rate]",
-                        "{sample_rate}".format(sample_rate=args.api_sample_rate))
+            args.audio_split_cmd = \
+                args.audio_split_cmd.replace(
+                    "[channel]",
+                    "{channel}".format(channel=args.api_audio_channel))
+            args.audio_split_cmd = \
+                args.audio_split_cmd.replace(
+                    "[sample_rate]",
+                    "{sample_rate}".format(sample_rate=args.api_sample_rate))
 
             cmdline_utils.validate_aovp_args(args)
             fps = cmdline_utils.get_fps(args=args, input_m=input_m)
