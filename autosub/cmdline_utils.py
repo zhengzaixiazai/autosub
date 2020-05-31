@@ -1030,6 +1030,48 @@ def get_fps(
     return fps
 
 
+def convert_wav(
+        input_,
+        conversion_cmd,
+        output_=None,
+        keep=False
+):
+    """
+    Convert an input audio to output.
+    """
+    if not output_ or not keep:
+        audio_wav_temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+        audio_wav = audio_wav_temp.name
+        audio_wav_temp.close()
+    else:
+        audio_wav = "{output_}.used{suffix}".format(
+            output_=output_,
+            suffix=".wav")
+    command = conversion_cmd.format(
+        in_=input_,
+        channel=1,
+        sample_rate=48000,
+        out_=audio_wav)
+    print(_("\nConvert source file to \"{name}\" "
+            "to detect audio regions.").format(
+                name=audio_wav))
+    print(command)
+    prcs = subprocess.Popen(constants.cmd_conversion(command),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
+    out, err = prcs.communicate()
+    if out:
+        print(out.decode(sys.stdout.encoding))
+    if err:
+        print(err.decode(sys.stdout.encoding))
+
+    if not ffmpeg_utils.ffprobe_check_file(audio_wav):
+        raise exceptions.AutosubException(
+            _("Error: Convert source file to \"{name}\" failed.").format(
+                name=audio_wav))
+    return audio_wav
+
+
 def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals, too-many-arguments
         args,
         input_m=input,
@@ -1038,30 +1080,19 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
     """
     Give args and process an input audio or video file.
     """
+    audio_wav = convert_wav(
+        input_=args.input,
+        conversion_cmd=args.audio_conversion_cmd,
+        output_=args.output,
+        keep=args.keep
+    )
+
     if args.ext_regions:
         # use external speech regions
         print(_("Use external speech regions."))
-        audio_wav_temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
-        audio_wav = audio_wav_temp.name
-        audio_wav_temp.close()
-        command = args.audio_conversion_cmd.format(
-            in_=args.input,
-            channel=1,
-            sample_rate=16000,
-            out_=audio_wav)
-        print(command)
-        prcs = subprocess.Popen(constants.cmd_conversion(command),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = prcs.communicate()
-        if out:
-            print(out.decode(sys.stdout.encoding))
-        if err:
-            print(err.decode(sys.stdout.encoding))
         regions = sub_utils.sub_to_speech_regions(
             audio_wav=audio_wav,
             sub_file=args.ext_regions)
-        os.remove(audio_wav)
 
     else:
         # use auditok_gen_speech_regions
@@ -1071,34 +1102,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         if args.drop_trailing_silence:
             mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
 
-        audio_wav_temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
-        audio_wav = audio_wav_temp.name
-        audio_wav_temp.close()
-        command = args.audio_conversion_cmd.format(
-            in_=args.input,
-            channel=1,
-            sample_rate=48000,
-            out_=audio_wav)
-        print(_("\nConvert source file to \"{name}\" "
-                "to detect audio regions.").format(
-                    name=audio_wav))
-        print(command)
-        prcs = subprocess.Popen(constants.cmd_conversion(command),
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = prcs.communicate()
-        if out:
-            print(out.decode(sys.stdout.encoding))
-        if err:
-            print(err.decode(sys.stdout.encoding))
-
-        if not ffmpeg_utils.ffprobe_check_file(audio_wav):
-            raise exceptions.AutosubException(
-                _("Error: Convert source file to \"{name}\" failed.").format(
-                    name=audio_wav))
-
         print(_("Conversion completed.\nUse Auditok to detect speech regions."))
-
         regions = core.auditok_gen_speech_regions(
             audio_wav=audio_wav,
             energy_threshold=args.energy_threshold,
@@ -1106,11 +1110,12 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             max_region_size=args.max_region_size,
             max_continuous_silence=args.max_continuous_silence,
             mode=mode)
-        os.remove(audio_wav)
         gc.collect(0)
+        print(_("Auditok detection completed."))
 
-        print(_("Auditok detection completed."
-                "\n\"{name}\" has been deleted.").format(name=audio_wav))
+    if not args.keep:
+        os.remove(audio_wav)
+        print(_("\"{name}\" has been deleted.").format(name=audio_wav))
 
     if not regions:
         raise exceptions.AutosubException(

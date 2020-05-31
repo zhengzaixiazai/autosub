@@ -54,6 +54,10 @@ Click up arrow to go back to TOC.
 
 ### [Unreleased]
 
+#### Added(Unreleased)
+
+- Add method convert_wav in cmdline_utils.py.
+
 #### Changed(Unreleased)
 
 - Change the default value for `-et` option into 50.
