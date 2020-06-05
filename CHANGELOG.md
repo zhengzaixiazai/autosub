@@ -57,6 +57,7 @@ Click up arrow to go back to TOC.
 #### Added(Unreleased)
 
 - Add method convert_wav in cmdline_utils.py.
+- Add the manual translation method.
 
 #### Changed(Unreleased)
 

@@ -511,6 +511,9 @@ def validate_sp_args(args):  # pylint: disable=too-many-branches,too-many-return
     Check that the commandline arguments passed to autosub are valid
     for subtitles processing.
     """
+    if args.translation_api != "pygt":
+        return 1
+
     if not args.dst_language or not args.src_language:
         return 0
 
@@ -791,14 +794,35 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
             text_list.append(event.text)
 
     # text translation
-    # use googletrans
+    if args.translation_api == "man":
+        trans_doc_name = "{base}.{nt}.{extension}".format(
+            base=args.output,
+            nt='trans',
+            extension=args.translation_format)
+        if not args.src_language or args.src_language == "auto":
+            args.src_language = "src"
+        if not args.dst_language:
+            args.dst_language = "dst"
+        translator = core.ManualTranslator(
+            trans_doc_name=trans_doc_name,
+            input_m=input_m
+        )
+        if args.sleep_seconds == constants.DEFAULT_SLEEP_SECONDS:
+            args.sleep_seconds = 0.1
+        if args.max_trans_size == constants.DEFAULT_SIZE_PER_TRANS:
+            args.max_trans_size = 9950
+    else:
+        translator = googletrans.Translator(
+            user_agent=args.user_agent,
+            service_urls=args.service_urls)
+
     translated_text, args.src_language = core.list_to_googletrans(
         text_list,
+        translator=translator,
         src_language=args.src_language,
         dst_language=args.dst_language,
+        size_per_trans=args.max_trans_size,
         sleep_seconds=args.sleep_seconds,
-        user_agent=args.user_agent,
-        service_urls=args.service_urls,
         drop_override_codes=args.drop_override_codes,
         delete_chars=args.gt_delete_chars)
 
@@ -1362,13 +1386,16 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
                 pass
 
             # text translation
+            translator = googletrans.Translator(
+                user_agent=args.user_agent,
+                service_urls=args.service_urls)
+
             translated_text, args.src_language = core.list_to_googletrans(
                 text_list,
+                translator=translator,
                 src_language=args.src_language,
                 dst_language=args.dst_language,
                 sleep_seconds=args.sleep_seconds,
-                user_agent=args.user_agent,
-                service_urls=args.service_urls,
                 drop_override_codes=args.drop_override_codes,
                 delete_chars=args.gt_delete_chars)
 

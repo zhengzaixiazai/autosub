@@ -40,7 +40,7 @@ setup(
         'fuzzywuzzy>=0.18.0',
         'google-cloud-speech>=1.3.1',
         'websocket-client>=0.56.0',
-        'python-Levenshtein>=0.12.0'
+        'python-docx>=0.8.10'
     ],
     license=open(os.path.join(here, "LICENSE")).read()
 )

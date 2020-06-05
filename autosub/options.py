@@ -66,11 +66,9 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         _('Speech Options'),
         _('Options to control speech-to-text. '
           'If Speech Options not given, it will only generate the times.'))
-    pygt_group = parser.add_argument_group(
-        _('py-googletrans Options'),
-        _('Options to control translation. '
-          'Default method to translate. '
-          'Could be blocked at any time.'))
+    trans_group = parser.add_argument_group(
+        _('Translation Options'),
+        _('Options to control translation.'))
     conversion_group = parser.add_argument_group(
         _('Subtitles Conversion Options'),
         _('Options to control subtitles conversions.(Experimental)'))
@@ -320,38 +318,66 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         help=_("Number of concurrent Speech-to-Text requests to make. "
                "(arg_num = 1) (default: %(default)s)"))
 
-    pygt_group.add_argument(
+    trans_group.add_argument(
+        '-tapi', '--translation-api',
+        metavar=_('API_code'),
+        default='pygt',
+        choices=["pygt", "man"],
+        help=_("Choose which translation API to use. "
+               "Currently support: "
+               "pygt: py-googletrans (https://py-googletrans.readthedocs.io/en/latest/). "
+               "man: Manually translate the content by write a txt or docx file and then read it. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    trans_group.add_argument(
+        '-tf', '--translation-format',
+        metavar=_('format'),
+        default='docx',
+        choices=["docx", "txt"],
+        help=_("Choose which output format for manual translation to use. "
+               "Currently support: docx, txt. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    trans_group.add_argument(
+        '-mts', '--max-trans-size',
+        metavar='integer',
+        type=int,
+        default=constants.DEFAULT_SIZE_PER_TRANS,
+        help=_("(Experimental)Max size per translation request. "
+               "(arg_num = 1) (default: %(default)s)"))
+
+    trans_group.add_argument(
         '-slp', '--sleep-seconds',
         metavar=_('second'),
         type=float,
         default=constants.DEFAULT_SLEEP_SECONDS,
-        help=_("(Experimental)Seconds to sleep "
+        help=_("(Experimental)Seconds for py-googletrans to sleep "
                "between two translation requests. "
                "(arg_num = 1) (default: %(default)s)"))
 
-    pygt_group.add_argument(
+    trans_group.add_argument(
         '-surl', '--service-urls',
         metavar='URL',
         nargs='*',
-        help=_("(Experimental)Customize request urls. "
+        help=_("(Experimental)Customize py-googletrans request urls. "
                "Ref: https://py-googletrans.readthedocs.io/en/latest/ "
                "(arg_num >= 1)"))
 
-    pygt_group.add_argument(
+    trans_group.add_argument(
         '-ua', '--user-agent',
         metavar='User-Agent headers',
-        help=_("(Experimental)Customize User-Agent headers. "
+        help=_("(Experimental)Customize py-googletrans User-Agent headers. "
                "Same docs above. "
                "(arg_num = 1)"))
 
-    pygt_group.add_argument(
+    trans_group.add_argument(
         '-doc', '--drop-override-codes',
         action='store_true',
         help=_("Drop any .ass override codes in the text before translation. "
                "Only affect the translation result. "
                "(arg_num = 0)"))
 
-    pygt_group.add_argument(
+    trans_group.add_argument(
         '-gt-dc', '--gt-delete-chars',
         nargs='?', metavar="chars",
         const="，。！",
