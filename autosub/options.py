@@ -9,7 +9,7 @@ import argparse
 import gettext
 
 # Import third-party modules
-
+from googletrans import constants as gt_constants
 
 # Any changes to the path and your own modules
 from autosub import metadata
@@ -358,6 +358,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     trans_group.add_argument(
         '-surl', '--service-urls',
         metavar='URL',
+        default=["translate.google.com"],
         nargs='*',
         help=_("(Experimental)Customize py-googletrans request urls. "
                "Ref: https://py-googletrans.readthedocs.io/en/latest/ "
@@ -366,6 +367,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     trans_group.add_argument(
         '-ua', '--user-agent',
         metavar='User-Agent headers',
+        default=gt_constants.DEFAULT_USER_AGENT,
         help=_("(Experimental)Customize py-googletrans User-Agent headers. "
                "Same docs above. "
                "(arg_num = 1)"))

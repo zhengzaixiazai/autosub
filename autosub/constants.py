@@ -40,8 +40,10 @@ else:
     APP_PATH = os.path.dirname(__file__)
 
 if sys.platform.startswith('win'):
+    DEFAULT_ENCODING = "utf-8-sig"
     IS_UNIX = False
 else:
+    DEFAULT_ENCODING = "utf-8"
     IS_UNIX = True
 
 LOCALE_PATH = os.path.abspath(os.path.join(APP_PATH, "data/locale"))

@@ -966,7 +966,8 @@ def list_to_ass_str(
 def str_to_file(
         str_,
         output,
-        input_m=input):
+        input_m=input,
+        encoding=constants.DEFAULT_ENCODING):
     """
     Give a string and write it to file
     """
@@ -984,5 +985,5 @@ def str_to_file(
                                         ext=ext)
 
     with open(dest, 'wb') as output_file:
-        output_file.write(str_.encode("utf-8"))
+        output_file.write(str_.encode(encoding))
     return dest

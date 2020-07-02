@@ -56,6 +56,7 @@
 
 - 添加convert_wav方法在cmdline_utils.py中。
 - 添加手动翻译的方法。
+- 添加sub_to_file方法在cmdline_utils.py中。
 
 #### 改动(未发布)
 
@@ -66,6 +67,7 @@
 
 - 修复不输入`-D`选项时的问题。
 - 修复args.audio_split_cmd替换问题当使用`-ap`参数时。[issue #122](https://github.com/BingLingGroup/autosub/issues/122)
+- 修复选项`--user-agent`的默认值问题。[issue #127](https://github.com/BingLingGroup/autosub/issues/127)
 
 ### [0.5.7-alpha] - 2020-05-06
 

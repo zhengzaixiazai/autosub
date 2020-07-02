@@ -650,6 +650,39 @@ def get_timed_text(
     return timed_text
 
 
+def sub_to_file(
+        name_tail,
+        args,
+        ssafile,
+        input_m=input,
+        fps=30.0):
+    """
+    Write subtitles to a file and return its path.
+    """
+    sub_string = core.ssafile_to_sub_str(
+        ssafile=ssafile,
+        fps=fps,
+        subtitles_file_format=args.format)
+
+    if args.format == 'mpl2':
+        extension = 'mpl2.txt'
+    else:
+        extension = args.format
+
+    sub_name = "{base}.{nt}.{extension}".format(
+        base=args.output,
+        nt=name_tail,
+        extension=extension)
+
+    subtitles_file_path = core.str_to_file(
+        str_=sub_string,
+        output=sub_name,
+        input_m=input_m)
+    # subtitles string to file
+
+    return subtitles_file_path
+
+
 def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         args,
         input_m=input,
@@ -663,25 +696,13 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
         new_sub = sub_utils.merge_bilingual_assfile(
             subtitles=src_sub
         )
-        sub_string = core.ssafile_to_sub_str(
+        subtitles_file_path = sub_to_file(
+            name_tail="combination",
+            args=args,
             ssafile=new_sub,
-            fps=fps,
-            subtitles_file_format=args.format)
-
-        if args.format == 'mpl2':
-            extension = 'mpl2.txt'
-        else:
-            extension = args.format
-
-        sub_name = "{base}.{nt}.{extension}".format(
-            base=args.output,
-            nt="combination",
-            extension=extension)
-
-        subtitles_file_path = core.str_to_file(
-            str_=sub_string,
-            output=sub_name,
-            input_m=input_m)
+            input_m=input_m,
+            fps=fps
+        )
         # subtitles string to file
         print(_("\"dst-lf-src\" subtitles file "
                 "created at \"{}\".").format(subtitles_file_path))
@@ -698,25 +719,13 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
             subtitles=src_sub,
             order=0
         )
-        sub_string = core.ssafile_to_sub_str(
+        subtitles_file_path = sub_to_file(
+            name_tail="combination.2",
+            args=args,
             ssafile=new_sub,
-            fps=fps,
-            subtitles_file_format=args.format)
-
-        if args.format == 'mpl2':
-            extension = 'mpl2.txt'
-        else:
-            extension = args.format
-
-        sub_name = "{base}.{nt}.{extension}".format(
-            base=args.output,
-            nt="combination.2",
-            extension=extension)
-
-        subtitles_file_path = core.str_to_file(
-            str_=sub_string,
-            output=sub_name,
-            input_m=input_m)
+            input_m=input_m,
+            fps=fps
+        )
         # subtitles string to file
         print(_("\"src-lf-dst\" subtitles file "
                 "created at \"{}\".").format(subtitles_file_path))
@@ -749,25 +758,13 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
             stop_words_set_2=stop_words_set_2,
             avoid_split=args.dont_split
         )
-        sub_string = core.ssafile_to_sub_str(
+        subtitles_file_path = sub_to_file(
+            name_tail="join",
+            args=args,
             ssafile=new_sub,
-            fps=fps,
-            subtitles_file_format=args.format)
-
-        if args.format == 'mpl2':
-            extension = 'mpl2.txt'
-        else:
-            extension = args.format
-
-        sub_name = "{base}.{nt}.{extension}".format(
-            base=args.output,
-            nt="join",
-            extension=extension)
-
-        subtitles_file_path = core.str_to_file(
-            str_=sub_string,
-            output=sub_name,
-            input_m=input_m)
+            input_m=input_m,
+            fps=fps
+        )
         # subtitles string to file
         print(_("\"join-events\" subtitles file "
                 "created at \"{}\".").format(subtitles_file_path))
@@ -864,25 +861,13 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 text_list=translated_text,
                 style_name="")
 
-        bilingual_string = core.ssafile_to_sub_str(
+        subtitles_file_path = sub_to_file(
+            name_tail=args.src_language + '&' + args.dst_language,
+            args=args,
             ssafile=bilingual_sub,
-            fps=fps,
-            subtitles_file_format=args.format)
-
-        if args.format == 'mpl2':
-            extension = 'mpl2.txt'
-        else:
-            extension = args.format
-
-        bilingual_name = "{base}.{nt}.{extension}".format(
-            base=args.output,
-            nt=args.src_language + '&' + args.dst_language,
-            extension=extension)
-
-        subtitles_file_path = core.str_to_file(
-            str_=bilingual_string,
-            output=bilingual_name,
-            input_m=input_m)
+            input_m=input_m,
+            fps=fps
+        )
         # subtitles string to file
         print(_("Bilingual subtitles file "
                 "created at \"{}\".").format(subtitles_file_path))
@@ -917,25 +902,15 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 style_name="",
                 same_event_type=1)
 
-        bilingual_string = core.ssafile_to_sub_str(
+        subtitles_file_path = sub_to_file(
+            name_tail="{src}&{dst}.0".format(
+                src=args.src_language,
+                dst=args.dst_language),
+            args=args,
             ssafile=bilingual_sub,
-            fps=fps,
-            subtitles_file_format=args.format)
-
-        if args.format == 'mpl2':
-            extension = 'mpl2.txt'
-        else:
-            extension = args.format
-
-        bilingual_name = "{base}.{nt}.0.{extension}".format(
-            base=args.output,
-            nt=args.src_language + '&' + args.dst_language,
-            extension=extension)
-
-        subtitles_file_path = core.str_to_file(
-            str_=bilingual_string,
-            output=bilingual_name,
-            input_m=input_m)
+            input_m=input_m,
+            fps=fps
+        )
         # subtitles string to file
         print(_("\"dst-lf-src\" subtitles file "
                 "created at \"{}\".").format(subtitles_file_path))
@@ -970,25 +945,15 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 style_name="",
                 same_event_type=2)
 
-        bilingual_string = core.ssafile_to_sub_str(
+        subtitles_file_path = sub_to_file(
+            name_tail="{src}&{dst}.1".format(
+                src=args.src_language,
+                dst=args.dst_language),
+            args=args,
             ssafile=bilingual_sub,
-            fps=fps,
-            subtitles_file_format=args.format)
-
-        if args.format == 'mpl2':
-            extension = 'mpl2.txt'
-        else:
-            extension = args.format
-
-        bilingual_name = "{base}.{nt}.1.{extension}".format(
-            base=args.output,
-            nt=args.src_language + '&' + args.dst_language,
-            extension=extension)
-
-        subtitles_file_path = core.str_to_file(
-            str_=bilingual_string,
-            output=bilingual_name,
-            input_m=input_m)
+            input_m=input_m,
+            fps=fps
+        )
         # subtitles string to file
         print(_("\"src-lf-dst\" subtitles file "
                 "created at \"{}\".").format(subtitles_file_path))
@@ -1016,23 +981,13 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 dst_ssafile=dst_sub,
                 text_list=translated_text,
                 style_name="")
-
-        dst_string = core.ssafile_to_sub_str(
+        subtitles_file_path = sub_to_file(
+            name_tail=args.dst_language,
+            args=args,
             ssafile=dst_sub,
-            fps=fps,
-            subtitles_file_format=args.format)
-
-        if args.format == 'mpl2':
-            extension = 'mpl2.txt'
-        else:
-            extension = args.format
-        dst_name = "{base}.{nt}.{extension}".format(base=args.output,
-                                                    nt=args.dst_language,
-                                                    extension=extension)
-        subtitles_file_path = core.str_to_file(
-            str_=dst_string,
-            output=dst_name,
-            input_m=input_m)
+            input_m=input_m,
+            fps=fps
+        )
         # subtitles string to file
         print(_("Destination language subtitles "
                 "file created at \"{}\".").format(subtitles_file_path))
