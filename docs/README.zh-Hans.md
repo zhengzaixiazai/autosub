@@ -677,6 +677,8 @@ autosub -i 输入文件 (-SRC 语言代码) -D 语言代码
 autosub -i 输入文件 -surl "translate.google.cn" ...(其他选项)
 ```
 
+或者使用其他可用的URL，详见[ssut/py-googletrans#165](https://github.com/ssut/py-googletrans/issues/165)。
+
 <escape><a href = "#目录">&nbsp;↑&nbsp;</a></escape>
 
 #### 选项

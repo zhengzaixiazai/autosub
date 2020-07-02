@@ -62,6 +62,7 @@ Click up arrow to go back to TOC.
 #### Changed(Unreleased)
 
 - Change the default value for `-et` option into 50.
+- Change the control flow in method audio_or_video_prcs by using args.output_files to control.
 
 #### Fixed(Unreleased)
 

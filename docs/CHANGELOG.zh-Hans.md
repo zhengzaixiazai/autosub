@@ -60,6 +60,7 @@
 #### 改动(未发布)
 
 - 修改`-et`默认参数为50。
+- 修改方法audio_or_video_prcs的控制流程，使用args.output_files来控制。
 
 #### 修复(未发布)
 

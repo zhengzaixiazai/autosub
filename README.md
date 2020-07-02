@@ -675,6 +675,8 @@ Translate subtitles by "translate.google.cn" which can be directly accessed from
 autosub -i input_file -surl "translate.google.cn" ...(other options)
 ```
 
+Or use other available URLs like these [ssut/py-googletrans#165](https://github.com/ssut/py-googletrans/issues/165).
+
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 #### Options

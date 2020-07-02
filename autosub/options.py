@@ -378,7 +378,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "(arg_num = 0)"))
 
     trans_group.add_argument(
-        '-gt-dc', '--gt-delete-chars',
+        '-tdc', '--trans-delete-chars',
         nargs='?', metavar="chars",
         const="，。！",
         help=_("Replace the specific chars with a space after translation, "

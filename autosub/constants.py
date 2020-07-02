@@ -293,7 +293,7 @@ def get_cmd(program_name):
     Return the path for a given executable.
     "" returned when no executable exists.
     """
-    if not sys.platform.startswith('win'):
+    if IS_UNIX:
         command = which_exe(program_name)
         if command:
             return command

@@ -581,6 +581,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
     valid_index = []
     is_last = ""
     text_list_length = len(text_list)
+    if size_per_trans <= 0:
+        size_per_trans = float("inf")
     while i < text_list_length:
         if text_list[i]:
             if not is_last:
@@ -605,7 +607,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
                 size = 0
                 continue
                 # stay at this line of text
-                # in case if it's the last one
+                # in case it's the last one
         else:
             if is_last:
                 is_last = text_list[i]
