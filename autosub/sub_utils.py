@@ -40,6 +40,7 @@ def str_to_file(
                     "or the path isn't valid: \"{dest_name}\".").format(dest_name=dest))
             dest = input_m(
                 _("Input a new path (including directory and file name) for output file.\n"))
+            dest = dest.rstrip("\"").lstrip("\"")
             ext = os.path.splitext(dest)[-1]
             dest = os.path.splitext(dest)[0]
             dest = "{base}{ext}".format(base=dest,
@@ -62,6 +63,30 @@ class VTTWord:  # pylint: disable=too-few-public-methods
         self.start = start
         self.end = end
         self.word = word
+
+    @property
+    def duration(self):
+        """
+        Subtitle duration in milliseconds (read/write property).
+
+        Writing to this property adjusts :attr:`SSAEvent.end`.
+        Setting negative durations raises :exc:`ValueError`.
+        """
+        return self.end - self.start
+
+    @duration.setter
+    def duration(self, mili_sec):
+        if mili_sec >= 0:
+            self.end = self.start + mili_sec
+        else:
+            raise ValueError("Subtitle duration cannot be negative")
+
+    @property
+    def speed(self):
+        """
+        Subtitle speed in char per second (read property).
+        """
+        return len(self.word) * 1000 // (self.end - self.start)
 
 
 def find_split_vtt_word(
@@ -133,6 +158,7 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
         subs = cls()
         subs.path = path
         last_timestamp = None
+        last_speed = 10
         with open(path, encoding=encoding) as file_p:
             is_content_outside_angle = True
             word = ""
@@ -153,6 +179,13 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                             stamp_ms.append(pysubs2.time.timestamp_to_ms(stamp))
                         if subs.vtt_words:
                             subs.vtt_words[-1].end = stamp_ms[0]
+                            cur_speed = subs.vtt_words[-1].speed
+                            if cur_speed < 5:
+                                subs.vtt_words[-1].start = subs.vtt_words[-1].end - \
+                                    len(subs.vtt_words[-1].word) * 1000 // last_speed
+                            else:
+                                last_speed = cur_speed
+
                         try:
                             # todo2: need regex
                             j = 0
@@ -168,6 +201,14 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                                             word=word.lstrip().rstrip(), start=start))
                                         if j < len(stamp_ms) - 1:
                                             subs.vtt_words[-1].end = stamp_ms[j + 1]
+                                            cur_speed = subs.vtt_words[-1].speed
+                                            if cur_speed < 5:
+                                                subs.vtt_words[-1].start = \
+                                                    subs.vtt_words[-1].end - \
+                                                    len(subs.vtt_words[-1].word) * 1000 \
+                                                    // last_speed
+                                            else:
+                                                last_speed = cur_speed
                                         j = j + 1
                                         word = ""
                                     continue
@@ -175,15 +216,16 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                                     word = word + char
                         except ValueError:
                             pass
-                    else:
-                        if subs.vtt_words and not subs.vtt_words[-1].word:
-                            subs.vtt_words.pop()
+        if len(subs.vtt_words) > 1:
+            last_speed = subs.vtt_words[-2].speed
+        subs.vtt_words[-1].duration = len(subs.vtt_words[-j].word) * 1000 // last_speed
         return subs
 
     def to_ass_events_simply(self,
                              events,
                              vtt_words_index,
-                             key_tag=""):
+                             key_tag="",
+                             is_cap=False):
         """
         Simply export to ass events.
         """
@@ -191,31 +233,35 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
         j = 0
         if key_tag:
             for event in events:
-                event.text = "{{{key_tag}{time}}}{word} ".format(
-                    key_tag=key_tag,
-                    time=int((self.vtt_words[j].end - self.vtt_words[j].start) // 10),
-                    word=self.vtt_words[j].word[0].upper() + self.vtt_words[j].word[1:])
-                j = j + 1
+                if is_cap:
+                    event.text = "{{{key_tag}{time}}}{word} ".format(
+                        key_tag=key_tag,
+                        time=int(self.vtt_words[j].duration // 10),
+                        word=self.vtt_words[j].word[0].upper() + self.vtt_words[j].word[1:])
+                    j = j + 1
                 while j < vtt_words_index[i]:
                     event.text = "{event}{{{key_tag}{time}}}{word} ".format(
                         event=event.text,
                         key_tag=key_tag,
-                        time=int((self.vtt_words[j].end - self.vtt_words[j].start) // 10),
+                        time=int(self.vtt_words[j].duration // 10),
                         word=self.vtt_words[j].word)
                     j = j + 1
-                event.text = event.text[:-1] + "."
+                if is_cap:
+                    event.text = event.text[:-1] + "."
                 i = i + 1
         else:
             for event in events:
-                event.text = "{word} ".format(
-                    word=self.vtt_words[j].word[0].upper() + self.vtt_words[j].word[1:])
-                j = j + 1
+                if is_cap:
+                    event.text = "{word} ".format(
+                        word=self.vtt_words[j].word[0].upper() + self.vtt_words[j].word[1:])
+                    j = j + 1
                 while j < vtt_words_index[i]:
                     event.text = "{event}{word} ".format(
                         event=event.text,
                         word=self.vtt_words[j].word)
                     j = j + 1
-                event.text = event.text[:-1] + "."
+                if is_cap:
+                    event.text = event.text[:-1] + "."
                 i = i + 1
         return events
 
@@ -253,35 +299,36 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
         vtt_words_len = len(self.vtt_words)
         vtt_words_index = []
         is_started = False
-        last_len = 0
+        # last_len = 0
         text_len = 0
-        while j < vtt_words_len and i < len(events):
-            if self.vtt_words[j].start < events[i].end:
-                start_delta = events[i].start - self.vtt_words[j].start
+        events_len = len(events)
+        events.append(pysubs2.SSAEvent(start=events[-1].end, end=events[-1].end))
+        while j < vtt_words_len and i < events_len:
+            if self.vtt_words[j].end < events[i + 1].start - 100:
+                # start_delta = events[i].start - self.vtt_words[j].start
                 if not is_started:
-                    if start_delta < 500:
-                        # inside the event
-                        # start_delta < 0
-                        # or a little ahead of time
-                        # 0 <= start_delta < 300
-                        is_started = True
-                        events[i].start = self.vtt_words[j].start
-                        events[i].text = ""
-                    else:
-                        # check if it's necessary to insert new events
-                        if i < len(events) - 1:
-                            events.insert(
-                                i,
-                                pysubs2.SSAEvent(start=self.vtt_words[j].start,
-                                                 end=events[i].start))
-                        else:
-                            events.insert(
-                                i,
-                                pysubs2.SSAEvent(start=self.vtt_words[j].start,
-                                                 end=self.vtt_words[j].start + 5000))
-                        events[i].is_comment = True
-                        # the end time is estimated so it needs a trim
-                        continue
+                    self.vtt_words[j].start = events[i].start
+                    # if start_delta < 300:
+                    #     # inside the event
+                    #     # start_delta < 0
+                    #     # or a little ahead of time
+                    #     # 0 <= start_delta < 300
+                    is_started = True
+                # else:
+                #     # check if it's necessary to insert new events
+                #     if i < len(events) - 1:
+                #         events.insert(
+                #             i,
+                #             pysubs2.SSAEvent(start=self.vtt_words[j].start,
+                #                              end=events[i].start))
+                #     else:
+                #         events.insert(
+                #             i,
+                #             pysubs2.SSAEvent(start=self.vtt_words[j].start,
+                #                              end=self.vtt_words[j].start + 5000))
+                #     events[i].is_comment = True
+                #     # the end time is estimated so it needs a trim
+                #     continue
                 text_len = text_len + len(self.vtt_words[j].word) + 1
                 if text_len > text_limit and not avoid_split:
                     vtt_word_dict = get_vtt_slice_pos_dict(
@@ -315,22 +362,22 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                 j = j + 1
             else:
                 if text_len:
-                    if events[i].is_comment:
-                        # trim the empty region
-                        cur_speed = text_len * 1000 // events[i].duration
-                        if last_len:
-                            last_speed = last_len * 1000 // events[i - 1].duration
-                        else:
-                            last_speed = 10
-                        if cur_speed < (last_speed >> 2):
-                            events[i].end = last_speed * events[i].duration // 1000
-                        events[i].is_comment = False
+                    # if events[i].is_comment:
+                    #     # trim the empty region
+                    #     cur_speed = text_len * 1000 // events[i].duration
+                    #     if last_len:
+                    #         last_speed = last_len * 1000 // events[i - 1].duration
+                    #     else:
+                    #         last_speed = 10
+                    #     if cur_speed < (last_speed >> 2):
+                    #         events[i].duration = last_speed * events[i].duration // 1000
+                    #     events[i].is_comment = False
+                    # last_len = text_len
+                    text_len = 0
                     vtt_words_index.append(j)
                     if j:
                         self.vtt_words[j - 1].end = events[i].end
                     is_started = False
-                    last_len = text_len
-                    text_len = 0
                     i = i + 1
                 else:
                     del events[i]
@@ -348,7 +395,8 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
             key_tag = ""
 
         if "man" in control_list:
-            new_events = []
+            del events
+            events = []
             path = self.path[:-3] + "txt"
             path = str_to_file(
                 str_=self.to_text_str(vtt_words_index=vtt_words_index),
@@ -368,14 +416,14 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                     vtt_words_index.append(i)
                     if i:
                         event.end = self.vtt_words[i - 1].end
-                    new_events.append(event)
-                events = new_events
+                    events.append(event)
             os.remove(path)
 
         return self.to_ass_events_simply(
             events=events,
             vtt_words_index=vtt_words_index,
-            key_tag=key_tag)
+            key_tag=key_tag,
+            is_cap="cap" in control_list)
 
 
 def sub_to_speech_regions(

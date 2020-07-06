@@ -436,6 +436,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         help=_("Control the way to join events when using vtt. "
                "Key tag choice: [\"\\k\", \"\\ko\", \"\\kf\"]. "
                "Events manual adjustment: \"man\". "
+               "Auto capitalization and full stop: \"cap\". "
                "(arg_num >= 1)"))
 
     network_group.add_argument(
