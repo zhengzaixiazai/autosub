@@ -5,6 +5,7 @@ Defines constants used by autosub.
 """
 # Import built-in modules
 import os
+import re
 import sys
 import shlex
 import locale
@@ -72,6 +73,9 @@ if multiprocessing.cpu_count() > 3:
     DEFAULT_CONCURRENCY = multiprocessing.cpu_count() >> 1
 else:
     DEFAULT_CONCURRENCY = 2
+
+VTT_TIMESTAMP = re.compile(r'\s*((?:\d+:)?\d{2}:\d{2}.\d{3})\s*-->\s*((?:\d+:)?\d{2}:\d{2}.\d{3})')
+VTT_WORD_TIMESTAMP = re.compile(r'<(\d{1,2}):(\d{2}):(\d{2})[.,](\d{2,3})>')
 
 DEFAULT_SRC_LANGUAGE = 'en-US'
 DEFAULT_ENERGY_THRESHOLD = 50
@@ -235,6 +239,7 @@ OUTPUT_FORMAT = {
 }
 
 INPUT_FORMAT = {
+    'vtt': 'WebVTT',
     'srt': 'SubRip',
     'ass': 'Advanced SubStation Alpha',
     'ssa': 'SubStation Alpha',

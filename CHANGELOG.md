@@ -59,6 +59,8 @@ Click up arrow to go back to TOC.
 - Add method convert_wav in cmdline_utils.py.
 - Add the manual translation method.
 - Add method sub_to_file in cmdline_utils.py.
+- Add complex join-events functions.
+- Add Auditok options optimization.
 
 #### Changed(Unreleased)
 

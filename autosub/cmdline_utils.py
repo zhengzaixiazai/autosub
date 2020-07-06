@@ -27,6 +27,7 @@ from autosub import lang_code_utils
 from autosub import sub_utils
 from autosub import api_google
 from autosub import api_baidu
+from autosub import auditok_utils
 
 CMDLINE_UTILS_TEXT = gettext.translation(domain=__name__,
                                          localedir=constants.LOCALE_PATH,
@@ -239,23 +240,32 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
     return 1
 
 
-def validate_config_args(args):  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
+def validate_json_config(config_file):
+    """
+    Check if a json config is properly given.
+    """
+    if os.path.isfile(config_file):
+        with open(config_file, encoding='utf-8') as config_fp:
+            try:
+                config_dict = json.load(config_fp)
+            except ValueError:
+                raise exceptions.AutosubException(
+                    _("Error: Can't decode config file \"{filename}\".").format(
+                        filename=config_file))
+    else:
+        raise exceptions.AutosubException(
+            _("Error: Config file \"{filename}\" doesn't exist.").format(
+                filename=config_file))
+
+    return config_dict
+
+
+def validate_speech_config(args):  # pylint: disable=too-many-branches, too-many-return-statements, too-many-statements
     """
     Check that the speech-config args passed to autosub are valid
     for audio or video processing.
     """
-    if os.path.isfile(args.speech_config):
-        with open(args.speech_config, encoding='utf-8') as config_file:
-            try:
-                config_dict = json.load(config_file)
-            except ValueError:
-                raise exceptions.AutosubException(
-                    _("Error: Can't decode speech config file \"{filename}\".").format(
-                        filename=args.speech_config))
-    else:
-        raise exceptions.AutosubException(
-            _("Error: Speech config file \"{filename}\" doesn't exist.").format(
-                filename=args.speech_config))
+    config_dict = validate_json_config(args.speech_config)
 
     if args.speech_api == "gcsv1":
         if "encoding" in config_dict and config_dict["encoding"]:
@@ -674,7 +684,7 @@ def sub_to_file(
         nt=name_tail,
         extension=extension)
 
-    subtitles_file_path = core.str_to_file(
+    subtitles_file_path = sub_utils.str_to_file(
         str_=sub_string,
         output=sub_name,
         input_m=input_m)
@@ -690,7 +700,11 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
     """
     Give args and convert a subtitles file.
     """
-    src_sub = pysubs2.SSAFile.load(args.input)
+    if args.input.endswith('vtt'):
+        src_sub = sub_utils.YTBWebVTT.from_file(args.input)
+        args.output_files = {"join-events"}
+    else:
+        src_sub = pysubs2.SSAFile.load(args.input)
     try:
         args.output_files.remove("dst-lf-src")
         new_sub = sub_utils.merge_bilingual_assfile(
@@ -749,15 +763,72 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
         else:
             stop_words_set_2 = constants.DEFAULT_ENGLISH_STOP_WORDS_SET_2
 
-        new_sub = sub_utils.merge_src_assfile(
-            subtitles=src_sub,
-            max_join_size=args.max_join_size,
-            max_delta_time=int(args.max_delta_time * 1000),
-            delimiters=args.delimiters,
-            stop_words_set_1=stop_words_set_1,
-            stop_words_set_2=stop_words_set_2,
-            avoid_split=args.dont_split
-        )
+        if args.ext_regions:
+            ext_name = os.path.splitext(args.ext_regions)
+            ext_ext = ext_name[-1]
+            ext_fmt = ext_ext.strip('.')
+            if ext_fmt not in constants.INPUT_FORMAT:
+                print(_("External regions file is a video or audio file."))
+                if ext_fmt != ".wav":
+                    audio_wav = convert_wav(
+                        input_=args.ext_regions,
+                        conversion_cmd=args.audio_conversion_cmd,
+                        output_=args.output,
+                        keep=args.keep
+                    )
+                else:
+                    audio_wav = args.ext_regions
+                print(_("Conversion completed.\nUse Auditok to detect speech regions."))
+                if args.auditok_config is not None:
+                    ass_events = core.auditok_opt_opt(config_dict=args.auditok_config,
+                                                      audio_wav=audio_wav,
+                                                      concurrency=args.audio_concurrency)
+                else:
+                    mode = 0
+                    if not args.not_strict_min_length:
+                        mode = auditok.StreamTokenizer.STRICT_MIN_LENGTH
+                    if args.drop_trailing_silence:
+                        mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
+                    ass_events = auditok_utils.auditok_gen_speech_regions(
+                        audio_wav=audio_wav,
+                        energy_threshold=args.energy_threshold,
+                        min_region_size=args.min_region_size,
+                        max_region_size=args.max_region_size,
+                        max_continuous_silence=args.max_continuous_silence,
+                        mode=mode,
+                        is_ssa_event=True)
+
+                gc.collect(0)
+                print(_("Auditok detection completed."))
+                if not args.keep and audio_wav != args.ext_regions:
+                    os.remove(audio_wav)
+                    print(_("\"{name}\" has been deleted.").format(name=audio_wav))
+
+            else:
+                ext_ass = pysubs2.SSAFile.load(args.ext_regions)
+                ass_events = ext_ass.events
+
+            new_sub = pysubs2.SSAFile()
+            new_sub.events = src_sub.to_ass_events(
+                events=ass_events,
+                stop_words_set_1=stop_words_set_1,
+                stop_words_set_2=stop_words_set_2,
+                control_list=args.control_list,
+                text_limit=args.max_join_size,
+                avoid_split=args.dont_split)
+
+        else:
+            new_sub = pysubs2.SSAFile()
+            new_sub.events = sub_utils.merge_src_assfile(
+                subtitles=src_sub,
+                max_join_size=args.max_join_size,
+                max_delta_time=int(args.max_delta_time * 1000),
+                delimiters=args.delimiters,
+                stop_words_set_1=stop_words_set_1,
+                stop_words_set_2=stop_words_set_2,
+                avoid_split=args.dont_split
+            )
+
         subtitles_file_path = sub_to_file(
             name_tail="join",
             args=args,
@@ -1093,7 +1164,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
 
         print(_("Conversion completed.\nUse Auditok to detect speech regions."))
-        regions = core.auditok_gen_speech_regions(
+        regions = auditok_utils.auditok_gen_speech_regions(
             audio_wav=audio_wav,
             energy_threshold=args.energy_threshold,
             min_region_size=args.min_region_size,
@@ -1129,7 +1200,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         times_name = "{base}.{nt}.{extension}".format(base=args.output,
                                                       nt="times",
                                                       extension=args.format)
-        subtitles_file_path = core.str_to_file(
+        subtitles_file_path = sub_utils.str_to_file(
             str_=times_string,
             output=times_name,
             input_m=input_m)
@@ -1293,7 +1364,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             text_list=result_list)
         result_string = sub_utils.list_to_json_str(timed_result)
         result_name = "{base}.result.json".format(base=args.output)
-        result_file_path = core.str_to_file(
+        result_file_path = sub_utils.str_to_file(
             str_=result_string,
             output=result_name,
             input_m=input_m)
@@ -1332,7 +1403,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
         src_name = "{base}.{nt}.{extension}".format(base=args.output,
                                                     nt=args.speech_language,
                                                     extension=args.format)
-        subtitles_file_path = core.str_to_file(
+        subtitles_file_path = sub_utils.str_to_file(
             str_=src_string,
             output=src_name,
             input_m=input_m)
@@ -1395,7 +1466,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             base=args.output,
             nt=args.src_language + '&' + args.dst_language,
             extension=args.format)
-        subtitles_file_path = core.str_to_file(
+        subtitles_file_path = sub_utils.str_to_file(
             str_=bilingual_string,
             output=bilingual_name,
             input_m=input_m)
@@ -1441,7 +1512,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             base=args.output,
             nt=args.src_language + '&' + args.dst_language,
             extension=args.format)
-        subtitles_file_path = core.str_to_file(
+        subtitles_file_path = sub_utils.str_to_file(
             str_=bilingual_string,
             output=bilingual_name,
             input_m=input_m)
@@ -1487,7 +1558,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             base=args.output,
             nt=args.src_language + '&' + args.dst_language,
             extension=args.format)
-        subtitles_file_path = core.str_to_file(
+        subtitles_file_path = sub_utils.str_to_file(
             str_=bilingual_string,
             output=bilingual_name,
             input_m=input_m)
@@ -1532,7 +1603,7 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             base=args.output,
             nt=args.dst_language,
             extension=args.format)
-        subtitles_file_path = core.str_to_file(
+        subtitles_file_path = sub_utils.str_to_file(
             str_=dst_string,
             output=dst_name,
             input_m=input_m)

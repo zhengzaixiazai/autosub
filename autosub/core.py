@@ -3,6 +3,7 @@
 """
 Defines autosub's core functionality.
 """
+# pylint: disable=too-many-lines
 # Import built-in modules
 import os
 import multiprocessing
@@ -10,22 +11,24 @@ import time
 import gettext
 import gc
 import re
+import operator
 
 # Import third-party modules
 import progressbar
 import pysubs2
-import auditok
 import wcwidth
 import docx
 import googletrans
+import auditok
 
 # Any changes to the path and your own modules
 from autosub import api_baidu
 from autosub import api_google
 from autosub import api_xfyun
+from autosub import auditok_utils
 from autosub import sub_utils
-from autosub import constants
 from autosub import ffmpeg_utils
+from autosub import constants
 from autosub import exceptions
 
 CORE_TEXT = gettext.translation(domain=__name__,
@@ -36,40 +39,141 @@ CORE_TEXT = gettext.translation(domain=__name__,
 _ = CORE_TEXT.gettext
 
 
-def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
+def auditok_opt_opt(  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+        config_dict,
         audio_wav,
-        energy_threshold=constants.DEFAULT_ENERGY_THRESHOLD,
-        min_region_size=constants.DEFAULT_MIN_REGION_SIZE,
-        max_region_size=constants.DEFAULT_MAX_REGION_SIZE,
-        max_continuous_silence=constants.DEFAULT_CONTINUOUS_SILENCE,
-        mode=auditok.StreamTokenizer.STRICT_MIN_LENGTH):
+        concurrency=constants.DEFAULT_CONCURRENCY):
     """
-    Give an input audio/video file, generate proper speech regions.
+    Function for optimize auditok options.
     """
+    if "max_et" in config_dict and config_dict["max_et"]:
+        max_et = config_dict["max_et"]
+    else:
+        max_et = 60
+
+    if "min_et" in config_dict and config_dict["min_et"]:
+        min_et = config_dict["min_et"]
+    else:
+        min_et = 45
+
+    if max_et <= min_et:
+        max_et = min_et ^ max_et
+        min_et = min_et ^ max_et
+        max_et = min_et ^ max_et
+
+    if "et_pass" in config_dict and config_dict["et_pass"] and config_dict["et_pass"] > 0:
+        et_pass = config_dict["et_pass"]
+    else:
+        et_pass = 3
+
+    if "max_mxcs" in config_dict and config_dict["max_mxcs"]:
+        max_mxcs = config_dict["max_mxcs"]
+    else:
+        max_mxcs = 0.3
+
+    if "min_mxcs" in config_dict and config_dict["min_mxcs"]:
+        min_mxcs = config_dict["min_mxcs"]
+    else:
+        min_mxcs = 0.07
+
+    if max_mxcs <= min_mxcs:
+        max_mxcs = min_mxcs ^ max_mxcs
+        min_mxcs = min_mxcs ^ max_mxcs
+        max_mxcs = min_mxcs ^ max_mxcs
+
+    if "mxcs_pass" in config_dict and config_dict["mxcs_pass"] and config_dict["mxcs_pass"] > 0:
+        mxcs_pass = config_dict["mxcs_pass"]
+    else:
+        mxcs_pass = 3
+
+    if "mnrs" in config_dict and config_dict["mnrs"]:
+        mnrs = config_dict["mnrs"]
+    else:
+        mnrs = constants.DEFAULT_MIN_REGION_SIZE
+
+    if "mxrs" in config_dict and config_dict["mxrs"]:
+        mxrs = config_dict["mxrs"]
+    else:
+        mxrs = constants.DEFAULT_MAX_REGION_SIZE
+
+    if "nsml" in config_dict and config_dict["nsml"]:
+        nsml = config_dict["nsml"]
+    else:
+        nsml = False
+
+    if "dts" in config_dict and config_dict["dts"]:
+        dts = config_dict["dts"]
+    else:
+        dts = False
+
+    delta_et = (max_et - min_et) / (et_pass + 1)
+    delta_mxcs = (max_mxcs - min_mxcs) / (mxcs_pass + 1)
+    input_stats = []
     asource = auditok.ADSFactory.ads(
         filename=audio_wav, record=True)
-    validator = auditok.AudioEnergyValidator(
-        sample_width=asource.get_sample_width(),
-        energy_threshold=energy_threshold)
-    asource.open()
-    tokenizer = auditok.StreamTokenizer(
-        validator=validator,
-        min_length=int(min_region_size * 100),
-        max_length=int(max_region_size * 100),
-        max_continuous_silence=int(max_continuous_silence * 100),
-        mode=mode)
 
-    # auditok.StreamTokenizer.DROP_TRAILING_SILENCE
-    tokens = tokenizer.tokenize(asource)
-    regions = []
-    for token in tokens:
-        # get start and end times
-        regions.append((token[1] * 10, token[2] * 10))
+    et_i = min_et + delta_et
+    while et_i < max_et:
+        mxcs_i = min_mxcs + delta_mxcs
+        while mxcs_i < max_mxcs:
+            input_stats.append(auditok_utils.AuditokSTATS(
+                energy_t=et_i,
+                mxcs=mxcs_i,
+                mnrs=mnrs,
+                mxrs=mxrs,
+                nsml=nsml,
+                dts=dts,
+                audio_wav=audio_wav
+            ))
+            mxcs_i = mxcs_i + delta_mxcs
+        et_i = et_i + delta_et
 
-    asource.close()
-    # reference
-    # auditok.readthedocs.io/en/latest/apitutorial.html#examples-using-real-audio-data
-    return regions
+    pool = multiprocessing.Pool(concurrency)
+    widgets = [_("Auditok options optimization: "),
+               progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(input_stats)).start()
+
+    try:
+        i = 0
+        tasks = []
+        result_stats = []
+        for stat in input_stats:
+            tasks.append(pool.apply_async(
+                auditok_utils.auditok_gen_stats_regions,
+                args=(stat, asource)))
+            gc.collect(0)
+
+        for task in tasks:
+            i = i + 1
+            result_stats.append(task.get())
+            pbar.update(i)
+
+        rank_list = [
+            sorted(result_stats, key=operator.attrgetter('big_region_count')),
+            sorted(result_stats, key=operator.attrgetter('small_region_count')),
+            sorted(result_stats, key=operator.attrgetter('delta_region_size'))]
+
+        for stats_ in result_stats:
+            for rank_item in rank_list:
+                stats_.rank_count = rank_item.index(stats_) + stats_.rank_count
+
+        result = min(result_stats)
+        asource.close()
+        pbar.finish()
+        print(_("Best options for Auditok is:\n"
+                "mxcs = {mxcs}s\net = {et}").format(mxcs=result.mxcs, et=result.et))
+        pool.terminate()
+        pool.join()
+        return result.events
+
+    except KeyboardInterrupt:
+        asource.close()
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+        return None
 
 
 def bulk_audio_conversion(  # pylint: disable=too-many-arguments
@@ -753,7 +857,7 @@ class ManualTranslator:  # pylint: disable=too-few-public-methods
                 para_list.append(para.text)
             trans_doc_str = '\n'.join(para_list)
         else:
-            trans_doc_name = str_to_file(
+            trans_doc_name = sub_utils.str_to_file(
                 str_=text,
                 output=self.trans_doc_name,
                 input_m=self.input_m)
@@ -771,7 +875,7 @@ class ManualTranslator:  # pylint: disable=too-few-public-methods
                     pbar.update(i)
                     time.sleep(1)
                 pbar.finish()
-            trans_doc = open(trans_doc_name, encoding='utf-8')
+            trans_doc = open(trans_doc_name, encoding=constants.DEFAULT_ENCODING)
             trans_doc_str = trans_doc.read()
             trans_doc.close()
         os.remove(self.trans_doc_name)
@@ -961,29 +1065,3 @@ def list_to_ass_str(
         formatted_subtitles = pysubs2_obj.to_string(format_='json')
 
     return formatted_subtitles
-
-
-def str_to_file(
-        str_,
-        output,
-        input_m=input,
-        encoding=constants.DEFAULT_ENCODING):
-    """
-    Give a string and write it to file
-    """
-    dest = output
-
-    if input_m:
-        while os.path.isfile(dest) or not os.path.isdir(os.path.dirname(dest)):
-            print(_("There is already a file with the same path "
-                    "or the path isn't valid: \"{dest_name}\".").format(dest_name=dest))
-            dest = input_m(
-                _("Input a new path (including directory and file name) for output file.\n"))
-            ext = os.path.splitext(dest)[-1]
-            dest = os.path.splitext(dest)[0]
-            dest = "{base}{ext}".format(base=dest,
-                                        ext=ext)
-
-    with open(dest, 'wb') as output_file:
-        output_file.write(str_.encode(encoding))
-    return dest

@@ -58,7 +58,10 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
 
     try:
         if args.speech_config:
-            cmdline_utils.validate_config_args(args)
+            cmdline_utils.validate_speech_config(args)
+
+        if args.auditok_config:
+            args.auditok_config = cmdline_utils.validate_json_config(args.auditok_config)
 
         if cmdline_utils.list_args(args):
             raise exceptions.AutosubException(_("\nAll works done."))

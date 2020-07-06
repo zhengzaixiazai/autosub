@@ -3,10 +3,12 @@
 """
 Defines subtitle formatters used by autosub.
 """
+# pylint: disable=too-many-lines
 # Import built-in modules
 import wave
 import json
 import gettext
+import os
 
 # Import third-party modules
 import pysubs2
@@ -14,13 +16,366 @@ import pysubs2
 # Any changes to the path and your own modules
 from autosub import constants
 
-
 SUB_UTILS_TEXT = gettext.translation(domain=__name__,
                                      localedir=constants.LOCALE_PATH,
                                      languages=[constants.CURRENT_LOCALE],
                                      fallback=True)
 
 _ = SUB_UTILS_TEXT.gettext
+
+
+def str_to_file(
+        str_,
+        output,
+        input_m=input,
+        encoding=constants.DEFAULT_ENCODING):
+    """
+    Give a string and write it to file
+    """
+    dest = output
+
+    if input_m:
+        while os.path.isfile(dest) or not os.path.isdir(os.path.dirname(dest)):
+            print(_("There is already a file with the same path "
+                    "or the path isn't valid: \"{dest_name}\".").format(dest_name=dest))
+            dest = input_m(
+                _("Input a new path (including directory and file name) for output file.\n"))
+            ext = os.path.splitext(dest)[-1]
+            dest = os.path.splitext(dest)[0]
+            dest = "{base}{ext}".format(base=dest,
+                                        ext=ext)
+
+    with open(dest, 'wb') as output_file:
+        output_file.write(str_.encode(encoding))
+    return dest
+
+
+class VTTWord:  # pylint: disable=too-few-public-methods
+    """
+    Class for youtube WebVTT word and word-level timestamp.
+    """
+
+    def __init__(self,
+                 start=0,
+                 end=0,
+                 word=""):
+        self.start = start
+        self.end = end
+        self.word = word
+
+
+def find_split_vtt_word(
+        total_length,
+        stop_word_set,
+        vtt_word_dict,
+        min_range_ratio
+):
+    """
+    Find index to split vtt_word_dict.
+    """
+    half_pos = int(total_length / 2)
+    min_range = int(min_range_ratio * total_length)
+    max_range = total_length - min_range
+    last_index = (0, 0)
+    last_delta = half_pos - last_index[1]
+    if stop_word_set:
+        for stop_word in stop_word_set:
+            for index in vtt_word_dict[stop_word]:
+                if min_range < index[1] < max_range:
+                    delta = abs(index[1] - half_pos)
+                    if delta < last_delta:
+                        last_index = index
+                        last_delta = delta
+
+    return last_index
+
+
+def get_vtt_slice_pos_dict(
+        vtt_words,
+):
+    """
+    Get word position dictionary from vtt_words.
+    """
+    vtt_word_dict = {}
+    i = 0
+    length = len(vtt_words)
+    j = 0
+    while i < length:
+        key_ = vtt_word_dict.get(vtt_words[i].word)
+        if not key_:
+            # first for vtt_word list index
+            # second for string index
+            vtt_word_dict[vtt_words[i].word] = [(i, j)]
+        else:
+            vtt_word_dict[vtt_words[i].word].append((i, j))
+        j = j + len(vtt_words[i].word)
+        i = i + 1
+
+    return vtt_word_dict
+
+
+class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, too-many-arguments, too-many-statements, too-many-locals
+    """
+    Class for youtube WebVTT.
+    """
+
+    def __init__(self):
+        self.vtt_words = []
+        self.path = ""
+
+    @classmethod
+    def from_file(cls,
+                  path,
+                  encoding="utf-8"):
+        """
+        Get youtube WebVTT from a file.
+        """
+        subs = cls()
+        subs.path = path
+        last_timestamp = None
+        with open(path, encoding=encoding) as file_p:
+            is_content_outside_angle = True
+            word = ""
+            for line in file_p:
+                line = line.rstrip()
+                if not line:
+                    continue
+                stamps = constants.VTT_TIMESTAMP.findall(line)
+                if len(stamps) == 1 and len(stamps[0]) == 2:
+                    # youtube WebVTT sentence timestamp line
+                    last_timestamp = pysubs2.time.TIMESTAMP.findall(stamps[0][0])[0]
+                else:
+                    stamps = constants.VTT_WORD_TIMESTAMP.findall(line)
+                    if stamps:  # youtube WebVTT word-level timestamp
+                        stamps.insert(0, last_timestamp)
+                        stamp_ms = []
+                        for stamp in stamps:
+                            stamp_ms.append(pysubs2.time.timestamp_to_ms(stamp))
+                        if subs.vtt_words:
+                            subs.vtt_words[-1].end = stamp_ms[0]
+                        try:
+                            # todo2: need regex
+                            j = 0
+                            for char in line:
+                                if char == '>':
+                                    is_content_outside_angle = True
+                                    continue
+                                if char == '<':
+                                    is_content_outside_angle = False
+                                    if word:
+                                        start = stamp_ms[j]
+                                        subs.vtt_words.append(VTTWord(
+                                            word=word.lstrip().rstrip(), start=start))
+                                        if j < len(stamp_ms) - 1:
+                                            subs.vtt_words[-1].end = stamp_ms[j + 1]
+                                        j = j + 1
+                                        word = ""
+                                    continue
+                                if is_content_outside_angle:
+                                    word = word + char
+                        except ValueError:
+                            pass
+                    else:
+                        if subs.vtt_words and not subs.vtt_words[-1].word:
+                            subs.vtt_words.pop()
+        return subs
+
+    def to_ass_events_simply(self,
+                             events,
+                             vtt_words_index,
+                             key_tag=""):
+        """
+        Simply export to ass events.
+        """
+        i = 0
+        j = 0
+        if key_tag:
+            for event in events:
+                event.text = "{{{key_tag}{time}}}{word} ".format(
+                    key_tag=key_tag,
+                    time=int((self.vtt_words[j].end - self.vtt_words[j].start) // 10),
+                    word=self.vtt_words[j].word[0].upper() + self.vtt_words[j].word[1:])
+                j = j + 1
+                while j < vtt_words_index[i]:
+                    event.text = "{event}{{{key_tag}{time}}}{word} ".format(
+                        event=event.text,
+                        key_tag=key_tag,
+                        time=int((self.vtt_words[j].end - self.vtt_words[j].start) // 10),
+                        word=self.vtt_words[j].word)
+                    j = j + 1
+                event.text = event.text[:-1] + "."
+                i = i + 1
+        else:
+            for event in events:
+                event.text = "{word} ".format(
+                    word=self.vtt_words[j].word[0].upper() + self.vtt_words[j].word[1:])
+                j = j + 1
+                while j < vtt_words_index[i]:
+                    event.text = "{event}{word} ".format(
+                        event=event.text,
+                        word=self.vtt_words[j].word)
+                    j = j + 1
+                event.text = event.text[:-1] + "."
+                i = i + 1
+        return events
+
+    def to_text_str(self,
+                    vtt_words_index):
+        """
+        Export to ass events.
+        """
+        i = 0
+        j = 0
+        text_str = ""
+        vtt_words_index_len = len(vtt_words_index)
+        while i < vtt_words_index_len:
+            while j < vtt_words_index[i]:
+                text_str = "{event}{word} ".format(
+                    event=text_str,
+                    word=self.vtt_words[j].word)
+                j = j + 1
+            text_str = text_str + "\n"
+            i = i + 1
+        return text_str
+
+    def to_ass_events(self,
+                      events,
+                      stop_words_set_1,
+                      stop_words_set_2,
+                      control_list,
+                      text_limit=constants.DEFAULT_MAX_SIZE_PER_EVENT,
+                      avoid_split=False):
+        """
+        Get end timestamps from a SSAEvent list.
+        """
+        i = 0
+        j = 0
+        vtt_words_len = len(self.vtt_words)
+        vtt_words_index = []
+        is_started = False
+        last_len = 0
+        text_len = 0
+        while j < vtt_words_len and i < len(events):
+            if self.vtt_words[j].start < events[i].end:
+                start_delta = events[i].start - self.vtt_words[j].start
+                if not is_started:
+                    if start_delta < 500:
+                        # inside the event
+                        # start_delta < 0
+                        # or a little ahead of time
+                        # 0 <= start_delta < 300
+                        is_started = True
+                        events[i].start = self.vtt_words[j].start
+                        events[i].text = ""
+                    else:
+                        # check if it's necessary to insert new events
+                        if i < len(events) - 1:
+                            events.insert(
+                                i,
+                                pysubs2.SSAEvent(start=self.vtt_words[j].start,
+                                                 end=events[i].start))
+                        else:
+                            events.insert(
+                                i,
+                                pysubs2.SSAEvent(start=self.vtt_words[j].start,
+                                                 end=self.vtt_words[j].start + 5000))
+                        events[i].is_comment = True
+                        # the end time is estimated so it needs a trim
+                        continue
+                text_len = text_len + len(self.vtt_words[j].word) + 1
+                if text_len > text_limit and not avoid_split:
+                    vtt_word_dict = get_vtt_slice_pos_dict(
+                        self.vtt_words[vtt_words_index[-1]:j])
+                    stop_word_set = stop_words_set_1 & set(vtt_word_dict.keys())
+                    last_index = find_split_vtt_word(
+                        total_length=text_len,
+                        stop_word_set=stop_word_set,
+                        vtt_word_dict=vtt_word_dict,
+                        min_range_ratio=0.1
+                    )
+                    if not last_index[1]:
+                        stop_word_set = stop_words_set_2 & set(vtt_word_dict.keys())
+                        last_index = find_split_vtt_word(
+                            total_length=text_len,
+                            stop_word_set=stop_word_set,
+                            vtt_word_dict=vtt_word_dict,
+                            min_range_ratio=0.1
+                        )
+
+                    if 0 < last_index[1] < text_limit:
+                        vtt_words_index.append(vtt_words_index[-1] + last_index[0])
+                        last_end = events[i].end
+                        events[i].end = self.vtt_words[vtt_words_index[-1]].start
+                        events.insert(
+                            i + 1,
+                            pysubs2.SSAEvent(start=events[i].end,
+                                             end=last_end))
+                        i = i + 1
+                        text_len = text_len - last_index[1]
+                j = j + 1
+            else:
+                if text_len:
+                    if events[i].is_comment:
+                        # trim the empty region
+                        cur_speed = text_len * 1000 // events[i].duration
+                        if last_len:
+                            last_speed = last_len * 1000 // events[i - 1].duration
+                        else:
+                            last_speed = 10
+                        if cur_speed < (last_speed >> 2):
+                            events[i].end = last_speed * events[i].duration // 1000
+                        events[i].is_comment = False
+                    vtt_words_index.append(j)
+                    if j:
+                        self.vtt_words[j - 1].end = events[i].end
+                    is_started = False
+                    last_len = text_len
+                    text_len = 0
+                    i = i + 1
+                else:
+                    del events[i]
+
+        if j == vtt_words_len:
+            vtt_words_index.append(j)
+            events = events[:vtt_words_len]
+        if r"\k" in control_list:
+            key_tag = r"\k"
+        elif r"\kf" in control_list:
+            key_tag = r"\kf"
+        elif r"\ko" in control_list:
+            key_tag = r"\ko"
+        else:
+            key_tag = ""
+
+        if "man" in control_list:
+            new_events = []
+            path = self.path[:-3] + "txt"
+            path = str_to_file(
+                str_=self.to_text_str(vtt_words_index=vtt_words_index),
+                output=path,
+                input_m=input)
+            vtt_words_index = []
+            input(_("Wait for the events manual adjustment. "
+                    "Press Enter to continue."))
+            with open(path, encoding=constants.DEFAULT_ENCODING) as file_p:
+                i = 0
+                for line in file_p:
+                    word_list = line.split()
+                    event = pysubs2.SSAEvent(start=self.vtt_words[i].start)
+                    for word in word_list:
+                        self.vtt_words[i].word = word
+                        i = i + 1
+                    vtt_words_index.append(i)
+                    if i:
+                        event.end = self.vtt_words[i - 1].end
+                    new_events.append(event)
+                events = new_events
+            os.remove(path)
+
+        return self.to_ass_events_simply(
+            events=events,
+            vtt_words_index=vtt_words_index,
+            key_tag=key_tag)
 
 
 def sub_to_speech_regions(
@@ -70,7 +425,7 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
         dst_ssafile,
         text_list,
         style_name='Default',
-        same_event_type=0,):
+        same_event_type=0, ):
     """
     Serialize a list of subtitles using pysubs2.
     """
@@ -314,7 +669,8 @@ def assfile_to_txt_str(subtitles):
     return '\n'.join(event.text for event in subtitles.events)
 
 
-def merge_bilingual_assfile(  # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+def merge_bilingual_assfile(
+        # pylint: disable=too-many-locals, too-many-branches, too-many-statements
         subtitles,
         order=1):
     """
@@ -501,7 +857,7 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                 and new_ssafile.events[-1].style == temp_ssafile.events[event_count].style \
                 and temp_ssafile.events[event_count].start \
                 - new_ssafile.events[-1].end < max_delta_time \
-                and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters\
+                and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters \
                 and temp_ssafile.events[event_count].text.lstrip(" ")[0] not in delimiters:
             if len(new_ssafile.events[-1].text) + \
                     len(temp_ssafile.events[event_count].text) < max_join_size:
@@ -541,7 +897,7 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                         # then use stop words
                         word_dict = get_slice_pos_dict(joint_event.text)
                         stop_word_set = stop_words_set_1 & \
-                            set(word_dict.keys())
+                                        set(word_dict.keys())
                         last_index = find_split_index(
                             total_length=total_length,
                             stop_word_set=stop_word_set,
@@ -550,7 +906,7 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                         )
                         if not last_index:
                             stop_word_set = stop_words_set_2 & \
-                                set(word_dict.keys())
+                                            set(word_dict.keys())
                             last_index = find_split_index(
                                 total_length=total_length,
                                 stop_word_set=stop_word_set,

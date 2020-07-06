@@ -426,8 +426,17 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
     conversion_group.add_argument(
         '-ds', '--dont-split',
         action='store_true',
-        help=_("(Experimental)Don't Split just merge. "
+        help=_("(Experimental)Don't split. Just merge. "
                "(arg_num = 0)"))
+
+    conversion_group.add_argument(
+        '-ctl', '--control-list',
+        metavar=_('string'),
+        nargs='*',
+        help=_("Control the way to join events when using vtt. "
+               "Key tag choice: [\"\\k\", \"\\ko\", \"\\kf\"]. "
+               "Events manual adjustment: \"man\". "
+               "(arg_num >= 1)"))
 
     network_group.add_argument(
         '-hsa', '--http-speech-api',
@@ -633,6 +642,13 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         action='store_true',
         help=_("Ref: https://auditok.readthedocs.io/en/latest/core.html#class-summary "
                "(arg_num = 0)"))
+
+    auditok_group.add_argument(
+        '-aconf', '--auditok-config',
+        nargs='?', metavar=_('path'),
+        const='aconfig.json',
+        help=_("Auditok options automatic optimization config."
+               "(arg_num = 0 or 1)"))
 
     list_group.add_argument(
         '-lf', '--list-formats',

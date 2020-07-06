@@ -57,6 +57,8 @@
 - 添加convert_wav方法在cmdline_utils.py中。
 - 添加手动翻译的方法。
 - 添加sub_to_file方法在cmdline_utils.py中。
+- 添加复杂的行合并功能。
+- 添加Auditok选项优化功能。
 
 #### 改动(未发布)
 
