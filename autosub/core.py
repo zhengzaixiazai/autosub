@@ -122,7 +122,7 @@ def auditok_opt_opt(  # pylint: disable=too-many-locals, too-many-branches, too-
         return None
 
 
-def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals
+def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
         audio_fragments,
         events,
         delta,

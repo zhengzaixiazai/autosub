@@ -84,7 +84,7 @@ def validate_atrim_config(
     validate_auditok_config(trim_dict)
 
 
-def validate_auditok_config(
+def validate_auditok_config(  # pylint: disable=too-many-branches
         auditok_dict,
         args=None):
     """

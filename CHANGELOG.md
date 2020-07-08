@@ -62,6 +62,7 @@ Click up arrow to go back to TOC.
 - Add complex join-events functions.
 - Add Auditok options optimization.
 - Add send2trash instead of os.remove in some cases.
+- Add word check in method man_get_vtt_words_index.
 
 #### Changed(Unreleased)
 

@@ -9,9 +9,11 @@ import wave
 import json
 import gettext
 import os
+import string
 
 # Import third-party modules
 import pysubs2
+from fuzzywuzzy import fuzz
 
 # Any changes to the path and your own modules
 from autosub import constants
@@ -180,7 +182,6 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                             stamp_ms.append(pysubs2.time.timestamp_to_ms(stamp))
                         if subs.vtt_words:
                             subs.vtt_words[-1].end = stamp_ms[0]
-
                         try:
                             # todo2: need regex
                             j = 0
@@ -294,18 +295,73 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
             input_m=input)
         input(_("Wait for the events manual adjustment. "
                 "Press Enter to continue."))
-        with open(path, encoding=constants.DEFAULT_ENCODING) as file_p:
-            i = 0
-            for line in file_p:
-                word_list = line.split()
+        line_count = 0
+        i = 0
+        j = 0
+        vtt_len = len(self.vtt_words)
+        is_paused = False
+        trans = str.maketrans(string.punctuation, " " * len(string.punctuation))
+        while True:
+            file_p = open(path, encoding=constants.DEFAULT_ENCODING)
+            line_list = file_p.readlines()
+            line_list_len = len(line_list)
+            file_p.close()
+            k = line_count
+            while k < line_list_len:
+                word_list = line_list[k].split()
                 event = pysubs2.SSAEvent(start=self.vtt_words[i].start)
-                for word in word_list:
-                    self.vtt_words[i].word = word
+                word_list_len = len(word_list)
+                while j < word_list_len:
+                    if self.vtt_words[i].word != word_list[j]:
+                        if fuzz.partial_ratio(
+                                self.vtt_words[i].word.lower().translate(trans).replace(" ", ""),
+                                word_list[j].lower().translate(trans).replace(" ", "")) != 100:
+                            if self.vtt_words_index:
+                                start_delta = self.vtt_words_index[-1]
+                            else:
+                                start_delta = 0
+                            if i < vtt_len - 5:
+                                end_delta = i + 6
+                            else:
+                                end_delta = vtt_len
+                            print(_("\nLine {num}, word {num2}").format(
+                                num=len(events), num2=j))
+                            cur_line = ""
+                            for vtt_word in self.vtt_words[start_delta:end_delta]:
+                                cur_line = "{cur_line} {word}".format(cur_line=cur_line,
+                                                                      word=vtt_word.word)
+                            print(cur_line)
+                            print(" ".join(word_list))
+                            print("{word} | {word2}".format(
+                                word=self.vtt_words[i].word, word2=word_list[j]))
+                            result = input(_("Press Enter to manual adjust. "
+                                             "Input 1 to overwrite."))
+                            if result != "1":
+                                line_count = k
+                                is_paused = True
+                                break
+
+                            self.vtt_words[i].word = word_list[j]
+                            is_paused = False
+                        else:
+                            if is_paused:
+                                is_paused = False
+                            self.vtt_words[i].word = word_list[j]
+
                     i = i + 1
+                    j = j + 1
+                    if i > vtt_len:
+                        break
+                if is_paused:
+                    break
+                j = 0
                 self.vtt_words_index.append(i)
                 if i:
                     event.end = self.vtt_words[i - 1].end
                 events.append(event)
+                k = k + 1
+            if not is_paused:
+                break
         constants.delete_path(path)
         return events
 

@@ -60,6 +60,7 @@
 - 添加复杂的行合并功能。
 - 添加Auditok选项优化功能。
 - 添加了send2trash，在某些情况下替代了os.remove。
+- 添加字词检查在man_get_vtt_words_index。
 
 #### 改动(未发布)
 
