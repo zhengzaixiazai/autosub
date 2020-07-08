@@ -38,18 +38,14 @@ class SplitIntoAudioPiece:  # pylint: disable=too-few-public-methods
             is_keep,
             cmd,
             suffix,
-            include_before=0.25,
-            include_after=0.25):
+            include_before=0.0,
+            include_after=0.0):
         self.source_path = source_path
         self.cmd = cmd
         self.suffix = suffix
         self.is_keep = is_keep
-        if is_keep:
-            self.include_before = 0.0
-            self.include_after = 0.0
-        else:
-            self.include_before = include_before
-            self.include_after = include_after
+        self.include_before = include_before
+        self.include_after = include_after
         self.output = output
 
     def __call__(self, region):

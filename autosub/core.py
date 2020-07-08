@@ -46,83 +46,27 @@ def auditok_opt_opt(  # pylint: disable=too-many-locals, too-many-branches, too-
     """
     Function for optimize auditok options.
     """
-    if "max_et" in config_dict and config_dict["max_et"]:
-        max_et = config_dict["max_et"]
-    else:
-        max_et = 60
 
-    if "min_et" in config_dict and config_dict["min_et"]:
-        min_et = config_dict["min_et"]
-    else:
-        min_et = 45
+    auditok_utils.validate_astats_config(config_dict)
 
-    if max_et <= min_et:
-        max_et = min_et ^ max_et
-        min_et = min_et ^ max_et
-        max_et = min_et ^ max_et
-
-    if "et_pass" in config_dict and config_dict["et_pass"] and config_dict["et_pass"] > 0:
-        et_pass = config_dict["et_pass"]
-    else:
-        et_pass = 3
-
-    if "max_mxcs" in config_dict and config_dict["max_mxcs"]:
-        max_mxcs = config_dict["max_mxcs"]
-    else:
-        max_mxcs = 0.3
-
-    if "min_mxcs" in config_dict and config_dict["min_mxcs"]:
-        min_mxcs = config_dict["min_mxcs"]
-    else:
-        min_mxcs = 0.07
-
-    if max_mxcs <= min_mxcs:
-        max_mxcs = min_mxcs ^ max_mxcs
-        min_mxcs = min_mxcs ^ max_mxcs
-        max_mxcs = min_mxcs ^ max_mxcs
-
-    if "mxcs_pass" in config_dict and config_dict["mxcs_pass"] and config_dict["mxcs_pass"] > 0:
-        mxcs_pass = config_dict["mxcs_pass"]
-    else:
-        mxcs_pass = 3
-
-    if "mnrs" in config_dict and config_dict["mnrs"]:
-        mnrs = config_dict["mnrs"]
-    else:
-        mnrs = constants.DEFAULT_MIN_REGION_SIZE
-
-    if "mxrs" in config_dict and config_dict["mxrs"]:
-        mxrs = config_dict["mxrs"]
-    else:
-        mxrs = constants.DEFAULT_MAX_REGION_SIZE
-
-    if "nsml" in config_dict and config_dict["nsml"]:
-        nsml = config_dict["nsml"]
-    else:
-        nsml = False
-
-    if "dts" in config_dict and config_dict["dts"]:
-        dts = config_dict["dts"]
-    else:
-        dts = False
-
-    delta_et = (max_et - min_et) / (et_pass + 1)
-    delta_mxcs = (max_mxcs - min_mxcs) / (mxcs_pass + 1)
+    delta_et = (config_dict["max_et"] - config_dict["min_et"]) / (config_dict["et_pass"] + 1)
+    delta_mxcs =\
+        (config_dict["max_mxcs"] - config_dict["min_mxcs"]) / (config_dict["mxcs_pass"] + 1)
     input_stats = []
     asource = auditok.ADSFactory.ads(
         filename=audio_wav, record=True)
 
-    et_i = min_et + delta_et
-    while et_i < max_et:
-        mxcs_i = min_mxcs + delta_mxcs
-        while mxcs_i < max_mxcs:
+    et_i = config_dict["min_et"] + delta_et
+    while et_i < config_dict["max_et"]:
+        mxcs_i = config_dict["min_mxcs"] + delta_mxcs
+        while mxcs_i < config_dict["max_mxcs"]:
             input_stats.append(auditok_utils.AuditokSTATS(
                 energy_t=et_i,
                 mxcs=mxcs_i,
-                mnrs=mnrs,
-                mxrs=mxrs,
-                nsml=nsml,
-                dts=dts,
+                mnrs=config_dict["mnrs"],
+                mxrs=config_dict["mxrs"],
+                nsml=config_dict["nsml"],
+                dts=config_dict["dts"],
                 audio_wav=audio_wav
             ))
             mxcs_i = mxcs_i + delta_mxcs
@@ -164,6 +108,8 @@ def auditok_opt_opt(  # pylint: disable=too-many-locals, too-many-branches, too-
         pbar.finish()
         print(_("Best options for Auditok is:\n"
                 "mxcs = {mxcs}s\net = {et}").format(mxcs=result.mxcs, et=result.et))
+        config_dict["result_mxcs"] = result.mxcs
+        config_dict["result_et"] = result.et
         pool.terminate()
         pool.join()
         return result.events
@@ -176,14 +122,92 @@ def auditok_opt_opt(  # pylint: disable=too-many-locals, too-many-branches, too-
         return None
 
 
-def bulk_audio_conversion(  # pylint: disable=too-many-arguments
+def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals
+        audio_fragments,
+        events,
+        delta,
+        is_keep=False,
+        trim_size=constants.DEFAULT_MIN_REGION_SIZE,
+        energy_threshold=constants.DEFAULT_ENERGY_THRESHOLD,
+        min_region_size=constants.DEFAULT_MIN_REGION_SIZE,
+        max_region_size=constants.DEFAULT_MAX_REGION_SIZE,
+        max_continuous_silence=constants.DEFAULT_CONTINUOUS_SILENCE,
+        mode=auditok.StreamTokenizer.STRICT_MIN_LENGTH):
+    """
+    Give input audio fragments and trim the events.
+    """
+
+    widgets = [_("Trimming events: "),
+               progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(events)).start()
+    try:
+        i = 0
+        regions = []
+        for audio_fragment in audio_fragments:
+            regions.append(auditok_utils.auditok_gen_speech_regions(
+                audio_fragment,
+                energy_threshold,
+                min_region_size,
+                max_region_size,
+                max_continuous_silence,
+                mode))
+            gc.collect(0)
+
+        for region in regions:
+            if region:
+                if events[i].start > delta:
+                    start_delta = events[i].start - delta
+                else:
+                    start_delta = events[i].start
+                start = 0
+                end = 0
+                if len(region) > 1:
+                    if region[0][1] - region[0][0] <= trim_size:
+                        start = start_delta + region[1][0]
+                    if region[-1][1] - region[-1][0] <= trim_size:
+                        end = start_delta + region[-2][1]
+                if not end:
+                    end = start_delta + region[-1][1]
+                if not start:
+                    start = start_delta + region[0][0]
+                events[i].start = start
+                events[i].end = end
+            i = i + 1
+            pbar.update(i)
+
+        i = 0
+        events_len = len(events)
+        while i < events_len:
+            if i > 0:
+                if events[i].start < events[i - 1].end:
+                    events[i].start = events[i - 1].end
+            if i < events_len - 1:
+                if events[i].end > events[i + 1].start:
+                    events[i].end = events[i + 1].start
+            i = i + 1
+
+        if not is_keep:
+            for audio_fragment in audio_fragments:
+                os.remove(audio_fragment)
+
+        pbar.finish()
+
+    except KeyboardInterrupt:
+        pbar.finish()
+
+
+def bulk_audio_conversion(  # pylint: disable=too-many-arguments, too-many-locals
         source_file,
         regions,
         split_cmd,
         suffix,
         concurrency=constants.DEFAULT_CONCURRENCY,
         output=None,
-        is_keep=False):
+        is_keep=False,
+        include_before=0.0,
+        include_after=0.0):
     """
     Give an input audio/video file and
     generate short-term audio fragments.
@@ -199,7 +223,9 @@ def bulk_audio_conversion(  # pylint: disable=too-many-arguments
         cmd=split_cmd,
         suffix=suffix,
         output=output,
-        is_keep=is_keep)
+        is_keep=is_keep,
+        include_before=include_before,
+        include_after=include_after)
 
     print(_("\nConverting speech regions to short-term fragments."))
     widgets = [_("Converting: "),
@@ -878,7 +904,7 @@ class ManualTranslator:  # pylint: disable=too-few-public-methods
             trans_doc = open(trans_doc_name, encoding=constants.DEFAULT_ENCODING)
             trans_doc_str = trans_doc.read()
             trans_doc.close()
-        os.remove(self.trans_doc_name)
+        constants.delete_path(self.trans_doc_name)
         return googletrans.client.Translated(
             src=src, dest=dest, origin="manual",
             text=trans_doc_str, pronunciation="manual", extra_data="manual")

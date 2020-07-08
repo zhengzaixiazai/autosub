@@ -175,6 +175,15 @@ def main():  # pylint: disable=too-many-branches, too-many-statements, too-many-
                                         fps=fps,
                                         styles_list=None)
             else:
+                args.audio_split_cmd = \
+                    args.audio_split_cmd.replace(
+                        "[channel]",
+                        "{channel}".format(channel=args.api_audio_channel))
+                args.audio_split_cmd = \
+                    args.audio_split_cmd.replace(
+                        "[sample_rate]",
+                        "{sample_rate}".format(sample_rate=args.api_sample_rate))
+
                 cmdline_utils.sub_conversion(
                     args,
                     input_m=input_m,

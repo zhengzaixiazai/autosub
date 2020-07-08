@@ -18,6 +18,7 @@ try:
     IS_GOOGLECLOUDCLIENT = True
 except DistributionNotFound:
     IS_GOOGLECLOUDCLIENT = False
+from send2trash import send2trash
 
 try:
     import langcodes as langcodes_  # pylint: disable=unused-import
@@ -43,9 +44,11 @@ else:
 if sys.platform.startswith('win'):
     DEFAULT_ENCODING = "utf-8-sig"
     IS_UNIX = False
+    delete_path = send2trash
 else:
     DEFAULT_ENCODING = "utf-8"
     IS_UNIX = True
+    delete_path = os.remove
 
 LOCALE_PATH = os.path.abspath(os.path.join(APP_PATH, "data/locale"))
 

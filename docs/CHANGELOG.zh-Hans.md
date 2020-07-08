@@ -59,6 +59,7 @@
 - 添加sub_to_file方法在cmdline_utils.py中。
 - 添加复杂的行合并功能。
 - 添加Auditok选项优化功能。
+- 添加了send2trash，在某些情况下替代了os.remove。
 
 #### 改动(未发布)
 

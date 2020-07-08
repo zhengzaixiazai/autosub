@@ -57,6 +57,113 @@ def auditok_gen_speech_regions(  # pylint: disable=too-many-arguments
     return regions
 
 
+def validate_atrim_config(
+        trim_dict,
+        args=None):
+    """
+    Validate auditok trim config.
+    """
+    if "include_before" not in trim_dict or not trim_dict["include_before"]:
+        if not args:
+            trim_dict["include_before"] = constants.DEFAULT_CONTINUOUS_SILENCE
+        else:
+            trim_dict["include_before"] = args.max_continuous_silence
+
+    if "include_after" not in trim_dict or not trim_dict["include_after"]:
+        if not args:
+            trim_dict["include_after"] = constants.DEFAULT_CONTINUOUS_SILENCE
+        else:
+            trim_dict["include_after"] = args.max_continuous_silence
+
+    if "trim_size" not in trim_dict or not trim_dict["trim_size"]:
+        if not args:
+            trim_dict["trim_size"] = constants.DEFAULT_CONTINUOUS_SILENCE
+        else:
+            trim_dict["trim_size"] = args.max_continuous_silence
+
+    validate_auditok_config(trim_dict)
+
+
+def validate_auditok_config(
+        auditok_dict,
+        args=None):
+    """
+    Validate auditok config.
+    """
+    if "mxcs" not in auditok_dict or not auditok_dict["mxcs"]:
+        if not args:
+            auditok_dict["mxcs"] = constants.DEFAULT_CONTINUOUS_SILENCE
+        else:
+            auditok_dict["mxcs"] = args.max_continuous_silence
+
+    if "et" not in auditok_dict or not auditok_dict["et"]:
+        if not args:
+            auditok_dict["et"] = constants.DEFAULT_ENERGY_THRESHOLD
+        else:
+            auditok_dict["et"] = args.energy_threshold
+
+    if "mnrs" not in auditok_dict or not auditok_dict["mnrs"]:
+        if not args:
+            auditok_dict["mnrs"] = constants.DEFAULT_MIN_REGION_SIZE
+        else:
+            auditok_dict["mnrs"] = args.min_region_size
+
+    if "mxrs" not in auditok_dict or not auditok_dict["mxrs"]:
+        if not args:
+            auditok_dict["mxrs"] = constants.DEFAULT_MAX_REGION_SIZE
+        else:
+            auditok_dict["mxrs"] = args.max_region_size
+
+    if "nsml" not in auditok_dict or not auditok_dict["nsml"]:
+        if not args:
+            auditok_dict["nsml"] = False
+        else:
+            auditok_dict["nsml"] = args.not_strict_min_length
+
+    if "dts" not in auditok_dict or not auditok_dict["dts"]:
+        if not args:
+            auditok_dict["dts"] = False
+        else:
+            auditok_dict["dts"] = args.drop_trailing_silence
+
+
+def validate_astats_config(
+        astats_dict):
+    """
+    Validate auditok stats config.
+    """
+    if "max_et" not in astats_dict or not astats_dict["max_et"]:
+        astats_dict["max_et"] = 60
+
+    if "min_et" not in astats_dict or not astats_dict["min_et"]:
+        astats_dict["min_et"] = 45
+
+    if astats_dict["max_et"] <= astats_dict["min_et"]:
+        astats_dict["max_et"] = astats_dict["min_et"] ^ astats_dict["max_et"]
+        astats_dict["min_et"] = astats_dict["min_et"] ^ astats_dict["max_et"]
+        astats_dict["max_et"] = astats_dict["min_et"] ^ astats_dict["max_et"]
+
+    if "et_pass" not in astats_dict or not astats_dict["et_pass"] or astats_dict["et_pass"] <= 0:
+        astats_dict["et_pass"] = 3
+
+    if "max_mxcs" not in astats_dict or not astats_dict["max_mxcs"]:
+        astats_dict["max_mxcs"] = 0.2
+
+    if "min_mxcs" not in astats_dict or not astats_dict["min_mxcs"]:
+        astats_dict["min_mxcs"] = 0.05
+
+    if astats_dict["max_mxcs"] <= astats_dict["min_mxcs"]:
+        astats_dict["max_mxcs"] = astats_dict["min_mxcs"] ^ astats_dict["max_mxcs"]
+        astats_dict["min_mxcs"] = astats_dict["min_mxcs"] ^ astats_dict["max_mxcs"]
+        astats_dict["max_mxcs"] = astats_dict["min_mxcs"] ^ astats_dict["max_mxcs"]
+
+    if "mxcs_pass" not in astats_dict or not astats_dict["mxcs_pass"]\
+            or astats_dict["mxcs_pass"] <= 0:
+        astats_dict["mxcs_pass"] = 3
+
+    validate_auditok_config(astats_dict)
+
+
 class AuditokSTATS:  # pylint: disable=too-many-instance-attributes, too-many-arguments, too-few-public-methods
     """
     Class for storing auditok stats.

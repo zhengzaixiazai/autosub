@@ -116,12 +116,12 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "which provides \"ass\"/\"ssa\" styles for your output. "
                "If the arg_num is 0, "
                "it will use the styles from the : "
-               "\"-esr\"/\"--external-speech-regions\". "
+               "\"-er\"/\"--external-speech-regions\". "
                "More info on \"-sn\"/\"--styles-name\". "
                "(arg_num = 0 or 1)"))
 
     input_group.add_argument(
-        '-sn', '--styles-name',
+        '-sn', '--style-name',
         nargs='*', metavar=_('style_name'),
         help=_("Valid when your output format is \"ass\"/\"ssa\" "
                "and \"-sty\"/\"--styles\" is given. "
@@ -430,13 +430,14 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "(arg_num = 0)"))
 
     conversion_group.add_argument(
-        '-ctl', '--control-list',
+        '-jctl', '--join-control',
         metavar=_('string'),
         nargs='*',
         help=_("Control the way to join events when using vtt. "
-               "Key tag choice: [\"\\k\", \"\\ko\", \"\\kf\"]. "
-               "Events manual adjustment: \"man\". "
-               "Auto capitalization and full stop: \"cap\". "
+               "Key tag choice: [\"\\k\", \"\\ko\", \"\\kf\", (None)] (default: None). "
+               "Events manual adjustment: [\"man\", \"semi-auto\", \"auto\"] (default: man). "
+               "Auto capitalization and full stop: [\"cap\", (None)] (default: None). "
+               "Trim regions after processing: [\"trim\", (None)] (default: None). "
                "(arg_num >= 1)"))
 
     network_group.add_argument(

@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import gc
 import json
+import copy
 
 # Import third-party modules
 import auditok
@@ -131,19 +132,19 @@ def validate_io(  # pylint: disable=too-many-branches, too-many-statements
                 _("Error: arg of \"-sty\"/\"--styles\": \"{path}\" isn't valid. "
                   "You need to give a valid path.").format(path=args.styles))
 
-        if args.styles_name:
-            if len(args.styles_name) > 2:
+        if args.style_name:
+            if len(args.style_name) > 2:
                 raise exceptions.AutosubException(
                     _("Error: Too many \"-sn\"/\"--styles-name\" arguments."))
 
             style_obj = pysubs2.SSAFile.load(args.styles)
-            ass_styles = style_obj.styles.get(args.styles_name[0])
+            ass_styles = style_obj.styles.get(args.style_name[0])
             if ass_styles:
-                styles_dict = {args.styles_name[0]: ass_styles}
-                if len(args.styles_name) == 2:
-                    ass_styles = style_obj.styles.get(args.styles_name[1])
+                styles_dict = {args.style_name[0]: ass_styles}
+                if len(args.style_name) == 2:
+                    ass_styles = style_obj.styles.get(args.style_name[1])
                     if ass_styles:
-                        styles_dict[args.styles_name[1]] = ass_styles
+                        styles_dict[args.style_name[1]] = ass_styles
                     else:
                         raise exceptions.AutosubException(
                             _("Error: \"-sn\"/\"--styles-name\" "
@@ -660,6 +661,32 @@ def get_timed_text(
     return timed_text
 
 
+def events_to_regions(
+        events
+):
+    """
+    From events to regions.
+    """
+    regions = []
+    for event in events:
+        regions.append((event.start, event.end))
+    return regions
+
+
+def regions_to_events(
+        regions,
+        events,
+):
+    """
+    From regions to events.
+    """
+    i = 0
+    for region in regions:
+        events[i].start = region[0]
+        events[i].end = region[1]
+        i = i + 1
+
+
 def sub_to_file(
         name_tail,
         args,
@@ -702,9 +729,18 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
     """
     if args.input.endswith('vtt'):
         src_sub = sub_utils.YTBWebVTT.from_file(args.input)
+        if not src_sub.vtt_words:
+            raise exceptions.AutosubException(_("\nError: Input WebVTT file is invalid."))
         args.output_files = {"join-events"}
     else:
         src_sub = pysubs2.SSAFile.load(args.input)
+
+    mode = 0
+    if not args.not_strict_min_length:
+        mode = auditok.StreamTokenizer.STRICT_MIN_LENGTH
+    if args.drop_trailing_silence:
+        mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
+
     try:
         args.output_files.remove("dst-lf-src")
         new_sub = sub_utils.merge_bilingual_assfile(
@@ -763,59 +799,117 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
         else:
             stop_words_set_2 = constants.DEFAULT_ENGLISH_STOP_WORDS_SET_2
 
-        if args.ext_regions:
-            ext_name = os.path.splitext(args.ext_regions)
-            ext_ext = ext_name[-1]
-            ext_fmt = ext_ext.strip('.')
-            if ext_fmt not in constants.INPUT_FORMAT:
-                print(_("External regions file is a video or audio file."))
-                if ext_fmt != ".wav":
-                    audio_wav = convert_wav(
-                        input_=args.ext_regions,
-                        conversion_cmd=args.audio_conversion_cmd,
-                        output_=args.output,
-                        keep=args.keep
-                    )
-                else:
-                    audio_wav = args.ext_regions
-                print(_("Conversion completed.\nUse Auditok to detect speech regions."))
-                if args.auditok_config is not None:
-                    ass_events = core.auditok_opt_opt(config_dict=args.auditok_config,
-                                                      audio_wav=audio_wav,
-                                                      concurrency=args.audio_concurrency)
-                else:
-                    mode = 0
-                    if not args.not_strict_min_length:
-                        mode = auditok.StreamTokenizer.STRICT_MIN_LENGTH
-                    if args.drop_trailing_silence:
-                        mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
-                    ass_events = auditok_utils.auditok_gen_speech_regions(
-                        audio_wav=audio_wav,
-                        energy_threshold=args.energy_threshold,
-                        min_region_size=args.min_region_size,
-                        max_region_size=args.max_region_size,
-                        max_continuous_silence=args.max_continuous_silence,
-                        mode=mode,
-                        is_ssa_event=True)
+        if args.join_control:
+            args.join_control = set(args.join_control)
+        else:
+            args.join_control = {}
 
-                gc.collect(0)
-                print(_("Auditok detection completed."))
-                if not args.keep and audio_wav != args.ext_regions:
-                    os.remove(audio_wav)
-                    print(_("\"{name}\" has been deleted.").format(name=audio_wav))
-
-            else:
-                ext_ass = pysubs2.SSAFile.load(args.ext_regions)
-                ass_events = ext_ass.events
-
+        if args.input.endswith('vtt'):
             new_sub = pysubs2.SSAFile()
-            new_sub.events = src_sub.to_ass_events(
-                events=ass_events,
-                stop_words_set_1=stop_words_set_1,
-                stop_words_set_2=stop_words_set_2,
-                control_list=args.control_list,
-                text_limit=args.max_join_size,
-                avoid_split=args.dont_split)
+            if not args.ext_regions:
+                print(_("External audio/video regions is not provided. Use manual method instead."))
+                args.join_control = args.join_control | {"man"}
+                args.join_control = args.join_control - {"trim"}
+
+            if args.styles:
+                style_sub = pysubs2.SSAFile.load(args.styles)
+                new_sub.styles = style_sub.styles
+
+            if "man" not in args.join_control:
+                args.join_control = args.join_control = args.join_control | {"auto"}
+            try:
+                args.join_control.remove("semi-auto")
+                args.join_control = args.join_control | {"auto", "man"}
+            except KeyError:
+                pass
+
+            try:
+                args.join_control.remove("auto")
+                # get ass events from external regions
+                ext_name = os.path.splitext(args.ext_regions)
+                ext_ext = ext_name[-1]
+                ext_fmt = ext_ext.strip('.')
+                if ext_fmt not in constants.INPUT_FORMAT:
+                    print(_("External regions file is a video or audio file."))
+                    if ext_fmt != ".wav":
+                        audio_wav = convert_wav(
+                            input_=args.ext_regions,
+                            conversion_cmd=args.audio_conversion_cmd,
+                            output_=args.output,
+                            keep=args.keep
+                        )
+                    else:
+                        audio_wav = args.ext_regions
+                    print(_("Conversion completed.\nUse Auditok to detect speech regions."))
+                    if args.auditok_config is not None and "astats" in args.auditok_config:
+                        astats = args.auditok_config["astats"]
+                        ass_events = core.auditok_opt_opt(config_dict=astats,
+                                                          audio_wav=audio_wav,
+                                                          concurrency=args.audio_concurrency)
+                        args.max_continuous_silence = astats["result_mxcs"]
+                        args.energy_threshold = astats["result_et"]
+                    else:
+                        ass_events = auditok_utils.auditok_gen_speech_regions(
+                            audio_wav=audio_wav,
+                            energy_threshold=args.energy_threshold,
+                            min_region_size=args.min_region_size,
+                            max_region_size=args.max_region_size,
+                            max_continuous_silence=args.max_continuous_silence,
+                            mode=mode,
+                            is_ssa_event=True)
+
+                    gc.collect(0)
+                    print(_("Auditok detection completed."))
+                    if not args.keep and audio_wav != args.ext_regions:
+                        os.remove(audio_wav)
+                        print(_("\"{name}\" has been deleted.").format(name=audio_wav))
+
+                else:
+                    args.join_control = args.join_control - {"trim"}
+                    ext_ass = pysubs2.SSAFile.load(args.ext_regions)
+                    ass_events = ext_ass.events
+
+                src_sub_backup = copy.deepcopy(src_sub)
+                new_sub.events = src_sub.auto_get_vtt_words_index(
+                    events=ass_events,
+                    stop_words_set_1=stop_words_set_1,
+                    stop_words_set_2=stop_words_set_2,
+                    text_limit=args.max_join_size,
+                    avoid_split=args.dont_split)
+
+                if not new_sub.events:
+                    print(_("External regions are not enough.\n"
+                            "Use manual method instead."))
+                    args.join_control = args.join_control | {"man"}
+                    del src_sub
+                    src_sub = src_sub_backup
+                else:
+                    del src_sub_backup
+
+            except KeyError:
+                pass
+
+            try:
+                args.join_control.remove("man")
+                new_sub.events = src_sub.man_get_vtt_words_index()
+            except KeyError:
+                pass
+
+            if r"\k" in args.join_control:
+                key_tag = r"\k"
+            elif r"\kf" in args.join_control:
+                key_tag = r"\kf"
+            elif r"\ko" in args.join_control:
+                key_tag = r"\ko"
+            else:
+                key_tag = ""
+            if not args.style_name:
+                args.style_name = ["default"]
+            src_sub.text_to_ass_events(
+                events=new_sub.events,
+                key_tag=key_tag,
+                style_name=args.style_name[0],
+                is_cap="cap" in args.join_control)
 
         else:
             new_sub = pysubs2.SSAFile()
@@ -828,6 +922,43 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
                 stop_words_set_2=stop_words_set_2,
                 avoid_split=args.dont_split
             )
+
+        try:
+            args.join_control.remove("trim")
+            regions = events_to_regions(new_sub.events)
+            if args.auditok_config is not None and "trim" in args.auditok_config:
+                trim_dict = args.auditok_config["trim"]
+            else:
+                trim_dict = {}
+            auditok_utils.validate_atrim_config(trim_dict, args)
+            mode = 0
+            if not trim_dict["nsml"]:
+                mode = auditok.StreamTokenizer.STRICT_MIN_LENGTH
+            if trim_dict["dts"]:
+                mode = mode | auditok.StreamTokenizer.DROP_TRAILING_SILENCE
+            audio_fragments = core.bulk_audio_conversion(
+                source_file=args.ext_regions,
+                output=args.output,
+                regions=regions,
+                split_cmd=args.audio_split_cmd,
+                suffix=".wav",
+                concurrency=args.audio_concurrency,
+                is_keep=args.keep,
+                include_before=trim_dict["include_before"],
+                include_after=trim_dict["include_after"])
+            gc.collect(0)
+            core.trim_audio_regions(
+                audio_fragments=audio_fragments,
+                events=new_sub.events,
+                delta=int(trim_dict["include_before"] * 1000),
+                trim_size=int(trim_dict["trim_size"] * 1000),
+                energy_threshold=trim_dict["et"],
+                min_region_size=trim_dict["mnrs"],
+                max_region_size=trim_dict["mxrs"],
+                max_continuous_silence=trim_dict["mxcs"],
+                mode=mode)
+        except KeyError:
+            pass
 
         subtitles_file_path = sub_to_file(
             name_tail="join",

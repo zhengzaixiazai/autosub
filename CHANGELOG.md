@@ -61,6 +61,7 @@ Click up arrow to go back to TOC.
 - Add method sub_to_file in cmdline_utils.py.
 - Add complex join-events functions.
 - Add Auditok options optimization.
+- Add send2trash instead of os.remove in some cases.
 
 #### Changed(Unreleased)
 
