@@ -162,6 +162,7 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
         subs.path = path
         last_timestamp = None
         last_speed = 10
+        j = 0
         with open(path, encoding=encoding) as file_p:
             is_content_outside_angle = True
             word = ""
@@ -398,7 +399,7 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                             if self.vtt_words[j].start < self.vtt_words[j + 1].start:
                                 self.vtt_words[j].end = self.vtt_words[j + 1].start
                             else:
-                                delta =\
+                                delta = \
                                     (self.vtt_words[j + 1].end - self.vtt_words[j].start) >> 1
                                 self.vtt_words[j].end = delta + self.vtt_words[j].start
                                 self.vtt_words[j + 1].start = delta + self.vtt_words[j].end
@@ -941,6 +942,7 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
     style_events = {}
 
     for event in subtitles.events:
+        event.text = event.text.replace("\\N", " ")
         if event.style not in style_events:
             style_events[event.style] = [event]
         else:
@@ -959,7 +961,6 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
     split_count = 0
 
     new_ssafile.events.append(temp_ssafile.events[0])
-    new_ssafile.events[-1].text = new_ssafile.events[-1].text.replace("\\N", " ")
 
     while event_count < sub_length:
         if not new_ssafile.events[-1].is_comment \
@@ -969,8 +970,6 @@ def merge_src_assfile(  # pylint: disable=too-many-locals, too-many-nested-block
                 - new_ssafile.events[-1].end < max_delta_time \
                 and new_ssafile.events[-1].text.rstrip(" ")[-1] not in delimiters \
                 and temp_ssafile.events[event_count].text.lstrip(" ")[0] not in delimiters:
-            temp_ssafile.events[event_count].text =\
-                temp_ssafile.events[event_count].text.replace("\\N", " ")
             if len(new_ssafile.events[-1].text) + \
                     len(temp_ssafile.events[event_count].text) < max_join_size:
                 new_ssafile.events[-1].end = temp_ssafile.events[event_count].end

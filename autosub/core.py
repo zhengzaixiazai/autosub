@@ -126,6 +126,7 @@ def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals, 
         audio_fragments,
         events,
         delta,
+        max_speed,
         is_keep=False,
         trim_size=constants.DEFAULT_MIN_REGION_SIZE,
         energy_threshold=constants.DEFAULT_ENERGY_THRESHOLD,
@@ -163,6 +164,7 @@ def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals, 
                     start_delta = events[i].start
                 start = 0
                 end = 0
+                speed = len(events[i].text) * 1000 // (events[i].end - events[i].start)
                 if len(region) > 1:
                     if region[0][1] - region[0][0] <= trim_size:
                         start = start_delta + region[1][0]
@@ -172,8 +174,14 @@ def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals, 
                     end = start_delta + region[-1][1]
                 if not start:
                     start = start_delta + region[0][0]
-                events[i].start = start
-                events[i].end = end
+                new_speed = len(events[i].text) * 1000 // (end - start)
+                if speed < new_speed:
+                    if speed < max_speed:
+                        events[i].start = start
+                        events[i].end = end
+                    else:
+                        events[i].start = (start + events[i].start) >> 1
+                        events[i].end = (end + events[i].end) >> 1
             i = i + 1
             pbar.update(i)
 

@@ -63,6 +63,7 @@ Click up arrow to go back to TOC.
 - Add Auditok options optimization.
 - Add send2trash instead of os.remove in some cases.
 - Add word check in method man_get_vtt_words_index.
+- Add speed limit in trim in join-events.
 
 #### Changed(Unreleased)
 

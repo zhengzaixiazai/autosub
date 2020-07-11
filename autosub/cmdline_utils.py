@@ -734,6 +734,10 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
         args.output_files = {"join-events"}
     else:
         src_sub = pysubs2.SSAFile.load(args.input)
+        if args.styles:
+            style_sub = pysubs2.SSAFile.load(args.styles)
+            src_sub.styles = style_sub.styles
+            src_sub.info = style_sub.info
 
     mode = 0
     if not args.not_strict_min_length:
@@ -802,7 +806,7 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
         if args.join_control:
             args.join_control = set(args.join_control)
         else:
-            args.join_control = {}
+            args.join_control = set()
 
         if args.input.endswith('vtt'):
             new_sub = pysubs2.SSAFile()
@@ -814,6 +818,7 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
             if args.styles:
                 style_sub = pysubs2.SSAFile.load(args.styles)
                 new_sub.styles = style_sub.styles
+                new_sub.info = style_sub.info
 
             if "man" not in args.join_control:
                 args.join_control = args.join_control = args.join_control | {"auto"}
@@ -950,6 +955,7 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
             core.trim_audio_regions(
                 audio_fragments=audio_fragments,
                 events=new_sub.events,
+                max_speed=trim_dict["max_speed"],
                 delta=int(trim_dict["include_before"] * 1000),
                 trim_size=int(trim_dict["trim_size"] * 1000),
                 energy_threshold=trim_dict["et"],
@@ -1055,7 +1061,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=bilingual_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[2])
+                style_name=styles_list[1])
         else:
             sub_utils.pysubs2_ssa_event_add(
                 src_ssafile=bilingual_sub,
@@ -1094,7 +1100,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[2],
+                style_name=styles_list[1],
                 same_event_type=1)
         else:
             sub_utils.pysubs2_ssa_event_add(
@@ -1137,7 +1143,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=bilingual_sub,
                 text_list=translated_text,
-                style_name=styles_list[2],
+                style_name=styles_list[1],
                 same_event_type=2)
         else:
             sub_utils.pysubs2_ssa_event_add(
@@ -1176,7 +1182,7 @@ def sub_trans(  # pylint: disable=too-many-branches, too-many-statements, too-ma
                 src_ssafile=src_sub,
                 dst_ssafile=dst_sub,
                 text_list=translated_text,
-                style_name=styles_list[2])
+                style_name=styles_list[1])
         else:
             sub_utils.pysubs2_ssa_event_add(
                 src_ssafile=src_sub,

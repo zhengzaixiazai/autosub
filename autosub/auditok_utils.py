@@ -81,6 +81,9 @@ def validate_atrim_config(
         else:
             trim_dict["trim_size"] = args.max_continuous_silence
 
+    if "max_speed" not in trim_dict or not trim_dict["max_speed"]:
+        trim_dict["max_speed"] = 18
+
     validate_auditok_config(trim_dict)
 
 
