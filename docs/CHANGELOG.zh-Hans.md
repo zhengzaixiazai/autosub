@@ -73,6 +73,7 @@
 - 修复不输入`-D`选项时的问题。
 - 修复args.audio_split_cmd替换问题当使用`-ap`参数时。[issue #122](https://github.com/BingLingGroup/autosub/issues/122)
 - 修复选项`--user-agent`的默认值问题。[issue #127](https://github.com/BingLingGroup/autosub/issues/127)
+- 修复vtt读取不到每行最后一个词的问题，在方法YTBWebVTT.from_file中。
 
 ### [0.5.7-alpha] - 2020-05-06
 

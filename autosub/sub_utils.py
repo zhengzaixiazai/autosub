@@ -88,7 +88,10 @@ class VTTWord:  # pylint: disable=too-few-public-methods
         """
         Subtitle speed in char per second (read property).
         """
-        return len(self.word) * 1000 // (self.end - self.start)
+        speed = len(self.word) * 1000 // (self.end - self.start)
+        if not speed:
+            speed = 1
+        return speed
 
 
 def find_split_vtt_word(
@@ -161,52 +164,74 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
         subs = cls()
         subs.path = path
         last_timestamp = None
-        last_speed = 10
         j = 0
-        with open(path, encoding=encoding) as file_p:
-            is_content_outside_angle = True
-            word = ""
-            for line in file_p:
-                line = line.rstrip()
-                if not line:
-                    continue
-                stamps = constants.VTT_TIMESTAMP.findall(line)
-                if len(stamps) == 1 and len(stamps[0]) == 2:
-                    # youtube WebVTT sentence timestamp line
-                    last_timestamp = pysubs2.time.TIMESTAMP.findall(stamps[0][0])[0]
+        file_p = open(path, encoding=encoding)
+        line_list = file_p.readlines()
+        line_list = line_list[4:]
+        file_p.close()
+        is_content_outside_angle = True
+        word = ""
+        for line in line_list:
+            line = line.rstrip()
+            if not line:
+                continue
+            stamps = constants.VTT_TIMESTAMP.findall(line)
+            if len(stamps) == 1 and len(stamps[0]) == 2:
+                # youtube WebVTT sentence timestamp line
+                last_timestamp = pysubs2.time.TIMESTAMP.findall(stamps[0][0])[0]
+            else:
+                stamps = constants.VTT_WORD_TIMESTAMP.findall(line)
+                if stamps:  # youtube WebVTT word-level timestamp
+                    stamps.insert(0, last_timestamp)
+                    stamp_ms = []
+                    for stamp in stamps:
+                        stamp_ms.append(pysubs2.time.timestamp_to_ms(stamp))
+                    if subs.vtt_words:
+                        subs.vtt_words[-1].end = stamp_ms[0]
+                    try:
+                        # todo2: need regex
+                        j = 0
+                        for char in line:
+                            if char == '>':
+                                is_content_outside_angle = True
+                                continue
+                            if char == '<':
+                                is_content_outside_angle = False
+                                if word:
+                                    start = stamp_ms[j]
+                                    subs.vtt_words.append(VTTWord(
+                                        word=word.lstrip().rstrip(), start=start))
+                                    if j < len(stamp_ms) - 1:
+                                        subs.vtt_words[-1].end = stamp_ms[j + 1]
+                                    j = j + 1
+                                    word = ""
+                                continue
+                            if is_content_outside_angle:
+                                word = word + char
+                    except ValueError:
+                        pass
                 else:
-                    stamps = constants.VTT_WORD_TIMESTAMP.findall(line)
-                    if stamps:  # youtube WebVTT word-level timestamp
-                        stamps.insert(0, last_timestamp)
-                        stamp_ms = []
-                        for stamp in stamps:
-                            stamp_ms.append(pysubs2.time.timestamp_to_ms(stamp))
+                    text = line.split()
+                    if len(text) == 1:
                         if subs.vtt_words:
-                            subs.vtt_words[-1].end = stamp_ms[0]
-                        try:
-                            # todo2: need regex
-                            j = 0
-                            for char in line:
-                                if char == '>':
-                                    is_content_outside_angle = True
-                                    continue
-                                if char == '<':
-                                    is_content_outside_angle = False
-                                    if word:
-                                        start = stamp_ms[j]
-                                        subs.vtt_words.append(VTTWord(
-                                            word=word.lstrip().rstrip(), start=start))
-                                        if j < len(stamp_ms) - 1:
-                                            subs.vtt_words[-1].end = stamp_ms[j + 1]
-                                        j = j + 1
-                                        word = ""
-                                    continue
-                                if is_content_outside_angle:
-                                    word = word + char
-                        except ValueError:
-                            pass
+                            if text[0] != subs.vtt_words[-1].word:
+                                vtt_word = VTTWord(word=text[0].lstrip().rstrip())
+                                if not subs.vtt_words[-1].end:
+                                    subs.vtt_words[-1].end = \
+                                        pysubs2.time.timestamp_to_ms(last_timestamp)
+                                vtt_word.start = subs.vtt_words[-1].end
+                                vtt_word.duration = \
+                                    len(vtt_word.word) * 1000 // subs.vtt_words[-1].speed
+                                subs.vtt_words.append(vtt_word)
+                        else:
+                            vtt_word = VTTWord(word=text[0].lstrip().rstrip())
+                            vtt_word.start = pysubs2.time.timestamp_to_ms(last_timestamp)
+                            vtt_word.duration = len(vtt_word.word) * 1000 // 10
+                            subs.vtt_words.append(vtt_word)
         if len(subs.vtt_words) > 1:
             last_speed = subs.vtt_words[-2].speed
+        else:
+            last_speed = 10
         subs.vtt_words[-1].duration = len(subs.vtt_words[-j].word) * 1000 // last_speed
         return subs
 
@@ -363,7 +388,7 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                 k = k + 1
             if not is_paused:
                 break
-        constants.delete_path(path)
+        constants.DELETE_PATH(path)
         return events
 
     def auto_get_vtt_words_index(self,

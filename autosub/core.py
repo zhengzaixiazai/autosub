@@ -912,7 +912,7 @@ class ManualTranslator:  # pylint: disable=too-few-public-methods
             trans_doc = open(trans_doc_name, encoding=constants.DEFAULT_ENCODING)
             trans_doc_str = trans_doc.read()
             trans_doc.close()
-        constants.delete_path(self.trans_doc_name)
+        constants.DELETE_PATH(self.trans_doc_name)
         return googletrans.client.Translated(
             src=src, dest=dest, origin="manual",
             text=trans_doc_str, pronunciation="manual", extra_data="manual")

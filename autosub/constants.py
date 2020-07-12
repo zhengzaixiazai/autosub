@@ -44,11 +44,11 @@ else:
 if sys.platform.startswith('win'):
     DEFAULT_ENCODING = "utf-8-sig"
     IS_UNIX = False
-    delete_path = send2trash
+    DELETE_PATH = send2trash
 else:
     DEFAULT_ENCODING = "utf-8"
     IS_UNIX = True
-    delete_path = os.remove
+    DELETE_PATH = os.remove
 
 LOCALE_PATH = os.path.abspath(os.path.join(APP_PATH, "data/locale"))
 

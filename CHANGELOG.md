@@ -75,6 +75,7 @@ Click up arrow to go back to TOC.
 - Fix the issue when not input the `-D` option.
 - Fix args.audio_split_cmd replacement issue when using option `-ap`. [issue #122](https://github.com/BingLingGroup/autosub/issues/122)
 - Fix default value issue with option `--user-agent`. [issue #127](https://github.com/BingLingGroup/autosub/issues/127)
+- Fix last word in line not reading in method YTBWebVTT.from_file.
 
 ### [0.5.7-alpha] - 2020-05-06
 
