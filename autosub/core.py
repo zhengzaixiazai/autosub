@@ -144,7 +144,6 @@ def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals, 
                progressbar.ETA()]
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(events)).start()
     try:
-        i = 0
         regions = []
         for audio_fragment in audio_fragments:
             regions.append(auditok_utils.auditok_gen_speech_regions(
@@ -156,8 +155,9 @@ def trim_audio_regions(  # pylint: disable=too-many-arguments, too-many-locals, 
                 mode))
             gc.collect(0)
 
+        i = 0
         for region in regions:
-            if region:
+            if region and events[i].end > events[i].start:
                 if events[i].start > delta:
                     start_delta = events[i].start - delta
                 else:

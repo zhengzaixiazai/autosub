@@ -64,6 +64,7 @@ Click up arrow to go back to TOC.
 - Add send2trash instead of os.remove in some cases.
 - Add word check in method man_get_vtt_words_index.
 - Add speed limit in trim in join-events.
+- Add method split_dst_lf_src_assfile to split bilingual subtitles file's events.
 
 #### Changed(Unreleased)
 

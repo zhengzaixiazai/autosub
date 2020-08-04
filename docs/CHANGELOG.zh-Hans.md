@@ -62,6 +62,7 @@
 - 添加了send2trash，在某些情况下替代了os.remove。
 - 添加字词检查在man_get_vtt_words_index。
 - 添加速度限制在trim在join-events中。
+- 添加split_dst_lf_src_assfile方法来分离同行双语字幕。
 
 #### 改动(未发布)
 

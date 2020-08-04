@@ -739,6 +739,8 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
             src_sub.styles = style_sub.styles
             src_sub.info = style_sub.info
 
+    new_sub = None
+
     mode = 0
     if not args.not_strict_min_length:
         mode = auditok.StreamTokenizer.STRICT_MIN_LENGTH
@@ -782,6 +784,53 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
         )
         # subtitles string to file
         print(_("\"src-lf-dst\" subtitles file "
+                "created at \"{}\".").format(subtitles_file_path))
+
+        if not args.output_files:
+            raise exceptions.AutosubException(_("\nAll works done."))
+
+    except KeyError:
+        pass
+
+    try:
+        args.output_files.remove("bilingual")
+        new_sub = sub_utils.split_dst_lf_src_assfile(
+            subtitles=src_sub,
+            style_name=args.style_name
+        )
+        subtitles_file_path = sub_to_file(
+            name_tail="split",
+            args=args,
+            ssafile=new_sub,
+            input_m=input_m,
+            fps=fps
+        )
+        # subtitles string to file
+        print(_("\"bilingual\" subtitles file "
+                "created at \"{}\".").format(subtitles_file_path))
+
+        if not args.output_files:
+            raise exceptions.AutosubException(_("\nAll works done."))
+
+    except KeyError:
+        pass
+
+    try:
+        args.output_files.remove("bilingual-2")
+        new_sub = sub_utils.split_dst_lf_src_assfile(
+            subtitles=src_sub,
+            order=0,
+            style_name=args.style_name
+        )
+        subtitles_file_path = sub_to_file(
+            name_tail="split.2",
+            args=args,
+            ssafile=new_sub,
+            input_m=input_m,
+            fps=fps
+        )
+        # subtitles string to file
+        print(_("\"bilingual-2\" subtitles file "
                 "created at \"{}\".").format(subtitles_file_path))
 
         if not args.output_files:
@@ -930,7 +979,10 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
 
         try:
             args.join_control.remove("trim")
-            regions = events_to_regions(new_sub.events)
+            if new_sub:
+                regions = events_to_regions(new_sub.events)
+            else:
+                regions = events_to_regions(src_sub.events)
             if args.auditok_config is not None and "trim" in args.auditok_config:
                 trim_dict = args.auditok_config["trim"]
             else:
@@ -957,6 +1009,7 @@ def sub_conversion(  # pylint: disable=too-many-branches, too-many-statements, t
                 events=new_sub.events,
                 max_speed=trim_dict["max_speed"],
                 delta=int(trim_dict["include_before"] * 1000),
+                is_keep=args.keep,
                 trim_size=int(trim_dict["trim_size"] * 1000),
                 energy_threshold=trim_dict["et"],
                 min_region_size=trim_dict["mnrs"],
