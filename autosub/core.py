@@ -713,6 +713,7 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
     if not text_list:
         return None
 
+    translated_text = []
     size = 0
     i = 0
     partial_index = []
@@ -757,8 +758,8 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
         partial_index.append(i)
         # python sequence
         # every group's end index
-    else:
-        return None
+    elif not partial_index:
+        return translated_text, src_language
 
     len_valid_index = len(valid_index)
 
@@ -783,7 +784,6 @@ def list_to_googletrans(  # pylint: disable=too-many-locals, too-many-arguments,
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=i).start()
 
     try:
-        translated_text = []
         i = 0
         # total position
         j = 0
