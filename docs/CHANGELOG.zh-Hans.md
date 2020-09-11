@@ -76,6 +76,7 @@
 - 修复选项`--user-agent`的默认值问题。[issue #127](https://github.com/BingLingGroup/autosub/issues/127)
 - 修复vtt读取不到每行最后一个词的问题，在方法YTBWebVTT.from_file中。
 - 修复list_to_googletrans中错误的返回值。[issue #136](https://github.com/BingLingGroup/autosub/issues/136)
+- 修复youtube vtt多个单词共用一个时间戳问题。
 
 ### [0.5.7-alpha] - 2020-05-06
 

@@ -88,12 +88,41 @@ class VTTWord:  # pylint: disable=too-few-public-methods
     @property
     def speed(self):
         """
-        Subtitle speed in char per second (read property).
+        Subtitle speed in char per second (read/write property).
         """
-        speed = len(self.word) * 1000 // (self.end - self.start)
-        if not speed:
-            speed = 1
+        if self.end > self.start and self.word:
+            speed = len(self.word) * 1000 // (self.end - self.start)
+        else:
+            speed = 10
         return speed
+
+    @speed.setter
+    def speed(self, char_per_sec):
+        if char_per_sec <= 0:
+            char_per_sec = 10
+        self.duration = len(self.word) * 1000 // char_per_sec
+
+
+def split_vtt_word(vtt_word):
+    """
+    Strip space in word and return a list of VTTWord
+    """
+    word_list = vtt_word.word.split()
+    vtt_word_list = []
+    if len(word_list) > 1:
+        start = vtt_word.start
+        end = vtt_word.end
+        if end == 0:
+            vtt_word.speed = 10
+        for sub_word in word_list[:-1]:
+            temp = int(len(sub_word) / vtt_word.speed * 1000)
+            vtt_word_list.append(VTTWord(start=start, end=temp, word=sub_word))
+            start = temp
+        vtt_word_list.append(VTTWord(start=start, end=end, word=word_list[-1]))
+    else:
+        vtt_word_list.append(vtt_word)
+
+    return vtt_word_list
 
 
 def find_split_vtt_word(
@@ -201,10 +230,12 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                                 is_content_outside_angle = False
                                 if word:
                                     start = stamp_ms[j]
-                                    subs.vtt_words.append(VTTWord(
-                                        word=word.lstrip().rstrip(), start=start))
                                     if j < len(stamp_ms) - 1:
-                                        subs.vtt_words[-1].end = stamp_ms[j + 1]
+                                        end = stamp_ms[j + 1]
+                                    else:
+                                        end = 0
+                                    subs.vtt_words.extend(split_vtt_word(VTTWord(
+                                        word=word.lstrip().rstrip(), start=start, end=end)))
                                     j = j + 1
                                     word = ""
                                 continue
@@ -222,19 +253,18 @@ class YTBWebVTT:  # pylint: disable=too-many-nested-blocks, too-many-branches, t
                                     subs.vtt_words[-1].end = \
                                         pysubs2.time.timestamp_to_ms(last_timestamp)
                                 vtt_word.start = subs.vtt_words[-1].end
-                                vtt_word.duration = \
-                                    len(vtt_word.word) * 1000 // subs.vtt_words[-1].speed
+                                vtt_word.speed = subs.vtt_words[-1].speed
                                 subs.vtt_words.append(vtt_word)
                         else:
                             vtt_word = VTTWord(word=text[0].lstrip().rstrip())
                             vtt_word.start = pysubs2.time.timestamp_to_ms(last_timestamp)
-                            vtt_word.duration = len(vtt_word.word) * 1000 // 10
+                            vtt_word.speed = 10
                             subs.vtt_words.append(vtt_word)
         if len(subs.vtt_words) > 1:
             last_speed = subs.vtt_words[-2].speed
         else:
             last_speed = 10
-        subs.vtt_words[-1].duration = len(subs.vtt_words[-j].word) * 1000 // last_speed
+        subs.vtt_words[-1].speed = last_speed
         return subs
 
     def text_to_ass_events(self,
