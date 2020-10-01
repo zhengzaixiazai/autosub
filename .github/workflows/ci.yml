@@ -1,0 +1,65 @@
+name: autosub
+
+on:
+  push:
+    branches:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+
+      -
+        name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      -
+        name: build
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+          autosub -h
+
+      -
+        name: pylint check
+        continue-on-error: true
+        run: |
+          pip install pylint
+          pylint autosub
+
+      -
+        name: prepare test environment
+        run: |
+          apt update
+          apt install -y ffmpeg
+          pip install -U ffmpeg-normalize langcodes youtube-dl
+
+      -
+        name: prepare test file
+        run: |
+          youtube-dl -f 134+140 FhPI5lbyz-I -o video.mp4
+          ffmpeg -ss 00:02:20 -i video.mp4 -to 00:02:00 -c copy test.mp4 && rm video.mp4
+
+      -
+        name: test autosub
+        timeout-minutes: 5
+        run: |
+          autosub -i test.aac -S en
+
+      -
+        uses: actions/upload-artifact@v2
+        with:
+          name: result
+          path: test*
