@@ -14,7 +14,7 @@ from pkg_resources import DistributionNotFound
 
 # Import third-party modules
 try:
-    from google.cloud.speech_v1p1beta1 import enums  # pylint: disable=unused-import
+    from google.cloud.speech_v1p1beta1 import RecognitionConfig  # pylint: disable=unused-import
     IS_GOOGLECLOUDCLIENT = True
 except DistributionNotFound:
     IS_GOOGLECLOUDCLIENT = False

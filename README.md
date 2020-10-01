@@ -96,7 +96,7 @@ For windows user:
 
 #### Required dependencies
 
-- [auditok 0.1.5](https://github.com/amsehili/auditok)
+- [auditok](https://github.com/amsehili/auditok)
 - [pysubs2](https://github.com/tkarabela/pysubs2)
 - [wcwidth](https://github.com/jquast/wcwidth)
 - [requests](https://github.com/psf/requests)
@@ -503,7 +503,7 @@ autosub -i input_file -sapi gcsv1 -asf .mp3 ...(other options)
 
 Use customized [speech config file](https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig) to send request to Google Cloud Speech API. If using the config file, override these options: `-S`, `-asr`, `-asf`.
 
-`language_code` will be replaced by the best matching one if using option `-bm src` or `-bm all`. `encoding` string will be replaced by the enum in `google.cloud.speech_v1p1beta1.enums.RecognitionConfig.AudioEncoding` if using service account credentials. Default `encoding` is `FLAC`. Default `sample_rate_hertz` is `44100`.
+`language_code` will be replaced by the best matching one if using option `-bm src` or `-bm all`. `encoding` string will be replaced by the enum in `google.cloud.speech_v1p1beta1.RecognitionConfig.AudioEncoding` if using service account credentials. Default `encoding` is `FLAC`. Default `sample_rate_hertz` is `44100`.
 
 Example speech config file:
 

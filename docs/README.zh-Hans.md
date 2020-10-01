@@ -503,7 +503,7 @@ autosub -i 输入文件 -sapi gcsv1 -asf .mp3 ...(其他选项)
 
 使用定制的[语音识别配置文件](https://googleapis.dev/python/speech/latest/gapic/v1/types.html#google.cloud.speech_v1.types.RecognitionConfig)来发送请求给Google Cloud Speech API。如果使用配置文件，就会替代这些选项：`-S`, `-asr`, `-asf`。
 
-如果使用了选项`-bm src`或者`-bm all`，那么`language_code`会被最佳匹配替代。如果使用了服务账号凭据，那么`encoding`会被`google.cloud.speech_v1p1beta1.enums.RecognitionConfig.AudioEncoding`里的枚举 替代。默认`encoding`是`FLAC`。默认`sample_rate_hertz`是`44100`。
+如果使用了选项`-bm src`或者`-bm all`，那么`language_code`会被最佳匹配替代。如果使用了服务账号凭据，那么`encoding`会被`google.cloud.speech_v1p1beta1.RecognitionConfig.AudioEncoding`里的枚举 替代。默认`encoding`是`FLAC`。默认`sample_rate_hertz`是`44100`。
 
 示例语音识别配置文件：
 

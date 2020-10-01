@@ -16,13 +16,13 @@ from autosub import exceptions
 from autosub import constants
 
 if constants.IS_GOOGLECLOUDCLIENT:
-    from google.cloud import speech_v1p1beta1
+    from google.cloud import speech_v1p1beta1 as speech
     from google.protobuf.json_format import MessageToDict
-    from google.cloud.speech_v1p1beta1 import enums
+    from google.cloud.speech_v1p1beta1 import RecognitionConfig
 else:
-    speech_v1p1beta1 = None  # pylint: disable=invalid-name
+    speech = None  # pylint: disable=invalid-name
     MessageToDict = None  # pylint: disable=invalid-name
-    enums = None  # pylint: disable=invalid-name
+    RecognitionConfig = None  # pylint: disable=invalid-name
 
 
 def google_ext_to_enc(
@@ -50,25 +50,25 @@ def google_ext_to_enc(
         # https://cloud.google.com/speech-to-text/docs/reference/rest/v1p1beta1/RecognitionConfig?hl=zh-cn#AudioEncoding
         if ext.endswith(".flac"):
             encoding = \
-                enums.RecognitionConfig.AudioEncoding.FLAC
+                RecognitionConfig.AudioEncoding.FLAC
             # encoding = 2
         elif ext.endswith(".mp3"):
             encoding = \
-                enums.RecognitionConfig.AudioEncoding.MP3
+                RecognitionConfig.AudioEncoding.MP3
             # encoding = 8
         elif ext.endswith(".wav")\
                 or extension.lower().endswith(".pcm"):
             # regard WAV as PCM
             encoding = \
-                enums.RecognitionConfig.AudioEncoding.LINEAR16
+                RecognitionConfig.AudioEncoding.LINEAR16
             # encoding = 1
         elif ext.endswith(".ogg"):
             encoding = \
-                enums.RecognitionConfig.AudioEncoding.OGG_OPUS
+                RecognitionConfig.AudioEncoding.OGG_OPUS
             # encoding = 6
         else:
             encoding = \
-                enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
+                RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED
             # encoding = 0
 
     return encoding
@@ -260,9 +260,11 @@ def gcsv1p1beta1_service_client(
         # https://cloud.google.com/speech-to-text/docs/quickstart-client-libraries
         # https://cloud.google.com/speech-to-text/docs/basics
         # https://cloud.google.com/speech-to-text/docs/reference/rpc/google.cloud.speech.v1p1beta1#google.cloud.speech.v1p1beta1.SpeechRecognitionResult
-        client = speech_v1p1beta1.SpeechClient()
+        client = speech.SpeechClient()
+
         audio_dict = {"content": audio_data}
-        recognize_response = client.recognize(config, audio_dict)
+        request = speech.RecognizeRequest(request={"config": config, "audio": audio_dict})
+        recognize_response = client.recognize(request=request)
         result_dict = MessageToDict(
             recognize_response,
             preserving_proto_field_name=True)
