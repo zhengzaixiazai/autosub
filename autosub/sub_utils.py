@@ -632,6 +632,9 @@ def pysubs2_ssa_event_add(  # pylint: disable=too-many-branches, too-many-statem
             # text_list is [text, text, ...]
             i = 0
             length = len(text_list)
+            if length != src_ssafile.events.__len__():
+                text_list = [i for i in text_list if i]
+                length = len(text_list)
             if same_event_type == 0:
                 #  append text_list to new events
                 if style_name:

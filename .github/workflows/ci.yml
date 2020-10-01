@@ -85,7 +85,7 @@ jobs:
         timeout-minutes: 10
         run: |
           autosub -i test.mp4 -S en-us -D zh-cn -der -of all
-          cat 'test.en-us&zh-cn.srt'
+          cat 'test.en&zh-cn.srt'
 
       -
         uses: actions/upload-artifact@v2
