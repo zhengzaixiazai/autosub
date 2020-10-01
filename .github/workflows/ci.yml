@@ -28,6 +28,31 @@ jobs:
       -
         name: build
         run: |
+          set -v
+          python -m pip install --upgrade pip
+          pip install .
+          autosub -h
+
+  test:
+
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+
+      -
+        name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      -
+        name: build
+        run: |
+          set -v
           python -m pip install --upgrade pip
           pip install .
           autosub -h
@@ -36,27 +61,30 @@ jobs:
         name: pylint check
         continue-on-error: true
         run: |
+          set -v
           pip install pylint
           pylint autosub
 
       -
         name: prepare test environment
         run: |
-          apt update
-          apt install -y ffmpeg
+          set -v
+          sudo apt update
+          sudo apt install -qq -y ffmpeg
           pip install -U ffmpeg-normalize langcodes youtube-dl
 
       -
         name: prepare test file
         run: |
-          youtube-dl -f 134+140 FhPI5lbyz-I -o video.mp4
-          ffmpeg -ss 00:02:20 -i video.mp4 -to 00:02:00 -c copy test.mp4 && rm video.mp4
+          set -v
+          youtube-dl --no-progress -f 134+140 FhPI5lbyz-I -o video.mp4
+          ffmpeg -hide_banner -loglevel quiet -nostats -ss 00:02:20 -i video.mp4 -to 00:02:00 -c copy test.mp4 && rm video.mp4
 
       -
         name: test autosub
-        timeout-minutes: 5
+        timeout-minutes: 10
         run: |
-          autosub -i test.aac -S en
+          autosub -i test.mp4 -S en-us -D zh-cn -of all
 
       -
         uses: actions/upload-artifact@v2
