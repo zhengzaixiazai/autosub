@@ -78,13 +78,14 @@ jobs:
         run: |
           set -v
           youtube-dl --no-progress -f 134+140 FhPI5lbyz-I -o video.mp4
-          ffmpeg -hide_banner -loglevel quiet -nostats -ss 00:02:20 -i video.mp4 -to 00:02:00 -c copy test.mp4 && rm video.mp4
+          ffmpeg -hide_banner -loglevel quiet -nostats -ss 00:02:20 -i video.mp4 -to 00:02:00 test.mp4 && rm video.mp4
 
       -
         name: test autosub
         timeout-minutes: 10
         run: |
-          autosub -i test.mp4 -S en-us -D zh-cn -of all
+          autosub -i test.mp4 -S en-us -D zh-cn -der -of all
+          cat 'test.en-us&zh-cn.srt'
 
       -
         uses: actions/upload-artifact@v2

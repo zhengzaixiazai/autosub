@@ -34,11 +34,11 @@ setup(
         'requests>=2.3.0',
         'pysubs2>=0.2.4',
         'progressbar2>=3.34.3',
-        'auditok==0.1.5',
+        'auditok>=0.1.5',
         'googletrans>=2.4.0',
         'wcwidth>=0.1.7',
         'fuzzywuzzy>=0.18.0',
-        'google-cloud-speech>=1.3.1',
+        'google-cloud-speech>=1.3.1,<2.0.0',
         'websocket-client>=0.56.0',
         'python-docx>=0.8.10',
         'send2trash>=1.5.0'
