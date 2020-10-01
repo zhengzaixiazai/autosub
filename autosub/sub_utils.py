@@ -41,15 +41,20 @@ def str_to_file(
 
     if input_m:
         if not os.path.isdir(os.path.dirname(dest)):
-            dest = os.getcwd() + os.path.basename(dest)
+            dest = os.getcwd() + os.sep + os.path.basename(dest)
+
         while os.path.isfile(dest):
+            old_dest = dest
             print(_("There is already a file with the same path "
                     "or the path isn't valid: \"{dest_name}\".").format(dest_name=dest))
             dest = input_m(
                 _("Input a new path (including directory and file name) for output file.\n"))
+            if dest == "":
+                dest = old_dest
+                continue
             dest = dest.rstrip("\"").lstrip("\"")
             if not os.path.isdir(os.path.dirname(dest)):
-                dest = os.getcwd() + os.path.basename(dest)
+                dest = os.getcwd() + os.sep + os.path.basename(dest)
             dest = os.path.splitext(dest)[0]
             dest = "{base}{ext}".format(base=dest,
                                         ext=ext)
