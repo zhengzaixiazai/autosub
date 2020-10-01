@@ -37,15 +37,19 @@ def str_to_file(
     Give a string and write it to file
     """
     dest = output
+    ext = os.path.splitext(dest)[-1]
 
     if input_m:
-        while os.path.isfile(dest) or not os.path.isdir(os.path.dirname(dest)):
+        if not os.path.isdir(os.path.dirname(dest)):
+            dest = os.getcwd() + os.path.basename(dest)
+        while os.path.isfile(dest):
             print(_("There is already a file with the same path "
                     "or the path isn't valid: \"{dest_name}\".").format(dest_name=dest))
             dest = input_m(
                 _("Input a new path (including directory and file name) for output file.\n"))
             dest = dest.rstrip("\"").lstrip("\"")
-            ext = os.path.splitext(dest)[-1]
+            if not os.path.isdir(os.path.dirname(dest)):
+                dest = os.getcwd() + os.path.basename(dest)
             dest = os.path.splitext(dest)[0]
             dest = "{base}{ext}".format(base=dest,
                                         ext=ext)

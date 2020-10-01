@@ -63,6 +63,7 @@
 - 添加字词检查在man_get_vtt_words_index。
 - 添加速度限制在trim在join-events中。
 - 添加split_dst_lf_src_assfile方法来分离同行双语字幕。
+- 添加当前工作路径文件名重命名支持。
 
 #### 改动(未发布)
 
