@@ -17,8 +17,8 @@ from datetime import datetime
 from time import mktime
 
 # Import third-party modules
-import websocket
 import _thread
+import websocket
 
 # Any changes to the path and your own modules
 from autosub import constants

@@ -249,10 +249,10 @@ def validate_json_config(config_file):
         with open(config_file, encoding='utf-8') as config_fp:
             try:
                 config_dict = json.load(config_fp)
-            except ValueError:
+            except ValueError as credential_load_error:
                 raise exceptions.AutosubException(
                     _("Error: Can't decode config file \"{filename}\".").format(
-                        filename=config_file))
+                        filename=config_file)) from credential_load_error
     else:
         raise exceptions.AutosubException(
             _("Error: Config file \"{filename}\" doesn't exist.").format(
