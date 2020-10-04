@@ -20,7 +20,7 @@ class AutosubException(Exception):
     """
 
     def __init__(self, msg):
-        super(AutosubException, self).__init__(msg)
+        super().__init__(msg)
         try:
             self.msg = str(msg)
         except UnicodeEncodeError:
