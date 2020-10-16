@@ -168,8 +168,8 @@ pip install .
 
 ```bash
 apt install ffmpeg python3 curl git -y
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python3 get-pip.py
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py #下载Python
+python3 get-pip.py #运行安装python3
 pip install git+https://github.com/BingLingGroup/autosub.git@alpha ffmpeg-normalize langcodes
 ```
 
